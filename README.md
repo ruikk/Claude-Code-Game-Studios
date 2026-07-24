@@ -32,19 +32,19 @@
 
 ## 目录
 
-- [What's Included](#whats-included)
-- [Studio Hierarchy](#studio-hierarchy)
-- [Slash Commands](#slash-commands)
-- [Getting Started](#getting-started)
-- [Upgrading](#upgrading)
-- [Project Structure](#project-structure)
-- [How It Works](#how-it-works)
-- [Design Philosophy](#design-philosophy)
-- [Customization](#customization)
-- [Platform Support](#platform-support)
-- [Community](#community)
-- [Supporting This Project](#supporting-this-project)
-- [License](#license)
+- [包含内容](#包含内容)
+- [工作室层级](#工作室层级)
+- [斜杠命令](#斜杠命令)
+- [快速开始](#快速开始)
+- [升级](#升级)
+- [项目结构](#项目结构)
+- [工作原理](#工作原理)
+- [设计理念](#设计理念)
+- [自定义](#自定义)
+- [平台支持](#平台支持)
+- [社区](#社区)
+- [支持此项目](#支持此项目)
+- [许可证](#许可证)
 
 ---
 
@@ -289,7 +289,7 @@ settings.json 中的权限规则会自动放行安全操作（查看 Git 状态�
 
 ---
 
-## 支持这个项目
+## 支持此项目
 
 Claude Code Game Studios 是免费和开源的。如果你节省了时间或帮助你发布了游戏，请考虑支持持续开发：
 
