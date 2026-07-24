@@ -1,33 +1,33 @@
-# Docs Directory
+# 文档目录
 
-When authoring or editing files in this directory, follow these standards.
+在此目录中创建或编辑文件时，请遵循以下规范。
 
-## Architecture Decision Records (`docs/architecture/`)
+## 架构决策记录（Architecture Decision Records，`docs/architecture/`）
 
-Use the ADR template: `.claude/docs/templates/architecture-decision-record.md`
+使用 ADR 模板：`.claude/docs/templates/architecture-decision-record.md`
 
-**Required sections:** Title, Status, Context, Decision, Consequences,
-ADR Dependencies, Engine Compatibility, GDD Requirements Addressed
+**必需章节：** 标题（Title）、状态（Status）、背景（Context）、决策（Decision）、后果（Consequences）、
+ADR 依赖项（ADR Dependencies）、引擎兼容性（Engine Compatibility）、已覆盖的 GDD 需求（GDD Requirements Addressed）
 
-**Status lifecycle:** `Proposed` → `Accepted` → `Superseded`
-- Never skip `Accepted` — stories referencing a `Proposed` ADR are auto-blocked
-- Use `/architecture-decision` to create ADRs through the guided flow
+**状态生命周期：** `Proposed` → `Accepted` → `Superseded`
+- 切勿跳过 `Accepted`：引用 `Proposed` ADR 的故事会被自动阻止
+- 使用 `/architecture-decision`，通过引导式流程创建 ADR
 
-**TR Registry:** `docs/architecture/tr-registry.yaml`
-- Stable requirement IDs (e.g. `TR-MOV-001`) that link GDD requirements to stories
-- Never renumber existing IDs — only append new ones
-- Updated by `/architecture-review` Phase 8
+**TR 注册表（TR Registry）：** `docs/architecture/tr-registry.yaml`
+- 使用稳定的需求 ID（例如 `TR-MOV-001`）将 GDD 需求关联到故事
+- 切勿重新编号现有 ID，只能追加新 ID
+- 由 `/architecture-review` 的阶段 8 更新
 
-**Control Manifest:** `docs/architecture/control-manifest.md`
-- Flat programmer rules sheet: Required / Forbidden / Guardrails per layer
-- Date-stamped `Manifest Version:` in header
-- Stories embed this version; `/story-done` checks for staleness
+**控制清单（Control Manifest）：** `docs/architecture/control-manifest.md`
+- 扁平化的程序员规则表：按层级列出必需项（Required）/ 禁止项（Forbidden）/ 约束条件（Guardrails）
+- 标头中的 `Manifest Version:` 带有日期戳
+- 故事会嵌入此版本；`/story-done` 会检查版本是否过期
 
-**Validation:** Run `/architecture-review` after completing a set of ADRs.
+**验证：** 完成一组 ADR 后，运行 `/architecture-review`。
 
-## Engine Reference (`docs/engine-reference/`)
+## 引擎参考资料（Engine Reference，`docs/engine-reference/`）
 
-Version-pinned engine API snapshots. **Always check here before using any
-engine API** — the LLM's training data predates the pinned engine version.
+与特定版本绑定的引擎 API 快照。**使用任何引擎 API 之前，务必先在此处查阅**，
+因为 LLM 的训练数据早于所绑定的引擎版本。
 
-Current engine: see `docs/engine-reference/godot/VERSION.md`
+当前引擎：请参阅 `docs/engine-reference/godot/VERSION.md`
