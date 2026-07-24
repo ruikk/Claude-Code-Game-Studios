@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Notification hook — fires when Claude Code sends a notification
-# Shows a Windows toast via PowerShell
+# 通知钩子 — 在 Claude Code 发起通知时触发
+# 通过 PowerShell 弹出 Windows 系统通知弹窗
 
 # Read notification JSON from stdin
 INPUT=$(cat)
@@ -13,7 +13,7 @@ if [ -z "$MESSAGE" ]; then
   MESSAGE=$(echo "$INPUT" | grep -oE '"message":"[^"]*"' | sed 's/"message":"//;s/"//')
 fi
 if [ -z "$MESSAGE" ]; then
-  MESSAGE="Claude Code needs your attention"
+  MESSAGE="Claude Code 需要你进行处理"
 fi
 
 # Sanitize message for PowerShell string embedding (escape single quotes)
@@ -32,4 +32,4 @@ powershell.exe -NonInteractive -WindowStyle Hidden -Command "
   \$notify.Dispose()
 " 2>/dev/null &
 
-echo "Notification: $MESSAGE_SAFE"
+echo "通知: $MESSAGE_SAFE"

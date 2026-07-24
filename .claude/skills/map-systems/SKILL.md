@@ -1,364 +1,341 @@
 ---
 name: map-systems
-description: "Decompose a game concept into individual systems, map dependencies, prioritize design order, and create the systems index."
+description: "将游戏概念分解为单独的系统,映射依赖关系,优先排序设计顺序,并创建系统索引。"
 argument-hint: "[next | system-name] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion, TodoWrite, Task
 model: sonnet
 ---
 
-When this skill is invoked:
+当调用此技能时:
 
-## Parse Arguments
+## 解析参数
 
-Two modes:
+两种模式:
 
-- **No argument**: `/map-systems` — Run the full decomposition workflow (Phases 1-5)
-  to create or update the systems index.
-- **`next`**: `/map-systems next` — Pick the highest-priority undesigned system
-  from the index and hand off to `/design-system` (Phase 6).
+- **无参数**:`/map-systems` —— 运行完整分解工作流(Phase 1-5)
+  来创建或更新系统索引。
+- **`next`**:`/map-systems next` —— 从索引中选择最高优先级的未设计系统
+  并交接给 `/design-system`(Phase 6)。
 
-Also resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+同时解析评审模式(一次解析,本次运行的所有门禁生成都使用):
+1. 如果传递了 `--review [full|lean|solo]` → 使用它
+2. 否则读取 `production/review-mode.txt` → 使用该值
+3. 否则 → 默认为 `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
-
----
-
-## Phase 1: Read Concept (Required Context)
-
-Read the game concept and any existing design work. This provides the raw material
-for systems decomposition.
-
-**Required:**
-- Read `design/gdd/game-concept.md` — **fail with a clear message if missing**:
-  > "No game concept found at `design/gdd/game-concept.md`. Run `/brainstorm` first
-  > to create one, then come back to decompose it into systems."
-
-**Optional (read if they exist):**
-- Read `design/gdd/game-pillars.md` — pillars constrain priority and scope
-- Read `design/gdd/systems-index.md` — if exists, **resume** from where it left off
-  (update, don't recreate from scratch)
-- Glob `design/gdd/*.md` — check which system GDDs already exist
-
-**If the systems index already exists:**
-- Read it and present current status to the user
-- Use `AskUserQuestion` to ask:
-  "The systems index already exists with [N] systems ([M] designed, [K] not started).
-  What would you like to do?"
-  - Options: "Update the index with new systems", "Design the next undesigned system",
-    "Review and revise priorities"
+完整检查模式见 `.claude/docs/director-gates.md`。
 
 ---
 
-## Phase 2: Systems Enumeration (Collaborative)
+## Phase 1: 读取概念(必需上下文)
 
-Extract and identify all systems the game needs. This is the creative core of the
-skill — it requires human judgment because concept docs rarely enumerate every
-system explicitly.
+读取游戏概念和任何现有的设计工作。这提供了系统分解的原材料。
 
-### Step 2a: Extract Explicit Systems
+**必需:**
+- 读取 `design/gdd/game-concept.md` —— **如果缺失则失败并给出清晰消息**:
+  > "在 `design/gdd/game-concept.md` 未找到游戏概念。先运行 `/brainstorm`
+  > 创建一个,然后回来将其分解为系统。"
 
-Scan the game concept for directly mentioned systems and mechanics:
-- Core Mechanics section (most explicit)
-- Core Loop section (implies what systems drive each loop tier)
-- Technical Considerations section (networking, procedural generation, etc.)
-- MVP Definition section (required features = required systems)
+**可选(如果存在则读取):**
+- 读取 `design/gdd/game-pillars.md` —— 支柱约束优先级和范围
+- 读取 `design/gdd/systems-index.md` —— 如果存在,**从上次离开的地方恢复**
+  (更新,不要从头重建)
+- Glob `design/gdd/*.md` —— 检查哪些系统 GDD 已存在
 
-### Step 2b: Identify Implicit Systems
-
-For each explicit system, identify the **hidden systems** it implies. Games always
-need more systems than the concept doc mentions. Use this inference pattern:
-
-- "Inventory" implies: item database, equipment slots, weight/capacity rules,
-  inventory UI, item serialization for save/load
-- "Combat" implies: damage calculation, health system, hit detection, status effects,
-  enemy AI, combat UI (health bars, damage numbers), death/respawn
-- "Open world" implies: streaming/chunking, LOD system, fast travel, map/minimap,
-  point of interest tracking, world state persistence
-- "Multiplayer" implies: networking layer, lobby/matchmaking, state synchronization,
-  anti-cheat, network UI (ping, player list)
-- "Crafting" implies: recipe database, ingredient gathering, crafting UI,
-  success/failure mechanics, recipe discovery/learning
-- "Dialogue" implies: dialogue tree system, dialogue UI, choice tracking, NPC
-  state management, localization hooks
-- "Progression" implies: XP system, level-up mechanics, skill tree, unlock
-  tracking, progression UI, progression save data
-
-Explain in conversation text why each implicit system is needed (with examples).
-
-### Step 2c: User Review
-
-Present the enumeration organized by category. For each system, show:
-- Name
-- Category
-- Brief description (1 sentence)
-- Whether it was explicit (from concept) or implicit (inferred)
-
-Then use `AskUserQuestion` to capture feedback:
-- "Are there systems missing from this list?"
-- "Should any of these be combined or split?"
-- "Are there systems listed that this game does NOT need?"
-
-Iterate until the user approves the enumeration.
+**如果系统索引已存在:**
+- 读取它并向用户呈现当前状态
+- 使用 `AskUserQuestion` 询问:
+  "系统索引已存在,包含 [N] 个系统([M] 已设计,[K] 未开始)。
+  你想做什么?"
+  - 选项:"用新系统更新索引"、"设计下一个未设计的系统"、
+    "评审和修订优先级"
 
 ---
 
-## Phase 3: Dependency Mapping (Collaborative)
+## Phase 2: 系统枚举(协作)
 
-For each system, determine what it depends on. A system "depends on" another if
-it cannot function without that other system existing first.
+提取并识别游戏需要的所有系统。这是技能的创意核心 —— 它需要人工判断,因为概念文档很少显式枚举每个系统。
 
-### Step 3a: Map Dependencies
+### 步骤 2a: 提取显式系统
 
-For each system, list its dependencies. Use these dependency heuristics:
-- **Input/output dependencies**: System A produces data System B needs
-- **Structural dependencies**: System A provides the framework System B plugs into
-- **UI dependencies**: Every gameplay system has a corresponding UI system that
-  depends on it (but UI is designed after the gameplay system)
+扫描游戏概念中直接提及的系统和机制:
+- 核心机制章节(最显式)
+- 核心循环章节(暗示什么系统驱动每个循环层级)
+- 技术考量章节(网络、程序化生成等)
+- MVP 定义章节(必需功能 = 必需系统)
 
-### Step 3b: Sort by Dependency Order
+### 步骤 2b: 识别隐式系统
 
-Arrange systems into layers:
-1. **Foundation**: Systems with zero dependencies (designed and built first)
-2. **Core**: Systems depending only on Foundation systems
-3. **Feature**: Systems depending on Core systems
-4. **Presentation**: UI and feedback systems that wrap gameplay systems
-5. **Polish**: Meta-systems, tutorials, analytics, accessibility
+对于每个显式系统,识别它暗示的**隐藏系统**。游戏总是需要比概念文档提及的更多系统。使用此推理模式:
 
-### Step 3c: Detect Circular Dependencies
+- "物品栏"暗示:物品数据库、装备槽、重量/容量规则、物品栏 UI、物品序列化用于存档/读取
+- "战斗"暗示:伤害计算、生命值系统、命中检测、状态效果、敌人 AI、战斗 UI(血条、伤害数字)、死亡/重生
+- "开放世界"暗示:流式加载/分块、LOD 系统、快速旅行、地图/小地图、兴趣点追踪、世界状态持久化
+- "多人游戏"暗示:网络层、大厅/匹配、状态同步、反作弊、网络 UI(延迟、玩家列表)
+- "制作"暗示:配方数据库、材料采集、制作 UI、成功/失败机制、配方发现/学习
+- "对话"暗示:对话树系统、对话 UI、选择追踪、NPC 状态管理、本地化钩子
+- "进程"暗示:XP 系统、升级机制、技能树、解锁追踪、进程 UI、进程存档数据
 
-Check for cycles in the dependency graph. If found:
-- Highlight them to the user
-- Propose resolutions (interface abstraction, simultaneous design, breaking the
-  cycle by defining a contract between the two systems)
+在对话文本中解释每个隐式系统为何需要(附示例)。
 
-### Step 3d: Present to User
+### 步骤 2c: 用户评审
 
-Show the dependency map as a layered list. Highlight:
-- Any circular dependencies
-- Any "bottleneck" systems (many others depend on them — these are high-risk)
-- Any systems with no dependents (leaf nodes — lower risk, can be designed late)
+按类别呈现组织好的枚举。对于每个系统,显示:
+- 名称
+- 类别
+- 简短描述(1 句话)
+- 是显式的(来自概念)还是隐式的(推断的)
 
-Use `AskUserQuestion` to ask: "Does this dependency ordering look right? Any
-dependencies I'm missing or that should be removed?"
+然后使用 `AskUserQuestion` 捕获反馈:
+- "此列表中是否缺少系统?"
+- "是否有任何应该合并或拆分?"
+- "是否列出了此游戏不需要的系统?"
 
-**Review mode check** — apply before spawning TD-SYSTEM-BOUNDARY:
-- `solo` → skip. Note: "TD-SYSTEM-BOUNDARY skipped — Solo mode." Proceed to priority assignment.
-- `lean` → skip (not a PHASE-GATE). Note: "TD-SYSTEM-BOUNDARY skipped — Lean mode." Proceed to priority assignment.
-- `full` → spawn as normal.
-
-**After dependency mapping is approved, spawn `technical-director` via Task using gate TD-SYSTEM-BOUNDARY (`.claude/docs/director-gates.md`) before proceeding to priority assignment.**
-
-Pass: the dependency map summary, layer assignments, bottleneck systems list, any circular dependency resolutions.
-
-Present the assessment. If REJECT, revise the system boundaries with the user before moving to priority assignment. If CONCERNS, note them inline in the systems index and continue.
+迭代直到用户批准枚举。
 
 ---
 
-## Phase 4: Priority Assignment (Collaborative)
+## Phase 3: 依赖映射(协作)
 
-Assign each system to a priority tier based on what milestone it's needed for.
+对于每个系统,确定它依赖什么。一个系统"依赖"另一个系统,如果它不能在另一个系统先存在的情况下运行。
 
-### Step 4a: Auto-Assign Based on Concept
+### 步骤 3a: 映射依赖
 
-Use these heuristics for initial assignment:
-- **MVP**: Systems mentioned in the concept's "Required for MVP" section, plus their
-  Foundation-layer dependencies
-- **Vertical Slice**: Systems needed for a complete experience in one area
-- **Alpha**: All remaining gameplay systems
-- **Full Vision**: Polish, meta, and nice-to-have systems
+对于每个系统,列出其依赖。使用这些依赖启发式:
+- **输入/输出依赖**:系统 A 产生系统 B 需要的数据
+- **结构依赖**:系统 A 提供系统 B 插入的框架
+- **UI 依赖**:每个游戏玩法系统都有相应的 UI 系统依赖于它(但 UI 在游戏玩法系统之后设计)
 
-### Step 4b: User Review
+### 步骤 3b: 按依赖顺序排序
 
-Present the priority assignments in a table. For each tier, explain why systems
-were placed there.
+将系统安排到层级中:
+1. **Foundation**:零依赖的系统(先设计和构建)
+2. **Core**:仅依赖 Foundation 系统的系统
+3. **Feature**:依赖 Core 系统的系统
+4. **Presentation**:包裹游戏玩法系统的 UI 和反馈系统
+5. **Polish**:元系统、教程、分析、无障碍
 
-Use `AskUserQuestion` to ask: "Do these priority assignments match your vision?
-Which systems should be higher or lower priority?"
+### 步骤 3c: 检测循环依赖
 
-Explain reasoning in conversation: "I placed [system] in MVP because the core loop
-requires it — without [system], the 30-second loop can't function."
+检查依赖图中的环。如果发现:
+- 向用户高亮它们
+- 提出解决方案(接口抽象、同时设计、通过定义两个系统之间的契约来打破环)
 
-**"Why" column guidance**: When explaining why each system was placed in a priority tier, mix technical necessity with player-experience reasoning. Do not use purely technical justifications like "Combat needs damage math" — connect to player experience where relevant. Examples of good "Why" entries:
-- "Required for the core loop — without it, placement decisions have no consequence (Pillar 2: Placement is the Puzzle)"
-- "Ballista's punch-through identity is established here — this stat definition is what makes it feel different from Archer"
-- "Foundation for all economy decisions — players must understand upgrade costs to make meaningful placement choices"
+### 步骤 3d: 呈现给用户
 
-Pure technical necessity ("X depends on Y") is insufficient alone when the system directly shapes player experience.
+以分层列表显示依赖图。高亮:
+- 任何循环依赖
+- 任何"瓶颈"系统(许多其他系统依赖它们 —— 这些是高风险)
+- 任何无依赖者的系统(叶节点 —— 风险较低,可以晚些设计)
 
-**Review mode check** — apply before spawning PR-SCOPE:
-- `solo` → skip. Note: "PR-SCOPE skipped — Solo mode." Proceed to writing the systems index.
-- `lean` → skip (not a PHASE-GATE). Note: "PR-SCOPE skipped — Lean mode." Proceed to writing the systems index.
-- `full` → spawn as normal.
+使用 `AskUserQuestion` 询问:"这个依赖顺序看起来对吗?有我遗漏或应该删除的依赖吗?"
 
-**After priorities are approved, spawn `producer` via Task using gate PR-SCOPE (`.claude/docs/director-gates.md`) before writing the index.**
+**评审模式检查** —— 在生成 TD-SYSTEM-BOUNDARY 之前应用:
+- `solo` → 跳过。注意:"TD-SYSTEM-BOUNDARY skipped — Solo mode。"进入优先级分配。
+- `lean` → 跳过(非 PHASE-GATE)。注意:"TD-SYSTEM-BOUNDARY skipped — Lean mode。"进入优先级分配。
+- `full` → 正常生成。
 
-Pass: total system count per milestone tier, estimated implementation volume per tier (system count × average complexity), team size, stated project timeline.
+**在依赖映射获批后,通过 Task 使用门禁 TD-SYSTEM-BOUNDARY(`.claude/docs/director-gates.md`)生成 `technical-director`,然后再进入优先级分配。**
 
-Present the assessment. If UNREALISTIC, offer to revise priority tier assignments before writing the index. If CONCERNS, note them and continue.
+传递:依赖图摘要、层级分配、瓶颈系统列表、任何循环依赖的解决方案。
 
-### Step 4c: Determine Design Order
-
-Combine dependency sort + priority tier to produce the final design order:
-1. MVP Foundation systems first
-2. MVP Core systems second
-3. MVP Feature systems third
-4. Vertical Slice Foundation/Core systems
-5. ...and so on
-
-This is the order the team should write GDDs in.
+呈现评估。如果 REJECT,在进入优先级分配前与用户修订系统边界。如果 CONCERNS,在系统索引中内联记录并继续。
 
 ---
 
-## Phase 5: Create Systems Index (Write)
+## Phase 4: 优先级分配(协作)
 
-### Step 5a: Draft the Document
+根据系统在哪个里程碑需要,将每个系统分配到优先级层级。
 
-Using the template at `.claude/docs/templates/systems-index.md`, populate the
-systems index with all data from Phases 2-4:
-- Fill the enumeration table
-- Fill the dependency map
-- Fill the recommended design order
-- Fill the high-risk systems
-- Fill progress tracker (all systems "Not Started" initially, unless GDDs already exist)
+### 步骤 4a: 基于概念自动分配
 
-### Step 5b: Approval
+使用这些启发式进行初始分配:
+- **MVP**:概念中"MVP 必需"章节提及的系统,加上它们的 Foundation 层依赖
+- **Vertical Slice**:在一个区域完成完整体验所需的系统
+- **Alpha**:所有剩余的游戏玩法系统
+- **Full Vision**:打磨、元系统和可有可无的系统
 
-Present a summary of the document:
-- Total systems count by category
-- MVP system count
-- First 3 systems in the design order
-- Any high-risk items
+### 步骤 4b: 用户评审
 
-Ask: "May I write the systems index to `design/gdd/systems-index.md`?"
+以表格形式呈现优先级分配。对于每个层级,解释系统为何被放在那里。
 
-Wait for approval. Write the file only after "yes."
+使用 `AskUserQuestion` 询问:"这些优先级分配符合你的愿景吗?哪些系统应该更高或更低优先级?"
 
-**Review mode check** — apply before spawning CD-SYSTEMS:
-- `solo` → skip. Note: "CD-SYSTEMS skipped — Solo mode." Proceed to Phase 7 next steps.
-- `lean` → skip (not a PHASE-GATE). Note: "CD-SYSTEMS skipped — Lean mode." Proceed to Phase 7 next steps.
-- `full` → spawn as normal.
+在对话中解释理由:"我将 [system] 放在 MVP 中,因为核心循环需要它 —— 没有 [system],30 秒循环无法运行。"
 
-**After the systems index is written, spawn `creative-director` via Task using gate CD-SYSTEMS (`.claude/docs/director-gates.md`).**
+**"Why"列指导**:在解释每个系统为何被放在某个优先级层级时,混合技术必要性和玩家体验理由。不要使用纯技术理由如"战斗需要伤害数学" —— 在相关处联系到玩家体验。好的"Why"条目示例:
+- "核心循环必需 —— 没有它,放置决策就没有后果(Pillar 2:Placement is the Puzzle)"
+- "弩炮的穿透特性在此建立 —— 此属性定义是使其感觉与 Archer 不同的关键"
+- "所有经济决策的基础 —— 玩家必须理解升级成本才能做出有意义的放置选择"
 
-Pass: systems index path, game pillars and core fantasy (from `design/gdd/game-concept.md`), MVP priority tier system list.
+当系统直接影响玩家体验时,纯技术必要性("X 依赖 Y")本身是不充分的。
 
-Present the assessment. If REJECT, revise the system set with the user before GDD authoring begins. If CONCERNS, record them in the systems index as a `> **Creative Director Note**` at the top of the relevant tier section.
+**评审模式检查** —— 在生成 PR-SCOPE 之前应用:
+- `solo` → 跳过。注意:"PR-SCOPE skipped — Solo mode。"进入写入系统索引。
+- `lean` → 跳过(非 PHASE-GATE)。注意:"PR-SCOPE skipped — Lean mode。"进入写入系统索引。
+- `full` → 正常生成。
 
-### Step 5c: Update Session State
+**在优先级获批后,通过 Task 使用门禁 PR-SCOPE(`.claude/docs/director-gates.md`)生成 `producer`,然后再写入索引。**
 
-After writing, create `production/session-state/active.md` if it does not exist, then update it with:
-- Task: Systems decomposition
-- Status: Systems index created
-- File: design/gdd/systems-index.md
-- Next: Design individual system GDDs
+传递:每个里程碑层级的系统总数、每层级的估算实现量(系统数 × 平均复杂度)、团队规模、已声明的项目时间线。
 
-**Verdict: COMPLETE** — systems index written to `design/gdd/systems-index.md`.
-If the user declined: **Verdict: BLOCKED** — user did not approve the write.
+呈现评估。如果 UNREALISTIC,在写入索引前提供修订优先级层级分配。如果 CONCERNS,记录并继续。
 
----
+### 步骤 4c: 确定设计顺序
 
-## Phase 6: Design Individual Systems (Handoff to /design-system)
+结合依赖排序 + 优先级层级来产生最终设计顺序:
+1. MVP Foundation 系统优先
+2. MVP Core 系统其次
+3. MVP Feature 系统第三
+4. Vertical Slice Foundation/Core 系统
+5. ……以此类推
 
-This phase is entered when:
-- The user says "yes" to designing systems after creating the index
-- The user invokes `/map-systems [system-name]`
-- The user invokes `/map-systems next`
-
-### Step 6a: Select the System
-
-- If a system name was provided, find it in the systems index
-- If `next` was used, pick the highest-priority undesigned system (by design order)
-- If the user just finished the index, ask:
-  "Would you like to start designing individual systems now? The first system in
-  the design order is [name]. Or would you prefer to stop here and come back later?"
-
-Use `AskUserQuestion` for: "Start designing [system-name] now, pick a different
-system, or stop here?"
-
-### Step 6b: Hand Off to /design-system
-
-Once a system is selected, invoke the `/design-system [system-name]` skill.
-
-The `/design-system` skill handles the full GDD authoring process:
-- Gathers context from game concept, systems index, and dependency GDDs
-- Creates a file skeleton immediately
-- Walks through all 8 required sections one at a time (collaborative, incremental)
-- Cross-references existing docs to prevent contradictions
-- Routes to specialist agents for domain expertise
-- Writes each section to file as soon as it's approved
-- Runs `/design-review` when complete
-- Updates the systems index
-
-**Do not duplicate the /design-system workflow here.** This skill owns the systems
-*index*; `/design-system` owns individual system *GDDs*.
-
-### Step 6c: Loop or Stop
-
-After `/design-system` completes, use `AskUserQuestion`:
-- "Continue to the next system ([next system name])?"
-- "Pick a different system?"
-- "Stop here for this session?"
-
-If continuing, return to Step 6a.
+这是团队编写 GDD 的顺序。
 
 ---
 
-## Phase 7: Suggest Next Steps
+## Phase 5: 创建系统索引(写入)
 
-After the systems index is created (or after designing some systems), present next actions using `AskUserQuestion`:
+### 步骤 5a: 起草文档
 
-- "Systems index is written. What would you like to do next?"
-  - [A] Start designing GDDs — run `/design-system [first-system-in-order]`
-  - [B] Run `/gate-check systems-design` — triggers the CD-SYSTEMS and TD-SYSTEM-BOUNDARY gates automatically for a formal director sign-off on the system set
-  - [C] Stop here for this session
+使用 `.claude/docs/templates/systems-index.md` 的模板,用 Phase 2-4 的所有数据填充系统索引:
+- 填充枚举表
+- 填充依赖图
+- 填充推荐设计顺序
+- 填充高风险系统
+- 填充进度跟踪器(所有系统初始为"Not Started",除非 GDD 已存在)
 
-**The gate-check option ([B]) is worth highlighting**: running `/gate-check systems-design` triggers both the CD-SYSTEMS and TD-SYSTEM-BOUNDARY gates, catching scope issues, missing systems, and boundary problems before they're locked in across many documents. It is optional but recommended for new projects.
+### 步骤 5b: 审批
 
-After any individual GDD is completed:
-- "Run `/design-review design/gdd/[system].md` in a fresh session to validate quality"
-- "Run `/gate-check systems-design` when all MVP GDDs are complete"
+呈现文档摘要:
+- 按类别的系统总数
+- MVP 系统数
+- 设计顺序中的前 3 个系统
+- 任何高风险项
 
----
+询问:"我可以将系统索引写入 `design/gdd/systems-index.md` 吗?"
 
-## Collaborative Protocol
+等待审批。仅在"是"后写入文件。
 
-This skill follows the collaborative design principle at every phase:
+**评审模式检查** —— 在生成 CD-SYSTEMS 之前应用:
+- `solo` → 跳过。注意:"CD-SYSTEMS skipped — Solo mode。"进入 Phase 7 下一步。
+- `lean` → 跳过(非 PHASE-GATE)。注意:"CD-SYSTEMS skipped — Lean mode。"进入 Phase 7 下一步。
+- `full` → 正常生成。
 
-1. **Question -> Options -> Decision -> Draft -> Approval** at every step
-2. **AskUserQuestion** at every decision point (Explain -> Capture pattern):
-   - Phase 2: "Missing systems? Combine or split?"
-   - Phase 3: "Dependency ordering correct?"
-   - Phase 4: "Priority assignments match your vision?"
-   - Phase 5: "May I write the systems index?"
-   - Phase 6: "Start designing, pick different, or stop?" then hand off to `/design-system`
-3. **"May I write to [filepath]?"** before every file write
-4. **Incremental writing**: Update the systems index after each system is designed
-5. **Handoff**: Individual GDD authoring is owned by `/design-system`, which handles
-   incremental section writing, cross-referencing, design review, and index updates
-6. **Session state updates**: Write to `production/session-state/active.md` after
-   each milestone (index created, system designed, priorities changed)
+**在系统索引写入后,通过 Task 使用门禁 CD-SYSTEMS(`.claude/docs/director-gates.md`)生成 `creative-director`。**
 
-**Never** auto-generate the full systems list and write it without review.
-**Never** start designing a system without user confirmation.
-**Always** show the enumeration, dependencies, and priorities for user validation.
+传递:系统索引路径、游戏支柱和核心幻想(来自 `design/gdd/game-concept.md`)、MVP 优先级层级系统列表。
 
-## Context Window Awareness
+呈现评估。如果 REJECT,在 GDD 编写开始前与用户修订系统集。如果 CONCERNS,在系统索引中相关层级章节顶部作为 `> **Creative Director Note**` 记录。
 
-If context reaches or exceeds 70% at any point, append this notice:
+### 步骤 5c: 更新会话状态
 
-> **Context is approaching the limit (≥70%).** The systems index is saved to
-> `design/gdd/systems-index.md`. Open a fresh Claude Code session to continue
-> designing individual GDDs — run `/map-systems next` to pick up where you left off.
+写入后,创建 `production/session-state/active.md`(如果不存在),然后更新:
+- Task:Systems decomposition
+- Status:Systems index created
+- File:design/gdd/systems-index.md
+- Next:Design individual system GDDs
+
+**结论:COMPLETE** —— 系统索引已写入 `design/gdd/systems-index.md`。
+如果用户拒绝:**结论:BLOCKED** —— 用户未批准写入。
 
 ---
 
-## Recommended Next Steps
+## Phase 6: 设计单独系统(交接给 /design-system)
 
-- Run `/design-system [first-system-in-order]` to author the first GDD (use design order from the index)
-- Run `/map-systems next` to always pick the highest-priority undesigned system automatically
-- Run `/design-review design/gdd/[system].md` in a fresh session after each GDD is authored
-- Run `/gate-check pre-production` when all MVP GDDs are authored and reviewed
+此阶段在以下情况进入:
+- 用户在创建索引后说"是"要设计系统
+- 用户调用 `/map-systems [system-name]`
+- 用户调用 `/map-systems next`
+
+### 步骤 6a: 选择系统
+
+- 如果提供了系统名称,在系统索引中查找它
+- 如果使用了 `next`,选择最高优先级的未设计系统(按设计顺序)
+- 如果用户刚完成索引,询问:
+  "你想现在开始设计单独的系统吗?设计顺序中的第一个系统是 [name]。
+  还是你想到此为止,以后再来?"
+
+使用 `AskUserQuestion`:"现在开始设计 [system-name],选择不同的系统,还是到此为止?"
+
+### 步骤 6b: 交接给 /design-system
+
+一旦选择了系统,调用 `/design-system [system-name]` 技能。
+
+`/design-system` 技能处理完整的 GDD 编写流程:
+- 从游戏概念、系统索引和依赖 GDD 收集上下文
+- 立即创建文件骨架
+- 逐一走查所有 8 个必需章节(协作、增量)
+- 交叉引用现有文档以防止矛盾
+- 路由到专家代理获取域专业知识
+- 每个章节一旦获批即写入文件
+- 完成时运行 `/design-review`
+- 更新系统索引
+
+**不要在此处重复 /design-system 工作流。** 此技能拥有系统*索引*;`/design-system` 拥有单独的系统 *GDD*。
+
+### 步骤 6c: 循环或停止
+
+`/design-system` 完成后,使用 `AskUserQuestion`:
+- "继续下一个系统([next system name])?"
+- "选择不同的系统?"
+- "此会话到此为止?"
+
+如果继续,返回步骤 6a。
+
+---
+
+## Phase 7: 建议下一步
+
+在系统索引创建后(或设计了一些系统后),使用 `AskUserQuestion` 呈现下一步操作:
+
+- "系统索引已写入。你接下来想做什么?"
+  - [A] 开始设计 GDD —— 运行 `/design-system [first-system-in-order]`
+  - [B] 运行 `/gate-check systems-design` —— 自动触发 CD-SYSTEMS 和 TD-SYSTEM-BOUNDARY 门禁,获得系统集的正式总监签核
+  - [C] 此会话到此为止
+
+**gate-check 选项 ([B]) 值得高亮**:运行 `/gate-check systems-design` 触发 CD-SYSTEMS 和 TD-SYSTEM-BOUNDARY 两个门禁,在范围问题、缺失系统和边界问题被锁定到许多文档中之前捕获它们。它是可选的,但对于新项目推荐。
+
+任何单独 GDD 完成后:
+- "在全新会话中运行 `/design-review design/gdd/[system].md` 验证质量"
+- "所有 MVP GDD 完成时运行 `/gate-check systems-design`"
+
+---
+
+## 协作协议
+
+此技能在每个阶段遵循协作设计原则:
+
+1. 每步**提问 -> 选项 -> 决定 -> 草稿 -> 审批**
+2. 每个决策点使用 **AskUserQuestion**(解释 -> 捕获模式):
+   - Phase 2:"缺少系统?合并还是拆分?"
+   - Phase 3:"依赖顺序正确?"
+   - Phase 4:"优先级分配符合你的愿景?"
+   - Phase 5:"我可以写入系统索引吗?"
+   - Phase 6:"开始设计、选择不同,还是停止?"然后交接给 `/design-system`
+3. 每次文件写入前**"我可以写入 [filepath] 吗?"**
+4. **增量写入**:每个系统设计完成后更新系统索引
+5. **交接**:单独 GDD 编写由 `/design-system` 拥有,它处理增量章节写入、交叉引用、设计评审和索引更新
+6. **会话状态更新**:每个里程碑后写入 `production/session-state/active.md`
+   (索引创建、系统设计、优先级变更)
+
+**绝不**在未经评审的情况下自动生成完整系统列表并写入。
+**绝不**在未经用户确认的情况下开始设计系统。
+**始终**显示枚举、依赖和优先级供用户验证。
+
+## 上下文窗口感知
+
+如果上下文在任何时候达到或超过 70%,追加此通知:
+
+> **上下文接近限制(≥70%)。** 系统索引已保存到
+> `design/gdd/systems-index.md`。打开全新的 Claude Code 会话继续
+> 设计单独的 GDD —— 运行 `/map-systems next` 从上次离开的地方继续。
+
+---
+
+## 推荐下一步
+
+- 运行 `/design-system [first-system-in-order]` 编写第一个 GDD(使用索引中的设计顺序)
+- 运行 `/map-systems next` 始终自动选择最高优先级的未设计系统
+- 每个 GDD 编写完成后,在全新会话中运行 `/design-review design/gdd/[system].md`
+- 所有 MVP GDD 编写并评审后运行 `/gate-check pre-production`

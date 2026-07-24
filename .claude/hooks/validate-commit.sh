@@ -1,26 +1,26 @@
 #!/bin/bash
-# Claude Code PreToolUse hook: Validates git commit commands
-# Receives JSON on stdin with tool_input.command
-# Exit 0 = allow, Exit 2 = block (stderr shown to Claude)
+# Claude Code PreToolUse 钩子: 验证 git commit 命令
+# 从标准输入接收 JSON，包含 tool_input.command
+# 退出码 0 = 允许, 退出码 2 = 阻断 (stderr 显示给 Claude)
 #
-# Input schema (PreToolUse for Bash):
+# 输入格式 (PreToolUse for Bash):
 # { "tool_name": "Bash", "tool_input": { "command": "git commit -m ..." } }
 
 INPUT=$(cat)
 
-# Parse command -- use jq if available, fall back to grep
+# 解析命令 -- 优先使用 jq，退回使用 grep
 if command -v jq >/dev/null 2>&1; then
     COMMAND=$(echo "$INPUT" | jq -r '.tool_input.command // empty')
 else
     COMMAND=$(echo "$INPUT" | grep -oE '"command"[[:space:]]*:[[:space:]]*"[^"]*"' | sed 's/"command"[[:space:]]*:[[:space:]]*"//;s/"$//')
 fi
 
-# Only process git commit commands
+# 仅处理 git commit 命令
 if ! echo "$COMMAND" | grep -qE '^git[[:space:]]+commit'; then
     exit 0
 fi
 
-# Get staged files
+# 获取已暂存的文件
 STAGED=$(git diff --cached --name-only 2>/dev/null)
 if [ -z "$STAGED" ]; then
     exit 0
@@ -28,24 +28,24 @@ fi
 
 WARNINGS=""
 
-# Check design documents for required sections
+# 检查设计文档是否包含必需的章节
 DESIGN_FILES=$(echo "$STAGED" | grep -E '^design/gdd/')
 if [ -n "$DESIGN_FILES" ]; then
     while IFS= read -r file; do
         if [[ "$file" == *.md ]] && [ -f "$file" ]; then
             for section in "Overview" "Player Fantasy" "Detailed" "Formulas" "Edge Cases" "Dependencies" "Tuning Knobs" "Acceptance Criteria"; do
                 if ! grep -qi "$section" "$file"; then
-                    WARNINGS="$WARNINGS\nDESIGN: $file missing required section: $section"
+                    WARNINGS="$WARNINGS\n设计: $file 缺少必需的章节: $section"
                 fi
             done
         fi
     done <<< "$DESIGN_FILES"
 fi
 
-# Validate JSON data files -- block invalid JSON
+# 验证 JSON 数据文件 -- 阻断无效 JSON
 DATA_FILES=$(echo "$STAGED" | grep -E '^assets/data/.*\.json$')
 if [ -n "$DATA_FILES" ]; then
-    # Find a working Python command
+    # 查找可用的 Python 命令
     PYTHON_CMD=""
     for cmd in python python3 py; do
         if command -v "$cmd" >/dev/null 2>&1; then
@@ -58,44 +58,44 @@ if [ -n "$DATA_FILES" ]; then
         if [ -f "$file" ]; then
             if [ -n "$PYTHON_CMD" ]; then
                 if ! "$PYTHON_CMD" -m json.tool "$file" > /dev/null 2>&1; then
-                    echo "BLOCKED: $file is not valid JSON" >&2
+                    echo "已阻断: $file 不是有效的 JSON" >&2
                     exit 2
                 fi
             else
-                echo "WARNING: Cannot validate JSON (python not found): $file" >&2
+                echo "警告: 无法验证 JSON (未找到 python): $file" >&2
             fi
         fi
     done <<< "$DATA_FILES"
 fi
 
-# Check for hardcoded gameplay values in gameplay code
-# Uses grep -E (POSIX extended) instead of grep -P (Perl) for cross-platform compatibility
+# 检查游戏代码中是否存在硬编码的游戏数值
+# 使用 grep -E (POSIX 扩展) 而非 grep -P (Perl) 以保证跨平台兼容性
 CODE_FILES=$(echo "$STAGED" | grep -E '^src/gameplay/')
 if [ -n "$CODE_FILES" ]; then
     while IFS= read -r file; do
         if [ -f "$file" ]; then
             if grep -nE '(damage|health|speed|rate|chance|cost|duration)[[:space:]]*[:=][[:space:]]*[0-9]+' "$file" 2>/dev/null; then
-                WARNINGS="$WARNINGS\nCODE: $file may contain hardcoded gameplay values. Use data files."
+                WARNINGS="$WARNINGS\n代码: $file 可能包含硬编码的游戏数值。请使用数据文件。"
             fi
         fi
     done <<< "$CODE_FILES"
 fi
 
-# Check for TODO/FIXME without assignee -- uses grep -E instead of grep -P
+# 检查没有负责人的 TODO/FIXME -- 使用 grep -E 而非 grep -P
 SRC_FILES=$(echo "$STAGED" | grep -E '^src/')
 if [ -n "$SRC_FILES" ]; then
     while IFS= read -r file; do
         if [ -f "$file" ]; then
             if grep -nE '(TODO|FIXME|HACK)[^(]' "$file" 2>/dev/null; then
-                WARNINGS="$WARNINGS\nSTYLE: $file has TODO/FIXME without owner tag. Use TODO(name) format."
+                WARNINGS="$WARNINGS\n规范: $file 中的 TODO/FIXME 没有负责人标签。请使用 TODO(name) 格式。"
             fi
         fi
     done <<< "$SRC_FILES"
 fi
 
-# Print warnings (non-blocking) and allow commit
+# 输出警告 (非阻断) 并允许提交
 if [ -n "$WARNINGS" ]; then
-    echo -e "=== Commit Validation Warnings ===$WARNINGS\n================================" >&2
+    echo -e "=== 提交验证警告 ===$WARNINGS\n================================" >&2
 fi
 
 exit 0

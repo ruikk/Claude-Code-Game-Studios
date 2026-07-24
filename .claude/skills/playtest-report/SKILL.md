@@ -1,147 +1,147 @@
 ---
 name: playtest-report
-description: "Generates a structured playtest report template or analyzes existing playtest notes into a structured format. Use this to standardize playtest feedback collection and analysis."
+description: "生成结构化的试玩报告模板，或将现有试玩笔记分析为结构化格式。用于标准化试玩反馈的收集与分析。"
 argument-hint: "[new|analyze path-to-notes] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
 model: sonnet
 ---
 
-## Phase 1: Parse Arguments
+## 阶段 1：解析参数
 
-Resolve the review mode (once, store for all gate spawns this run):
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
+解析评审模式（一次解析，本次运行所有门禁派生均复用）：
+1. 如果传入 `--review [full|lean|solo]` → 使用该值
+2. 否则读取 `production/review-mode.txt` → 使用其中的值
+3. 否则 → 默认 `lean`
 
-See `.claude/docs/director-gates.md` for the full check pattern.
+完整检查模式参见 `.claude/docs/director-gates.md`。
 
-Determine the mode:
+确定模式：
 
-- `new` → generate a blank playtest report template
-- `analyze [path]` → read raw notes and fill in the template with structured findings
+- `new` → 生成空白试玩报告模板
+- `analyze [path]` → 读取原始笔记并用结构化发现填充模板
 
 ---
 
-## Phase 2A: New Template Mode
+## 阶段 2A：新模板模式
 
-Generate this template and output it to the user:
+生成以下模板并输出给用户：
 
 ```markdown
-# Playtest Report
+# 试玩报告
 
-## Session Info
-- **Date**: [Date]
-- **Build**: [Version/Commit]
-- **Duration**: [Time played]
-- **Tester**: [Name/ID]
-- **Platform**: [PC/Console/Mobile]
-- **Input Method**: [KB+M / Gamepad / Touch]
-- **Session Type**: [First time / Returning / Targeted test]
+## 会话信息
+- **日期**：[日期]
+- **版本**：[版本/提交]
+- **时长**：[游玩时间]
+- **测试员**：[姓名/ID]
+- **平台**：[PC/主机/移动]
+- **输入方式**：[键鼠 / 手柄 / 触控]
+- **会话类型**：[首次 / 回访 / 定向测试]
 
-## Test Focus
-[What specific features or flows were being tested]
+## 测试重点
+[本次测试的具体功能或流程]
 
-## First Impressions (First 5 minutes)
-- **Understood the goal?** [Yes/No/Partially]
-- **Understood the controls?** [Yes/No/Partially]
-- **Emotional response**: [Engaged/Confused/Bored/Frustrated/Excited]
-- **Notes**: [Observations]
+## 第一印象（前 5 分钟）
+- **理解了目标？** [是/否/部分]
+- **理解了操作？** [是/否/部分]
+- **情绪反应**：[投入/困惑/无聊/挫败/兴奋]
+- **备注**：[观察]
 
-## Gameplay Flow
-### What worked well
-- [Observation 1]
+## 游玩流程
+### 表现良好的部分
+- [观察 1]
 
-### Pain points
-- [Issue 1 -- Severity: High/Medium/Low]
+### 痛点
+- [问题 1 —— 严重度：高/中/低]
 
-### Confusion points
-- [Where the player was confused and why]
+### 困惑点
+- [玩家在哪里困惑以及原因]
 
-### Moments of delight
-- [What surprised or pleased the player]
+## 惊喜时刻
+- [什么让玩家惊讶或愉悦]
 
-## Bugs Encountered
-| # | Description | Severity | Reproducible |
+## 遇到的 Bug
+| # | 描述 | 严重度 | 可复现 |
 |---|-------------|----------|-------------|
 
-## Feature-Specific Feedback
-### [Feature 1]
-- **Understood purpose?** [Yes/No]
-- **Found engaging?** [Yes/No]
-- **Suggestions**: [Tester suggestions]
+## 针对具体功能的反馈
+### [功能 1]
+- **理解用途？** [是/否]
+- **觉得有吸引力？** [是/否]
+- **建议**：[测试员建议]
 
-## Quantitative Data (if available)
-- **Deaths**: [Count and locations]
-- **Time per area**: [Breakdown]
-- **Items used**: [What and when]
-- **Features discovered vs missed**: [List]
+## 定量数据（如有）
+- **死亡次数**：[次数和位置]
+- **每个区域的耗时**：[明细]
+- **使用物品**：[什么以及何时]
+- **发现 vs 错过的功能**：[列表]
 
-## Overall Assessment
-- **Would play again?** [Yes/No/Maybe]
-- **Difficulty**: [Too Easy / Just Right / Too Hard]
-- **Pacing**: [Too Slow / Good / Too Fast]
-- **Session length preference**: [Shorter / Good / Longer]
+## 总体评估
+- **愿意再玩吗？** [是/否/可能]
+- **难度**：[太简单 / 刚好 / 太难]
+- **节奏**：[太慢 / 合适 / 太快]
+- **会话时长偏好**：[更短 / 合适 / 更长]
 
-## Top 3 Priorities from this session
-1. [Most important finding]
-2. [Second priority]
-3. [Third priority]
+## 本次会话的 3 大优先事项
+1. [最重要的发现]
+2. [第二优先级]
+3. [第三优先级]
 ```
 
 ---
 
-## Phase 2B: Analyze Mode
+## 阶段 2B：分析模式
 
-Read the raw notes at the provided path. Cross-reference with existing design documents. Fill in the template above with structured findings. Flag any playtest observations that conflict with design intent.
-
----
-
-## Phase 3: Action Routing
-
-Categorize all findings into four buckets:
-
-- **Design changes needed** — fun issues, player confusion, broken mechanics, observations that conflict with the GDD's intended experience
-- **Balance adjustments** — numbers feel wrong, difficulty too spiked or too flat
-- **Bug reports** — clear implementation defects that are reproducible
-- **Polish items** — not blocking progress, but friction or feel issues for later
-
-Present the categorized list, then route:
-
-- **Design changes:** "Run `/propagate-design-change [path]` on the affected design document to find downstream impacts before making changes."
-- **Balance adjustments:** "Run `/balance-check [system]` to verify the full balance picture before tuning values."
-- **Bugs:** "Use `/bug-report` to formally track these."
-- **Polish items:** "Add to the polish backlog in `production/` when the team reaches that phase."
+读取所提供路径的原始笔记。与现有设计文档交叉参考。用结构化发现填充上方模板。标记任何与设计意图冲突的试玩观察。
 
 ---
 
-## Phase 3b: Creative Director Player Experience Review
+## 阶段 3：行动路由
 
-**Review mode check** — apply before spawning CD-PLAYTEST:
-- `solo` → skip. Note: "CD-PLAYTEST skipped — Solo mode." Proceed to Phase 4 (save the report).
-- `lean` → skip (not a PHASE-GATE). Note: "CD-PLAYTEST skipped — Lean mode." Proceed to Phase 4 (save the report).
-- `full` → spawn as normal.
+将所有发现归入四类：
 
-After categorising findings, spawn `creative-director` via Task using gate **CD-PLAYTEST** (`.claude/docs/director-gates.md`).
+- **需要设计改动** —— 趣味性问题、玩家困惑、机制失效、与 GDD 预期体验冲突的观察
+- **平衡性调整** —— 数值感觉不对、难度过于陡峭或过于平缓
+- **Bug 报告** —— 明确的实现缺陷且可复现
+- **打磨项** —— 不阻塞进展，但存在摩擦或手感问题，留待后续
 
-Pass: the structured report content, game pillars and core fantasy (from `design/gdd/game-concept.md`), the specific hypothesis being tested.
+呈现分类列表，然后路由：
 
-Present the creative director's assessment before saving the report. If CONCERNS or REJECT, add a `## Creative Director Assessment` section to the report capturing the verdict and feedback. If APPROVE, note the approval in the report.
-
----
-
-## Phase 4: Save Report
-
-Ask: "May I write this playtest report to `production/qa/playtests/playtest-[date]-[tester].md`?"
-
-If yes, write the file, creating the directory if needed.
+- **设计改动**："运行 `/propagate-design-change [path]` 对受影响的设计文档查找下游影响，再做改动。"
+- **平衡性调整**："运行 `/balance-check [system]` 在调整数值前验证完整的平衡图景。"
+- **Bug**："使用 `/bug-report` 正式跟踪这些。"
+- **打磨项**："当团队进入该阶段时，添加到 `production/` 的打磨待办列表。"
 
 ---
 
-## Phase 5: Next Steps
+## 阶段 3b：创意总监玩家体验评审
 
-Verdict: **COMPLETE** — playtest report generated.
+**评审模式检查** —— 在派生 CD-PLAYTEST 前执行：
+- `solo` → 跳过。提示："CD-PLAYTEST 已跳过 —— 单人模式。"（CD-PLAYTEST 已跳过 —— 单人模式。）进入阶段 4（保存报告）。
+- `lean` → 跳过（非 PHASE-GATE）。提示："CD-PLAYTEST 已跳过 —— 精简模式。"（CD-PLAYTEST 已跳过 —— 精简模式。）进入阶段 4（保存报告）。
+- `full` → 正常派生。
 
-- Act on the highest-priority finding category first.
-- After addressing design changes: re-run `/design-review` on the updated GDD.
-- After fixing bugs: re-run `/bug-triage` to update priorities.
+对发现进行分类后，通过 Task 使用门禁 **CD-PLAYTEST**（`.claude/docs/director-gates.md`）派生 `creative-director`（创意总监）。
+
+传递：结构化的报告内容、游戏支柱和核心幻想（来自 `design/gdd/game-concept.md`）、正在测试的具体假设。
+
+在保存报告前呈现创意总监的评估。如果为 CONCERNS（关注）或 REJECT（驳回），在报告中添加 `## 创意总监评估` 章节，记录裁定和反馈。如果为 APPROVE（批准），在报告中注明批准。
+
+---
+
+## 阶段 4：保存报告
+
+询问："我可以将这份试玩报告写入 `production/qa/playtests/playtest-[date]-[tester].md` 吗？"（我可以将这份试玩报告写入 `production/qa/playtests/playtest-[date]-[tester].md` 吗？）
+
+如果同意，写入文件（按需创建目录）。
+
+---
+
+## 阶段 5：后续步骤
+
+裁定：**COMPLETE**（已完成）—— 试玩报告已生成。
+
+- 首先处理最高优先级的发现类别。
+- 处理设计改动后：对更新的 GDD 重新运行 `/design-review`。
+- 修复 bug 后：重新运行 `/bug-triage` 更新优先级。

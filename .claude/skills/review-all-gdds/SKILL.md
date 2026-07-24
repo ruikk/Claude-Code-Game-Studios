@@ -1,639 +1,552 @@
 ---
 name: review-all-gdds
-description: "Holistic cross-GDD consistency and game design review. Reads all system GDDs simultaneously and checks for contradictions between them, stale references, ownership conflicts, formula incompatibilities, and game design theory violations (dominant strategies, economic imbalance, cognitive overload, pillar drift). Run after all MVP GDDs are written, before architecture begins."
+description: "全面的跨 GDD 一致性与游戏设计评审。同时读取所有系统 GDD，检查它们之间的矛盾、过时引用、所有权冲突、公式不兼容以及游戏设计理论违规（支配策略、经济失衡、认知过载、支柱偏移）。在所有 MVP GDD 编写完成后、架构开始前运行。"
 argument-hint: "[focus: full | consistency | design-theory | since-last-review]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash, AskUserQuestion, Task
 model: opus
 ---
 
-# Review All GDDs
+# 评审所有 GDD
 
-This skill reads every system GDD simultaneously and performs two complementary
-reviews that cannot be done per-GDD in isolation:
+此技能同时读取每个系统 GDD，并执行两项无法单独针对某个 GDD 完成的互补评审：
 
-1. **Cross-GDD Consistency** — contradictions, stale references, and ownership
-   conflicts between documents
-2. **Game Design Holism** — issues that only emerge when you see all systems
-   together: dominant strategies, broken economies, cognitive overload, pillar
-   drift, competing progression loops
+1. **跨 GDD 一致性** — 文档之间的矛盾、过时引用和所有权冲突
+2. **游戏设计整体性** — 只有同时查看所有系统才会出现的问题：支配策略、失效经济、认知过载、支柱偏移和相互竞争的成长循环
 
-**This is distinct from `/design-review`**, which reviews one GDD for internal
-completeness. This skill reviews the *relationships* between all GDDs.
+**这不同于 `/design-review`**，后者评审单个 GDD 的内部完整性。此技能评审所有 GDD 之间的*关系*。
 
-**When to run:**
-- After all MVP-tier GDDs are individually approved
-- After any GDD is significantly revised mid-production
-- Before `/create-architecture` begins (architecture built on inconsistent GDDs
-  inherits those inconsistencies)
+**运行时机：**
+- 所有 MVP 级 GDD 分别获批后
+- 制作过程中任何 GDD 被大幅修订后
+- `/create-architecture` 开始前（建立在不一致 GDD 上的架构会继承这些不一致）
 
-**Argument modes:**
+**参数模式：**
 
-**Focus:** `$ARGUMENTS[0]` (blank = `full`)
+**焦点：** `$ARGUMENTS[0]`（空白 = `full`）
 
-- **No argument / `full`**: Both consistency and design theory passes
-- **`consistency`**: Cross-GDD consistency checks only (faster)
-- **`design-theory`**: Game design holism checks only
-- **`since-last-review`**: Only GDDs modified since the last review report (git-based)
+- **无参数 / `full`**：同时执行一致性和设计理论检查
+- **`consistency`**：仅执行跨 GDD 一致性检查（更快）
+- **`design-theory`**：仅执行游戏设计整体性检查
+- **`since-last-review`**：仅检查上次评审报告之后修改的 GDD（基于 git）
 
 ---
 
-## Phase 1: Load Everything
+## 阶段 1：加载全部内容
 
-### Phase 1a — L0: Summary Scan (fast, low tokens)
+### 阶段 1a — L0：摘要扫描（快速、低 token 消耗）
 
-Before reading any full document, use Grep to extract `## Summary` sections
-from all GDD files:
+在读取任何完整文档前，使用 Grep 从所有 GDD 文件中提取 `## Summary` 部分：
 
 ```
 Grep pattern="## Summary" glob="design/gdd/*.md" output_mode="content" -A 5
 ```
 
-Display a manifest to the user:
+向用户显示清单：
 ```
-Found [N] GDDs. Summaries:
+找到 [N] 份 GDD。摘要：
   • combat.md — [summary text]
   • inventory.md — [summary text]
   ...
 ```
 
-For `since-last-review` mode: run `git log --name-only` to identify GDDs
-modified since the last review report file was written. Show the user which
-GDDs are in scope based on summaries before doing any full reads. Only
-proceed to L1 for those GDDs plus any GDDs listed in their "Key deps".
+对于 `since-last-review` 模式：运行 `git log --name-only`，识别上次评审报告文件写入后修改的 GDD。在进行完整读取前，根据摘要向用户展示处于范围内的 GDD。仅对这些 GDD 以及其“Key deps”中列出的任何 GDD 继续执行 L1。
 
-### Phase 1b — Registry Pre-Load (fast baseline)
+### 阶段 1b — 预加载注册表（快速基线）
 
-Before full-reading any GDD, check for the entity registry:
+完整读取任何 GDD 前，检查实体注册表：
 
 ```
 Read path="design/registry/entities.yaml"
 ```
 
-If the registry exists and has entries, use it as a **pre-built conflict
-baseline**: known entities, items, formulas, and constants with their
-authoritative values and source GDDs. In Phase 2, grep GDDs for registered
-names first — this is faster than reading all GDDs in full before knowing
-what to look for.
+如果注册表存在且包含条目，将其作为**预先建立的冲突基线**：其中包含已知实体、物品、公式和常量，以及它们的权威值和来源 GDD。在阶段 2，先在 GDD 中搜索已注册名称，这比在不知道要查找什么之前完整读取所有 GDD 更快。
 
-If the registry is empty or absent: proceed without it. Note in the report:
-"Entity registry is empty — consistency checks rely on full GDD reads only.
-Run `/consistency-check` after this review to populate the registry."
+如果注册表为空或不存在：不使用注册表继续。在报告中注明：
+“实体注册表为空 — 一致性检查仅依赖完整读取 GDD。
+此评审后运行 `/consistency-check` 以填充注册表。”
 
-### Phase 1c — L1/L2: Full Document Load
+### 阶段 1c — L1/L2：完整加载文档
 
-Full-read the in-scope documents:
+完整读取范围内的文档：
 
-1. `design/gdd/game-concept.md` — game vision, core loop, MVP definition
-2. `design/gdd/game-pillars.md` if it exists — design pillars and anti-pillars
-3. `design/gdd/systems-index.md` — authoritative system list, layers, dependencies, status
-4. **Every in-scope system GDD in `design/gdd/`** — read completely (skip
-   game-concept.md and systems-index.md — those are read above)
+1. `design/gdd/game-concept.md` — 游戏愿景、核心循环、MVP 定义
+2. 如果存在 `design/gdd/game-pillars.md` — 设计支柱和反支柱
+3. `design/gdd/systems-index.md` — 权威系统列表、层级、依赖关系、状态
+4. **`design/gdd/` 中范围内的每个系统 GDD** — 完整读取（跳过 game-concept.md 和 systems-index.md，它们已在上面读取）
 
-Report: "Loaded [N] system GDDs covering [M] systems. Pillars: [list]. Anti-pillars: [list]."
+报告：“已加载覆盖 [M] 个系统的 [N] 个系统 GDD。支柱：[list]。反支柱：[list]。”
 
-If fewer than 2 system GDDs exist, stop:
-> "Cross-GDD review requires at least 2 system GDDs. Write more GDDs first,
-> then re-run `/review-all-gdds`."
+如果系统 GDD 少于 2 个，停止：
+> “跨 GDD 评审至少需要 2 个系统 GDD。请先编写更多 GDD，
+> 然后重新运行 `/review-all-gdds`。”
 
 ---
 
-### Parallel Execution
+### 并行执行
 
-Phase 2 (Consistency) and Phase 3 (Design Theory) are independent — they read
-the same GDD inputs but produce separate reports. Spawn both as parallel Task
-agents simultaneously rather than waiting for Phase 2 to complete before
-starting Phase 3. Collect both results before writing the combined report.
+阶段 2（一致性）和阶段 3（设计理论）彼此独立：它们读取相同的 GDD 输入，但生成不同的报告。应同时将二者作为并行 Task 代理启动，而不是等待阶段 2 完成后再启动阶段 3。在编写合并报告前收集两者的结果。
 
-**When spawning parallel Task agents for Phase 2 and Phase 3, always pass:**
-- The complete list of GDD file paths loaded in Phase 1 (explicit paths, not just counts)
-- The full TR registry contents if loaded in Phase 1b (paste the registry text, not just a file path)
-- The specific checklist items assigned to that agent's phase (Phase 2 gets 2a–2f; Phase 3 gets 3a–3g)
-- The engine name and version from `.claude/docs/technical-preferences.md` and `docs/engine-reference/[engine]/VERSION.md`
+**为阶段 2 和阶段 3 启动并行 Task 代理时，始终传入：**
+- 阶段 1 加载的完整 GDD 文件路径列表（明确路径，而不只是数量）
+- 如果阶段 1b 已加载完整 TR 注册表内容（粘贴注册表文本，而不只是文件路径）
+- 分配给该代理阶段的具体检查项（阶段 2 获取 2a–2f；阶段 3 获取 3a–3g）
+- 来自 `.claude/docs/technical-preferences.md` 和 `docs/engine-reference/[engine]/VERSION.md` 的引擎名称和版本
 
-Do not rely on the subagent to re-read these files — it has its own context window and cannot access Phase 1 results unless they are explicitly passed in the Task prompt.
+不要依赖子代理重新读取这些文件：它拥有自己的上下文窗口，除非在 Task 提示中明确传入，否则无法访问阶段 1 的结果。
 
 ---
 
-## Phase 2: Cross-GDD Consistency
+## 阶段 2：跨 GDD 一致性
 
-Work through every pair and group of GDDs to find contradictions and gaps.
+逐一检查每一对及每一组 GDD，查找矛盾和缺口。
 
-### 2a: Dependency Bidirectionality
+### 2a：依赖双向性
 
-For every GDD's Dependencies section, check that every listed dependency is
-reciprocal:
-- If GDD-A lists "depends on GDD-B", check that GDD-B lists GDD-A as a dependent
-- If GDD-A lists "depended on by GDD-C", check that GDD-C lists GDD-A as a dependency
-- Flag any one-directional dependency as a consistency issue
-
-```
-⚠️  Dependency Asymmetry
-[system-a].md lists: Depends On → [system-b].md
-[system-b].md does NOT list [system-a].md as a dependent
-→ One of these documents has a stale dependency section
-```
-
-### 2b: Rule Contradictions
-
-For each game rule, mechanic, or constraint defined in any GDD, check whether
-any other GDD defines a contradicting rule for the same situation:
-
-Categories to scan:
-- **Floor/ceiling rules**: Does any GDD define a minimum value for an output? Does any other say a different system can bypass that floor? These contradict.
-- **Resource ownership**: If two GDDs both define how a shared resource accumulates or depletes, do they agree?
-- **State transitions**: If GDD-A describes what happens when a character dies,
-  does GDD-B's description of the same event agree?
-- **Timing**: If GDD-A says "X happens on the same frame", does GDD-B assume
-  it happens asynchronously?
-- **Stacking rules**: If GDD-A says status effects stack, does GDD-B assume
-  they don't?
+对于每个 GDD 的 Dependencies 部分，检查列出的每项依赖是否互为依赖：
+- 如果 GDD-A 列出“依赖 GDD-B”，检查 GDD-B 是否将 GDD-A 列为依赖方
+- 如果 GDD-A 列出“被 GDD-C 依赖”，检查 GDD-C 是否将 GDD-A 列为依赖项
+- 将任何单向依赖标记为一致性问题
 
 ```
-🔴 Rule Contradiction
-[system-a].md: "Minimum [output] after reduction is [floor_value]"
-[system-b].md: "[mechanic] bypasses [system-a]'s rules and can reduce [output] to 0"
-→ These rules directly contradict. Which GDD is authoritative?
+⚠️  依赖不对称
+[system-a].md 列出：Depends On → [system-b].md
+[system-b].md 未将 [system-a].md 列为依赖方
+→ 其中一份文档的依赖部分已过时
 ```
 
-### 2c: Stale References
+### 2b：规则矛盾
 
-For every cross-document reference (GDD-A mentions a mechanic, value, or
-system name from GDD-B), verify the referenced element still exists in GDD-B
-with the same name and behaviour:
+对于任意 GDD 定义的每条游戏规则、机制或约束，检查其他 GDD 是否为同一情形定义了相互矛盾的规则：
 
-- If GDD-A says "combo multiplier from the combat system feeds into score", check
-  that the combat GDD actually defines a combo multiplier that outputs to score
-- If GDD-A references "the progression curve defined in [system].md", check that
-  [system].md actually has that curve, not a different progression model
-- If GDD-A was written before GDD-B and assumed a mechanic that GDD-B later
-  designed differently, flag GDD-A as containing a stale reference
+扫描类别：
+- **下限/上限规则**：某个 GDD 是否为输出定义了最小值？另一个 GDD 是否称不同系统可以绕过该下限？这两者相互矛盾。
+- **资源所有权**：如果两个 GDD 都定义共享资源如何积累或消耗，它们是否一致？
+- **状态转换**：如果 GDD-A 描述角色死亡时会发生什么，GDD-B 对同一事件的描述是否一致？
+- **时序**：如果 GDD-A 说“X 在同一帧发生”，GDD-B 是否假定它异步发生？
+- **叠加规则**：如果 GDD-A 说状态效果可以叠加，GDD-B 是否假定不能叠加？
 
 ```
-⚠️  Stale Reference
-inventory.md (written first): "Item weight uses the encumbrance formula
-  from movement.md"
-movement.md (written later): Defines no encumbrance formula — uses a flat
-  carry limit instead
-→ inventory.md references a formula that doesn't exist
+🔴 规则矛盾
+[system-a].md：“[output] 降低后的最小值为 [floor_value]”
+[system-b].md：“[mechanic] 会绕过 [system-a] 的规则，并可将 [output] 降至 0”
+→ 这些规则直接矛盾。哪份 GDD 具有权威性？
 ```
 
-### 2d: Data and Tuning Knob Ownership Conflicts
+### 2c：过时引用
 
-Two GDDs should not both claim to own the same data or tuning knob. Scan all
-Tuning Knobs sections across all GDDs and flag duplicates:
+对于每个跨文档引用（GDD-A 提及 GDD-B 中的机制、数值或系统名称），验证被引用元素仍以相同名称和行为存在于 GDD-B 中：
 
-```
-⚠️  Ownership Conflict
-[system-a].md Tuning Knobs: "[multiplier_name] — controls [output] scaling"
-[system-b].md Tuning Knobs: "[multiplier_name] — scales [output] with [factor]"
-→ Two GDDs define multipliers on the same output. Which owns the final value?
-  This will produce either a double-application bug or a design conflict.
-```
-
-### 2e: Formula Compatibility
-
-For GDDs whose formulas are connected (output of one feeds input of another),
-check that the output range of the upstream formula is within the expected
-input range of the downstream formula:
-
-- If [system-a].md outputs values between [min]–[max], and [system-b].md is
-  designed to receive values between [min2]–[max2], is the mismatch intentional?
-- If an economy GDD expects resource acquisition in range X, and the
-  progression GDD generates it at range Y, the economy will be trivial or
-  inaccessible — is that intended?
-
-Flag incompatibilities as CONCERNS (design judgment needed, not necessarily wrong):
+- 如果 GDD-A 说“战斗系统的连击倍率会输入分数”，检查战斗 GDD 是否确实定义了输出到分数的连击倍率
+- 如果 GDD-A 引用“[system].md 中定义的成长曲线”，检查 [system].md 是否确实拥有该曲线，而不是另一种成长模型
+- 如果 GDD-A 早于 GDD-B 编写，并假定了 GDD-B 后来以不同方式设计的机制，将 GDD-A 标记为包含过时引用
 
 ```
-⚠️  Formula Range Mismatch
-[system-a].md: Max [output] = [value_a] (at max [condition])
-[system-b].md: Base [input] = [value_b], max [input] = [value_c]
-→ Late-[stage] [scenario] can resolve in a single [event].
-  Is this intentional? If not, either [system-a]'s ceiling or [system-b]'s ceiling needs adjustment.
+⚠️  过时引用
+inventory.md（先编写）：“物品重量使用 movement.md 中的负重公式”
+movement.md（后编写）：未定义负重公式，而是使用固定携带上限
+→ inventory.md 引用了不存在的公式
 ```
 
-### 2f: Acceptance Criteria Cross-Check
+### 2d：数据和调参项所有权冲突
 
-Scan Acceptance Criteria sections across all GDDs for contradictions:
+两个 GDD 不应同时声称拥有同一数据或调参项。扫描所有 GDD 的 Tuning Knobs 部分并标记重复项：
 
-- GDD-A criteria: "Player cannot die from a single hit"
-- GDD-B criteria: "Boss attack deals 150% of player max health"
-These acceptance criteria cannot both pass simultaneously.
+```
+⚠️  所有权冲突
+[system-a].md Tuning Knobs：“[multiplier_name] — 控制 [output] 的缩放”
+[system-b].md Tuning Knobs：“[multiplier_name] — 以 [factor] 缩放 [output]”
+→ 两份 GDD 为同一输出定义了倍率。哪一份拥有最终值？
+  这会导致重复应用错误或设计冲突。
+```
+
+### 2e：公式兼容性
+
+对于公式相互连接的 GDD（一个公式的输出作为另一个公式的输入），检查上游公式的输出范围是否处于下游公式预期的输入范围内：
+
+- 如果 [system-a].md 输出介于 [min]–[max] 的值，而 [system-b].md 设计为接收介于 [min2]–[max2] 的值，该不匹配是否有意为之？
+- 如果经济 GDD 预期资源获取范围为 X，而成长 GDD 以范围 Y 生成资源，经济系统将变得毫无挑战或无法使用，这是否符合预期？
+
+将不兼容标记为 CONCERNS（需要设计判断，不一定是错误）：
+
+```
+⚠️  公式范围不匹配
+[system-a].md：最大 [output] = [value_a]（达到最大 [condition] 时）
+[system-b].md：基础 [input] = [value_b]，最大 [input] = [value_c]
+→ [stage] 后期的 [scenario] 可在一次 [event] 中解决。
+  这是有意的吗？如果不是，则需要调整 [system-a] 或 [system-b] 的上限。
+```
+
+### 2f：验收标准交叉检查
+
+扫描所有 GDD 的 Acceptance Criteria 部分，查找矛盾：
+
+- GDD-A 标准：“玩家不会被单次攻击杀死”
+- GDD-B 标准：“Boss 攻击造成玩家最大生命值 150% 的伤害”
+这些验收标准不可能同时通过。
 
 ---
 
-## Phase 3: Game Design Holism
+## 阶段 3：游戏设计整体性
 
-Review all GDDs together through the lens of game design theory and player
-psychology. These are issues that individual GDD reviews cannot catch because
-they require seeing all systems at once.
+通过游戏设计理论和玩家心理学的视角共同评审所有 GDD。这些问题需要同时查看所有系统，单独评审 GDD 无法发现。
 
-### 3a: Progression Loop Competition
+### 3a：成长循环竞争
 
-A game should have one dominant progression loop that players feel is "the
-point" of the game, with supporting loops that feed into it. When multiple
-systems compete equally as the primary progression driver, players don't know
-what the game is about.
+游戏应有一个让玩家感到是游戏“核心目的”的主导成长循环，并由辅助循环为其提供支持。当多个系统同等竞争主要成长驱动力时，玩家会不知道游戏的重点是什么。
 
-Scan all GDDs for systems that:
-- Award the player's primary resource (XP, levels, prestige, unlocks)
-- Define themselves as the "core" or "main" loop
-- Have comparable depth and time investment to other systems doing the same
+扫描所有 GDD，查找满足以下条件的系统：
+- 奖励玩家的主要资源（XP、等级、声望、解锁内容）
+- 将自身定义为“核心”或“主要”循环
+- 与其他执行相同功能的系统具有相当的深度和时间投入
 
 ```
-⚠️  Competing Progression Loops
-combat.md: Awards XP, unlocks abilities, is described as "the core loop"
-crafting.md: Awards XP, unlocks recipes, is described as "the primary activity"
-exploration.md: Awards XP, unlocks map areas, described as "the main driver"
-→ Three systems all claim to be the primary progression loop and all award
-  the same primary currency. Players will optimise one and ignore the others.
-  Consider: one primary loop with the others as support systems.
+⚠️  相互竞争的成长循环
+combat.md：奖励 XP、解锁能力，并被描述为“核心循环”
+crafting.md：奖励 XP、解锁配方，并被描述为“主要活动”
+exploration.md：奖励 XP、解锁地图区域，并被描述为“主要驱动力”
+→ 三个系统都声称自己是主要成长循环，并奖励同一种主要货币。
+  玩家会优化其中一个而忽略其他系统。考虑只保留一个主要循环，
+  让其他循环作为支持系统。
 ```
 
-### 3b: Player Attention Budget
+### 3b：玩家注意力预算
 
-Count how many systems require active player attention simultaneously during
-a typical session. Each actively-managed system costs attention:
+统计典型游玩过程中需要玩家同时主动关注的系统数量。每个主动管理的系统都会消耗注意力：
 
-- Active = player must make decisions about this system regularly during play
-- Passive = system runs automatically, player sees results but doesn't manage it
+- 主动 = 玩家必须在游玩过程中定期为该系统做出决策
+- 被动 = 系统自动运行，玩家能看到结果但不管理它
 
-More than 3-4 simultaneously active systems creates cognitive overload for most
-players. Present the count and flag if it exceeds 4 concurrent active systems:
+对大多数玩家而言，同时处于主动状态的系统超过 3-4 个会造成认知过载。报告数量，并在同时主动系统超过 4 个时标记：
 
 ```
-⚠️  Cognitive Load Risk
-Simultaneously active systems during [core loop moment]:
-  1. [system-a].md — [decision type] (active)
-  2. [system-b].md — [resource management] (active)
-  3. [system-c].md — [tracking] (active)
-  4. [system-d].md — [item/action use] (active)
-  5. [system-e].md — [cooldown/timer management] (active)
-  6. [system-f].md — [coordination decisions] (active)
-→ 6 simultaneously active systems during the core loop.
-  Research suggests 3-4 is the comfortable limit for most players.
-  Consider: which of these can be made passive or simplified?
+⚠️  认知负荷风险
+[核心循环时刻]期间同时活跃的系统：
+  1. [system-a].md — [decision type]（主动）
+  2. [system-b].md — [resource management]（主动）
+  3. [system-c].md — [tracking]（主动）
+  4. [system-d].md — [item/action use]（主动）
+  5. [system-e].md — [cooldown/timer management]（主动）
+  6. [system-f].md — [coordination decisions]（主动）
+→ 核心循环期间有 6 个系统同时处于主动状态。
+  研究表明，对大多数玩家而言，3-4 个是舒适上限。
+  考虑：其中哪些可以改为被动或简化？
 ```
 
-### 3c: Dominant Strategy Detection
+### 3c：支配策略检测
 
-A dominant strategy makes other strategies irrelevant — players discover it,
-use it exclusively, and find the rest of the game boring. Look for:
+支配策略会使其他策略失去意义：玩家发现它、专门使用它，并觉得游戏其余部分无聊。查找：
 
-- **Resource monopolies**: One strategy generates a resource significantly
-  faster than all others
-- **Risk-free power**: A strategy that is both high-reward and low-risk
-  (if high-risk strategies exist, they need proportionally higher reward)
-- **No trade-offs**: An option that is superior in all dimensions to all others
-- **Obvious optimal path**: If any progression choice is "clearly correct",
-  the others aren't real choices
+- **资源垄断**：一种策略生成资源的速度显著快于其他策略
+- **无风险力量**：一种同时高回报、低风险的策略（如果存在高风险策略，它们需要按比例提供更高回报）
+- **没有取舍**：某个选项在所有维度都优于其他选项
+- **显而易见的最优路径**：如果某个成长选择“明显正确”，其他选择就不是真正的选择
 
 ```
-⚠️  Potential Dominant Strategy
-combat.md: Ranged attacks deal 80% of melee damage with no risk
-combat.md: Melee attacks deal 100% damage but require close range
-→ Unless melee has a significant compensating advantage (AOE, stagger,
-  resource regeneration), ranged is dominant — higher safety, only 20% less
-  damage. Consider what melee offers that ranged cannot.
+⚠️  潜在支配策略
+combat.md：远程攻击造成近战伤害的 80%，且没有风险
+combat.md：近战攻击造成 100% 伤害，但必须接近目标
+→ 除非近战具有显著的补偿优势（AOE、硬直、资源恢复），否则远程攻击
+  会成为支配策略：安全性更高，伤害仅低 20%。考虑近战能提供哪些
+  远程攻击无法提供的优势。
 ```
 
-### 3d: Economic Loop Analysis
+### 3d：经济循环分析
 
-Identify all resources across all GDDs (gold, XP, crafting materials, stamina,
-health, mana, etc.). For each resource, map its **sources** (how players gain
-it) and **sinks** (how players spend it).
+识别所有 GDD 中的全部资源（金钱、XP、制作材料、耐力、生命值、法力等）。对于每种资源，映射其**来源**（玩家如何获得）和**消耗端**（玩家如何花费）。
 
-Flag dangerous economic conditions:
+标记危险的经济状况：
 
-| Condition | Sign | Risk |
+| 状况 | 表现 | 风险 |
 |-----------|------|------|
-| **Infinite source, no sink** | Resource accumulates indefinitely | Late game becomes trivially easy |
-| **Sink, no source** | Resource drains to zero | System becomes unavailable |
-| **Source >> Sink** | Surplus accumulates | Resource becomes meaningless |
-| **Sink >> Source** | Constant scarcity | Frustration and gatekeeping |
-| **Positive feedback loop** | More resource → easier to earn more | Runaway leader, snowball |
-| **No catch-up** | Falling behind accelerates deficit | Unrecoverable states |
+| **无限来源、没有消耗端** | 资源无限积累 | 后期变得轻而易举 |
+| **有消耗端、没有来源** | 资源耗尽为零 | 系统变得不可用 |
+| **来源 >> 消耗端** | 过剩不断积累 | 资源失去意义 |
+| **消耗端 >> 来源** | 持续稀缺 | 挫败感和门槛阻碍 |
+| **正反馈循环** | 资源越多 → 越容易获得更多资源 | 领先者失控，滚雪球 |
+| **没有追赶机制** | 落后会加速扩大差距 | 无法挽回的状态 |
 
 ```
-🔴 Economic Imbalance: Unbounded Positive Feedback
-gold economy:
-  Sources: monster drops (scales with player power), merchant selling (unlimited)
-  Sinks: equipment purchase (one-time), ability upgrades (finite count)
-→ After equipment and abilities are purchased, gold has no sink.
-  Infinite surplus. Gold becomes meaningless mid-game.
-  Add ongoing gold sinks (upkeep, consumables, cosmetics, gambling).
+🔴 经济失衡：无上限的正反馈
+金币经济：
+  来源：怪物掉落（随玩家力量变化）、向商人出售（无限）
+  消耗端：购买装备（一次性）、升级能力（次数有限）
+→ 购买装备和能力后，金币便没有消耗端。
+  金币会无限过剩，并在游戏中期失去意义。
+  添加持续的金币消耗端（维护费、消耗品、装饰品、赌博）。
 ```
 
-### 3e: Difficulty Curve Consistency
+### 3e：难度曲线一致性
 
-When multiple systems scale with player progression, they must scale in
-compatible directions and at compatible rates. Mismatched scaling curves
-create unintended difficulty spikes or trivialisations.
+当多个系统随玩家成长变化时，它们必须以兼容的方向和速率变化。不匹配的变化曲线会造成意外的难度尖峰或难度被过度简化。
 
-For each system that scales over time, extract:
-- What scales (enemy health, player damage, resource cost, area size)
-- How it scales (linear, exponential, stepped)
-- When it scales (level, time, area)
+对于每个随时间变化的系统，提取：
+- 变化对象（敌人生命值、玩家伤害、资源消耗、区域大小）
+- 变化方式（线性、指数、分段）
+- 变化时机（等级、时间、区域）
 
-Compare all scaling curves. Flag mismatches:
+比较所有变化曲线。标记不匹配：
 
 ```
-⚠️  Difficulty Curve Mismatch
-combat.md: Enemy health scales exponentially with area (×2 per area)
-progression.md: Player damage scales linearly with level (+10% per level)
-→ By area 5, enemies have 32× base health; player deals ~1.5× base damage.
-  The gap widens indefinitely. Late areas will become inaccessibly difficult
-  unless the curves are reconciled.
+⚠️  难度曲线不匹配
+combat.md：敌人生命值随区域呈指数增长（每个区域 ×2）
+progression.md：玩家伤害随等级线性增长（每级 +10%）
+→ 到区域 5 时，敌人拥有 32× 基础生命值，而玩家造成约 1.5× 基础伤害。
+  差距会无限扩大。除非协调这些曲线，否则后期区域将难以进入。
 ```
 
-### 3f: Pillar Alignment
+### 3f：支柱对齐
 
-Every system should clearly serve at least one design pillar. A system that
-serves no pillar is "scope creep by design" — it's in the game but not in
-service of what the game is trying to be.
+每个系统都应明确服务至少一个设计支柱。不服务任何支柱的系统属于“设计导致的范围蔓延”：它存在于游戏中，却不服务于游戏想要成为的样子。
 
-For each GDD system, check its Player Fantasy section against the design pillars.
-Flag any system whose stated fantasy doesn't map to any pillar:
+对于每个 GDD 系统，将其 Player Fantasy 部分与设计支柱进行对照。标记其声明的幻想无法映射到任何支柱的系统：
 
 ```
-⚠️  Pillar Drift
-fishing-system.md: Player Fantasy — "peaceful, meditative activity"
-Pillars: "Brutal Combat", "Tense Survival", "Emergent Stories"
-→ The fishing system serves none of the three pillars. Either add a pillar
-  that covers it, redesign it to serve an existing pillar, or cut it.
+⚠️  支柱偏移
+fishing-system.md：Player Fantasy — “平静、冥想式的活动”
+支柱：“残酷战斗”、“紧张生存”、“涌现式故事”
+→ 钓鱼系统不服务于这三个支柱中的任何一个。添加一个涵盖它的支柱、
+  重新设计它以服务现有支柱，或将其删除。
 ```
 
-Also check anti-pillars — flag any system that does what an anti-pillar
-explicitly says the game will NOT do:
+同时检查反支柱：标记任何执行反支柱明确表示游戏不会做之事的系统：
 
 ```
-🔴 Anti-Pillar Violation
-Anti-Pillar: "We will NOT have linear story progression — player defines their path"
-main-quest.md: Defines a 12-chapter linear story with mandatory sequence
-→ This system directly violates the defined anti-pillar.
+🔴 违反反支柱
+反支柱：“我们不会采用线性故事进程，玩家自行决定前进路线”
+main-quest.md：定义了必须按顺序进行的 12 章线性故事
+→ 此系统直接违反了已定义的反支柱。
 ```
 
-### 3g: Player Fantasy Coherence
+### 3g：玩家幻想一致性
 
-The player fantasies across all systems should be compatible — they should
-reinforce a consistent identity for what the player IS in this game. Conflicting
-player fantasies create identity confusion.
+所有系统中的玩家幻想应当兼容：它们应共同强化玩家在本游戏中的一致身份。相互冲突的玩家幻想会造成身份混乱。
 
 ```
-⚠️  Player Fantasy Conflict
-combat.md: "You are a ruthless, precise warrior — every kill is earned"
-dialogue.md: "You are a charismatic diplomat — violence is always avoidable"
-exploration.md: "You are a reckless adventurer — diving in without a plan"
-→ Three systems present incompatible identities. Players will feel the game
-  doesn't know what it wants them to be. Consider: do these fantasies serve
-  the same core identity from different angles, or do they genuinely conflict?
+⚠️  玩家幻想冲突
+combat.md：“你是一名冷酷、精准的战士，每次击杀都来之不易”
+dialogue.md：“你是一名富有魅力的外交家，暴力总是可以避免”
+exploration.md：“你是一名鲁莽的冒险者，不做计划便一头扎进去”
+→ 三个系统呈现出不兼容的身份。玩家会觉得游戏并不清楚希望他们成为
+  什么样的人。考虑：这些幻想是否从不同角度服务于同一核心身份，
+  还是确实相互冲突？
 ```
 
 ---
 
-## Phase 4: Cross-System Scenario Walkthrough
+## 阶段 4：跨系统场景演练
 
-Walk through the game from the player's perspective to find problems that only
-appear at the interaction boundary between multiple systems — things static
-analysis of individual GDDs cannot surface.
+从玩家视角演练游戏，寻找只有在多个系统的交互边界才会出现的问题，这些问题无法通过单个 GDD 的静态分析发现。
 
-### 4a: Identify Key Multi-System Moments
+### 4a：识别关键多系统时刻
 
-Scan all GDDs and identify the 3–5 most important player-facing moments where
-multiple systems activate simultaneously. Look specifically for:
+扫描所有 GDD，识别 3–5 个多个系统同时激活、且对玩家最重要的时刻。重点查找：
 
-- **Combat + Economy overlap**: killing enemies that drop resources, spending
-  resources during combat, death/respawn interacting with economy state
-- **Progression + Difficulty overlap**: level-up triggering mid-fight, ability
-  unlocks changing combat viability, difficulty scaling at progression milestones
-- **Narrative + Gameplay overlap**: dialogue choices locking/unlocking mechanics,
-  story beats interrupting resource loops, quest completion triggering system
-  state changes
-- **3+ system chains**: any player action that triggers System A, which feeds
-  into System B, which triggers System C (these are highest-risk interaction paths)
+- **战斗 + 经济重叠**：击杀掉落资源的敌人、战斗中花费资源、死亡/重生与经济状态交互
+- **成长 + 难度重叠**：战斗中触发升级、能力解锁改变战斗可行性、成长里程碑处的难度变化
+- **叙事 + 游戏玩法重叠**：对话选择锁定/解锁机制、故事节点打断资源循环、任务完成触发系统状态变化
+- **3+ 系统链**：玩家动作触发 System A，System A 输入 System B，System B 再触发 System C 的任意情况（这是风险最高的交互路径）
 
-List each identified scenario with a one-line description before proceeding.
+继续之前，为每个识别出的场景列出一行描述。
 
-### 4b: Walk Through Each Scenario
+### 4b：演练每个场景
 
-For each scenario, step through the sequence explicitly:
+对于每个场景，明确逐步检查序列：
 
-1. **Trigger** — what player action or game event starts this?
-2. **Activation order** — which systems activate, in what sequence?
-3. **Data flow** — what does each system output, and is that output a valid
-   input for the next system in the chain?
-4. **Player experience** — what does the player see, hear, or feel at each step?
-5. **Failure modes** — are there any of the following?
-   - **Race conditions**: two systems trying to modify the same state simultaneously
-   - **Feedback loops**: System A amplifies System B which re-amplifies System A
-     with no cap or dampener
-   - **Broken state transitions**: a system assumes a state that a previous
-     system may have changed (e.g., "player is alive" assumption after a combat
-     step that could have caused death)
-   - **Contradictory messaging**: player receives conflicting feedback from two
-     systems reacting to the same event (e.g., "success" sound + "failure" UI)
-   - **Compounding difficulty spikes**: two systems both scaling up at the same
-     progression point, multiplying the intended difficulty increase
-   - **Reward conflicts**: two systems both reacting to the same trigger with
-     rewards that together exceed the intended value (double-dipping)
-   - **Undefined behavior**: the GDDs don't specify what happens in this combined
-     state (neither system's rules cover it)
+1. **触发条件** — 哪个玩家动作或游戏事件会启动此场景？
+2. **激活顺序** — 哪些系统会激活，顺序如何？
+3. **数据流** — 每个系统输出什么，该输出是否是链中下一系统的有效输入？
+4. **玩家体验** — 每一步中玩家会看到、听到或感受到什么？
+5. **失败模式** — 是否存在以下任一情况？
+   - **竞态条件**：两个系统试图同时修改同一状态
+   - **反馈循环**：System A 增强 System B，System B 又重新增强 System A，且没有上限或阻尼
+   - **损坏的状态转换**：某系统假定的状态可能已被前一系统改变（例如，可能导致死亡的战斗步骤之后仍假定“玩家存活”）
+   - **相互矛盾的提示**：玩家收到两个系统针对同一事件作出的冲突反馈（例如，“成功”音效 + “失败”UI）
+   - **叠加难度尖峰**：两个系统在同一成长节点同时增强，使预期的难度增幅相乘
+   - **奖励冲突**：两个系统都对同一触发条件作出反应，合计奖励超过预期值（重复获利）
+   - **未定义行为**：GDD 未规定这种组合状态下会发生什么（两个系统的规则都未覆盖）
 
 ```
-Example walkthrough:
-Scenario: Player kills elite enemy at level-up threshold during active quest
+演练示例：
+场景：玩家在进行中的任务里，于升级阈值处击杀精英敌人
 
-Trigger: Player lands killing blow on elite enemy
-→ combat.md: awards kill XP (100 pts)
-→ progression.md: XP total crosses level threshold → triggers level-up
-  Output: new level, stat increases, ability unlock popup
-→ quest.md: kill-count criterion met → triggers quest completion event
-  Output: quest reward XP (500 pts), completion fanfare
-→ progression.md (again): quest XP added → triggers SECOND level-up in same frame
-  ⚠️  Data flow issue: quest.md awards XP without checking if a level-up
-  is already in progress. progression.md has no guard against concurrent
-  level-up events. Undefined behavior: does the player level up once or twice?
-  Does the ability popup fire twice? Does the second level use the updated or
-  pre-update stat baseline?
+触发条件：玩家对精英敌人造成致命一击
+→ combat.md：奖励击杀 XP（100 点）
+→ progression.md：XP 总值越过等级阈值 → 触发升级
+  输出：新等级、属性提升、能力解锁弹窗
+→ quest.md：满足击杀数量标准 → 触发任务完成事件
+  输出：任务奖励 XP（500 点）、完成音效
+→ progression.md（再次）：加入任务 XP → 在同一帧触发第二次升级
+  ⚠️  数据流问题：quest.md 发放 XP 时未检查升级是否已在进行。
+  progression.md 没有防止并发升级事件的保护。未定义行为：玩家会升级
+  一次还是两次？能力弹窗会触发两次吗？第二次升级会使用更新后的
+  属性基准，还是更新前的属性基准？
 ```
 
-### 4c: Flag Scenario Issues
+### 4c：标记场景问题
 
-For each problem found during the walkthrough, categorize severity:
+对于演练过程中发现的每个问题，划分严重程度：
 
-- **BLOCKER**: undefined behavior, broken state transition, or contradictory
-  player messaging — the experience is broken or incoherent in this scenario
-- **WARNING**: compounding spikes, feedback loops without caps, reward conflicts —
-  the experience works but produces unintended outcomes
-- **INFO**: minor ordering ambiguity or messaging overlap — worth noting but
-  unlikely to cause player-visible problems
+- **BLOCKER**：未定义行为、损坏的状态转换或相互矛盾的玩家提示，该场景中的体验损坏或不连贯
+- **WARNING**：叠加尖峰、没有上限的反馈循环、奖励冲突，体验可以运行但会产生意外结果
+- **INFO**：轻微的顺序歧义或提示重叠，值得记录但不太可能造成玩家可见的问题
 
-Add all findings to the output report under **"Cross-System Scenario Issues"**.
-Each finding must cite: the scenario name, the specific systems involved, the
-step where the issue occurs, and the nature of the failure mode.
+将所有发现添加到输出报告的 **“跨系统场景问题”** 下。每条发现必须注明：场景名称、涉及的具体系统、问题发生的步骤以及失败模式的性质。
 
 ---
 
-## Phase 5: Output the Review Report
+## 阶段 5：输出评审报告
 
 ```
-## Cross-GDD Review Report
-Date: [date]
-GDDs Reviewed: [N]
-Systems Covered: [list]
+## 跨 GDD 评审报告
+日期：[date]
+已评审 GDD：[N]
+覆盖的系统：[list]
 
 ---
 
-### Consistency Issues
+### 一致性问题
 
-#### Blocking (must resolve before architecture begins)
+#### 阻塞项（开始架构设计前必须解决）
 🔴 [Issue title]
 [What GDDs are involved, what the contradiction is, what needs to change]
 
-#### Warnings (should resolve, but won't block)
+#### 警告（应当解决，但不会阻塞）
 ⚠️  [Issue title]
 [What GDDs are involved, what the concern is]
 
 ---
 
-### Game Design Issues
+### 游戏设计问题
 
-#### Blocking
+#### 阻塞项
 🔴 [Issue title]
-[What the problem is, which GDDs are involved, design recommendation]
+[问题内容、涉及的 GDD 及设计建议]
 
-#### Warnings
+#### 警告
 ⚠️  [Issue title]
 [What the concern is, which GDDs are affected, recommendation]
 
 ---
 
-### Cross-System Scenario Issues
+### 跨系统场景问题
 
-Scenarios walked: [N]
-[List scenario names]
+已演练场景：[N]
+[列出场景名称]
 
-#### Blockers
+#### 阻塞项
 🔴 [Scenario name] — [Systems involved]
-[Step where failure occurs, nature of the failure mode, what must be resolved]
+[发生失败的步骤、失败模式的性质及必须解决的事项]
 
-#### Warnings
+#### 警告
 ⚠️  [Scenario name] — [Systems involved]
 [What the unintended outcome is, recommendation]
 
-#### Info
+#### 信息
 ℹ️  [Scenario name] — [Systems involved]
-[Minor ordering ambiguity or note]
+[轻微的顺序歧义或备注]
 
 ---
 
-### GDDs Flagged for Revision
+### 标记为需要修订的 GDD
 
-| GDD | Reason | Type | Priority |
+| GDD | 原因 | 类型 | 优先级 |
 |-----|--------|------|----------|
-| [system-a].md | Rule contradiction with [system-b].md | Consistency | Blocking |
-| [system-c].md | Stale reference to nonexistent mechanic | Consistency | Blocking |
-| [system-d].md | No pillar alignment | Design Theory | Warning |
+| [system-a].md | 与 [system-b].md 存在规则矛盾 | 一致性 | 阻塞 |
+| [system-c].md | 对不存在机制的过时引用 | 一致性 | 阻塞 |
+| [system-d].md | 未与支柱对齐 | 设计理论 | 警告 |
 
 ---
 
-### Verdict: [PASS / CONCERNS / FAIL]
+### 结论：[PASS / CONCERNS / FAIL]
 
-PASS: No blocking issues. Warnings present but don't prevent architecture.
-CONCERNS: Warnings present that should be resolved but are not blocking.
-FAIL: One or more blocking issues must be resolved before architecture begins.
+PASS：没有阻塞问题。存在警告，但不妨碍架构设计。
+CONCERNS：存在应当解决但不构成阻塞的警告。
+FAIL：开始架构设计前必须解决一个或多个阻塞问题。
 
-### If FAIL — required actions before re-running:
-[Specific list of what must change in which GDD]
+### 如果为 FAIL，重新运行前必须执行的操作：
+[具体列出必须修改的 GDD 及修改内容]
 ```
 
 ---
 
-## Phase 6: Write Report and Flag GDDs
+## 阶段 6：写入报告并标记 GDD
 
-Use `AskUserQuestion` for write permission:
-- Prompt: "May I write this review to `design/gdd/gdd-cross-review-[date].md`?"
-- Options: `[A] Yes — write the report` / `[B] No — skip`
+使用 `AskUserQuestion` 请求写入权限：
+- 提示：“可以将此评审写入 `design/gdd/gdd-cross-review-[date].md` 吗？”
+- 选项：`[A] 是 — 写入报告` / `[B] 否 — 跳过`
 
-If any GDDs are flagged for revision, use a second `AskUserQuestion`:
-- Prompt: "Should I update the systems index to mark these GDDs as needing revision? ([list of flagged GDDs])"
-- Options: `[A] Yes — update systems index` / `[B] No — leave as-is`
-- If yes: update each flagged GDD's Status field in systems-index.md to "Needs Revision".
-  (Do NOT append parentheticals to the status value — other skills match "Needs Revision"
-  as an exact string and parentheticals break that match.)
+如果有任何 GDD 被标记为需要修订，第二次使用 `AskUserQuestion`：
+- 提示：“是否应更新系统索引，将这些 GDD 标记为需要修订？（[list of flagged GDDs]）”
+- 选项：`[A] 是 — 更新系统索引` / `[B] 否 — 保持不变`
+- 如果选择是：将 systems-index.md 中每个被标记 GDD 的 Status 字段更新为 "Needs Revision"。
+  （不要在状态值后附加括号说明，其他技能将 "Needs Revision" 作为精确字符串匹配，括号说明会破坏该匹配。）
 
-### Session State Update
+### 会话状态更新
 
-After writing the report (and updating systems index if approved), silently
-append to `production/session-state/active.md`:
+写入报告（并在获批后更新系统索引）后，静默追加到 `production/session-state/active.md`：
 
     ## Session Extract — /review-all-gdds [date]
     - Verdict: [PASS / CONCERNS / FAIL]
     - GDDs reviewed: [N]
-    - Flagged for revision: [comma-separated list, or "None"]
+    - Flagged for revision: [逗号分隔的列表，或 "None"]
     - Blocking issues: [N — brief one-line descriptions, or "None"]
-    - Recommended next: [the Phase 7 handoff action, condensed to one line]
-    - Report: design/gdd/gdd-cross-review-[date].md   ← only if user approved the write
-    - Report: (not written — user declined at [date])  ← only if user declined the write
+    - Recommended next: [将阶段 7 的交接操作压缩为一行]
+    - Report: design/gdd/gdd-cross-review-[date].md   ← 仅当用户批准写入时使用
+    - Report: (未写入 — 用户于 [date] 拒绝)  ← 仅当用户拒绝写入时使用
 
-Use the appropriate line based on the user's response to the write-permission widget in Phase 6.
+根据用户对阶段 6 写入权限控件的响应，使用相应的行。
 
-If `active.md` does not exist, create it with this block as the initial content.
-Confirm in conversation: "Session state updated."
-
----
-
-## Phase 7: Handoff
-
-After all file writes are complete, use `AskUserQuestion` for a closing widget.
-
-Before building options, check project state:
-- Are there any Warning-level items that are simple edits (flagged with "30-second edit", "brief addition", or similar)? → offer inline quick-fix option
-- Are any GDDs in the "Flagged for Revision" table? → offer /design-review option for each
-- Read systems-index.md for the next system with Status: Not Started → offer /design-system option
-- Is the verdict PASS or CONCERNS? → offer /gate-check or /create-architecture
-
-Build the option list dynamically — only include options that apply:
-
-**Option pool:**
-- `[_] Apply quick fix: [W-XX description] in [gdd-name].md — [effort estimate]` (one option per simple-edit warning; only for Warning-level, not Blocking)
-- `[_] Run /design-review [flagged-gdd-path] — address flagged warnings` (one per flagged GDD, if any)
-- `[_] Run /design-system [next-system] — next in design order` (always include, name the actual system)
-- `[_] Run /create-architecture — begin architecture (verdict is PASS/CONCERNS)` (include if verdict is not FAIL)
-- `[_] Run /gate-check — validate Systems Design phase gate` (include if verdict is PASS)
-- `[_] Stop here`
-
-Assign letters A, B, C… only to included options. Mark the most pipeline-advancing option as `(recommended)`.
-
-Never end the skill with plain text. Always close with this widget.
+如果 `active.md` 不存在，使用此块作为初始内容创建该文件。
+在对话中确认：“会话状态已更新。”
 
 ---
 
-## Error Recovery Protocol
+## 阶段 7：交接
 
-If any spawned agent returns BLOCKED, errors, or fails to complete:
+完成所有文件写入后，使用 `AskUserQuestion` 显示结束控件。
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" before continuing
-2. **Assess dependencies**: If the blocked agent's output is required by a later phase, do not proceed past that phase without user input
-3. **Offer options** via AskUserQuestion with three choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope (fewer GDDs, single-system focus)
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed so work is not lost
+构建选项前，检查项目状态：
+- 是否存在属于简单编辑的警告级条目（标有“30 秒编辑”“简短补充”或类似内容）？→ 提供内联快速修复选项
+- “标记为需要修订”表中是否有任何 GDD？→ 为每个 GDD 提供 /design-review 选项
+- 读取 systems-index.md，查找下一个 Status: Not Started 的系统 → 提供 /design-system 选项
+- 结论是否为 PASS 或 CONCERNS？→ 提供 /gate-check 或 /create-architecture
+
+动态构建选项列表，仅包含适用选项：
+
+**选项池：**
+- `[_] 应用快速修复：[gdd-name].md 中的 [W-XX description] — [effort estimate]`（每个简单编辑警告一个选项；仅适用于警告级，不适用于阻塞级）
+- `[_] 运行 /design-review [flagged-gdd-path] — 处理被标记的警告`（如果有被标记的 GDD，则每个 GDD 一个选项）
+- `[_] 运行 /design-system [next-system] — 设计顺序中的下一个系统`（始终包含，写出实际系统名称）
+- `[_] 运行 /create-architecture — 开始架构设计（结论为 PASS/CONCERNS）`（结论不是 FAIL 时包含）
+- `[_] 运行 /gate-check — 验证系统设计阶段关卡`（结论为 PASS 时包含）
+- `[_] 在此停止`
+
+仅为包含的选项分配字母 A、B、C…。将最能推进管线的选项标记为 `(推荐)`。
+
+绝不要用纯文本结束此技能。始终使用此控件收尾。
 
 ---
 
-## Collaborative Protocol
+## 错误恢复协议
 
-1. **Read silently** — load all GDDs before presenting anything
-2. **Show everything** — present the full consistency and design theory analysis
-   before asking for any action
-3. **Distinguish blocking from advisory** — not every issue needs to block
-   architecture; be clear about which do
-4. **Don't make design decisions** — flag contradictions and options, but never
-   unilaterally decide which GDD is "right"
-5. **Ask before writing** — confirm before writing the report or updating the
-   systems index
-6. **Be specific** — every issue must cite the exact GDD, section, and text
-   involved; no vague warnings
+如果任何已启动的代理返回 BLOCKED、报错或未能完成：
+
+1. **立即说明**：继续前报告“[AgentName]: BLOCKED — [reason]”
+2. **评估依赖关系**：如果后续阶段需要被阻塞代理的输出，没有用户输入时不要越过该阶段继续
+3. **提供选项**：通过 AskUserQuestion 提供三个选择：
+   - 跳过此代理，并在最终报告中注明缺口
+   - 缩小范围后重试（减少 GDD 数量、聚焦单个系统）
+   - 在此停止，先解决阻塞项
+4. **始终生成部分报告** — 输出所有已完成内容，以免工作丢失
+
+---
+
+## 协作协议
+
+1. **静默读取** — 展示任何内容前加载所有 GDD
+2. **展示全部内容** — 请求任何操作前，展示完整的一致性和设计理论分析
+3. **区分阻塞项与建议项** — 并非每个问题都需要阻塞架构；明确指出哪些问题会阻塞
+4. **不要做设计决策** — 标记矛盾和选项，但绝不单方面决定哪个 GDD“正确”
+5. **写入前询问** — 写入报告或更新系统索引前进行确认
+6. **具体明确** — 每个问题都必须引用涉及的准确 GDD、章节和文本；不要给出模糊警告

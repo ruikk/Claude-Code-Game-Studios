@@ -1,211 +1,203 @@
 ---
 name: test-flakiness
-description: "Detect non-deterministic (flaky) tests by reading CI run logs or test result history. Aggregates pass rates per test, identifies intermittent failures, recommends quarantine or fix, and maintains a flaky test registry. Best run during Polish phase or after multiple CI runs."
+description: "通过读取 CI 运行日志或测试结果历史记录，检测非确定性（不稳定）测试。汇总每项测试的通过率，识别间歇性失败，建议隔离或修复，并维护不稳定测试登记表。最适合在 Polish 阶段或多次 CI 运行后使用。"
 argument-hint: "[ci-log-path | scan | registry]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash
 model: sonnet
 ---
 
-# Test Flakiness Detection
+# 测试不稳定性检测
 
-A flaky test is one that sometimes passes and sometimes fails without any code
-change. Flaky tests are worse than no tests in some ways — they train the team
-to ignore red CI runs, masking genuine failures. This skill identifies them,
-explains likely causes, and recommends whether to quarantine or fix each one.
+不稳定测试是指在代码没有任何变更的情况下，有时通过、有时失败的测试。
+从某些方面看，不稳定测试比没有测试更糟糕，因为它会让团队习惯忽略失败的 CI
+运行，从而掩盖真正的故障。本技能用于识别此类测试、解释可能的原因，并建议
+逐项隔离或修复。
 
-**Output:** Updated `tests/regression-suite.md` quarantine section + optional
+**输出：** 更新 `tests/regression-suite.md` 的隔离区段 + 可选的
 `production/qa/flakiness-report-[date].md`
 
-**When to run:**
-- Polish phase (tests have had many runs; statistical signal is reliable)
-- When developers start dismissing CI failures as "probably flaky"
-- After `/regression-suite` identifies quarantined tests that need diagnosis
+**何时运行：**
+- Polish 阶段（测试已经运行多次，统计信号可靠）
+- 当开发人员开始把 CI 失败归为“可能是不稳定测试”而不予处理时
+- 在 `/regression-suite` 识别出需要诊断的已隔离测试后
 
 ---
 
-## 1. Parse Arguments
+## 1. 解析参数
 
-**Modes:**
-- `/test-flakiness [ci-log-path]` — analyse a specific CI run log file
-- `/test-flakiness scan` — scan all available CI logs in `.github/` or
-  standard log output directories
-- `/test-flakiness registry` — read existing regression-suite.md quarantine
-  section and provide remediation guidance for already-known flaky tests
-- No argument — auto-detect: run `scan` if CI logs are accessible, else
+**模式：**
+- `/test-flakiness [ci-log-path]` — 分析指定的 CI 运行日志文件
+- `/test-flakiness scan` — 扫描 `.github/` 或标准日志输出目录中的所有可用 CI 日志
+- `/test-flakiness registry` — 读取现有 regression-suite.md 的隔离区段，
+  并为已知的不稳定测试提供修复指导
+- 无参数 — 自动检测：如果可访问 CI 日志，则运行 `scan`，否则运行
   `registry`
 
 ---
 
-## 2. Locate CI Log Data
+## 2. 定位 CI 日志数据
 
-### Option A — GitHub Actions (preferred)
+### 选项 A — GitHub Actions（首选）
 
-Check for test result artifacts:
+检查测试结果产物：
 ```bash
 ls -t .github/ 2>/dev/null
 ls -t test-results/ 2>/dev/null
 ```
 
-For Godot projects: GdUnit4 outputs XML results compatible with JUnit format.
-Check `test-results/` for `.xml` files.
+对于 Godot 项目：GdUnit4 输出兼容 JUnit 格式的 XML 结果。
+检查 `test-results/` 中的 `.xml` 文件。
 
-For Unity projects: game-ci test runner outputs NUnit XML to `test-results/`
-by default.
+对于 Unity 项目：game-ci test runner 默认将 NUnit XML 输出到 `test-results/`。
 
-For Unreal projects: automation logs go to `Saved/Logs/`. Grep for
-`Result: Success` and `Result: Fail` patterns.
+对于 Unreal 项目：自动化日志位于 `Saved/Logs/`。使用 Grep 搜索
+`Result: Success` 和 `Result: Fail` 模式。
 
-### Option B — Local log files
+### 选项 B — 本地日志文件
 
-If a path argument is provided, read that file directly.
+如果提供了路径参数，直接读取该文件。
 
-### Option C — No log data available
+### 选项 C — 没有可用的日志数据
 
-If no logs found:
-> "No CI log data found. To detect flaky tests, this skill needs test result
-> history from multiple runs. Options:
-> 1. Run the test suite at least 3 times and collect the output logs
-> 2. Check CI pipeline output and save a log to `test-results/`
-> 3. Run `/test-flakiness registry` to review tests already flagged as flaky
->    in `tests/regression-suite.md`"
+如果未找到日志：
+> “未找到 CI 日志数据。要检测不稳定测试，本技能需要多次运行的测试结果历史记录。
+> 可选操作：
+> 1. 至少运行测试套件 3 次，并收集输出日志
+> 2. 检查 CI 流水线输出，并将日志保存到 `test-results/`
+> 3. 运行 `/test-flakiness registry`，检查 `tests/regression-suite.md` 中
+>    已标记为不稳定的测试”
 
-Stop and ask the user which option to pursue.
+停止并询问用户要采用哪个选项。
 
 ---
 
-## 3. Parse Test Results
+## 3. 解析测试结果
 
-For each CI log or result file found, parse:
+解析找到的每个 CI 日志或结果文件：
 
-**JUnit XML format** (GdUnit4 / Unity):
-- Grep for `<testcase name=` to get test names
-- Grep for `<failure` or `<error` to identify failures
-- Parse `classname` and `name` attributes for full test identifiers
+**JUnit XML 格式**（GdUnit4 / Unity）：
+- 使用 Grep 搜索 `<testcase name=` 以获取测试名称
+- 使用 Grep 搜索 `<failure` 或 `<error` 以识别失败
+- 解析 `classname` 和 `name` 属性以获取完整测试标识符
 
-**Plain text logs**:
-- Grep for pass/fail patterns:
-  - Godot: `PASSED` / `FAILED` adjacent to test names
+**纯文本日志：**
+- 使用 Grep 搜索通过/失败模式：
+  - Godot：测试名称旁的 `PASSED` / `FAILED`
   - Unreal: `Result: Success` / `Result: Fail`
   - Unity: `Test passed` / `Test failed`
 
-Build a table: `test_id → [run1_result, run2_result, run3_result, ...]`
+构建表格：`test_id → [run1_result, run2_result, run3_result, ...]`
 
 ---
 
-## 4. Identify Flaky Tests
+## 4. 识别不稳定测试
 
-A test is **flaky** if it appears in the result history with both PASS and
-FAIL outcomes across runs with no code changes between them.
+如果在代码未发生变更的多次运行中，一项测试的结果历史记录同时包含 PASS 和
+FAIL，则该测试属于**不稳定测试**。
 
-Flakiness thresholds:
-- **High flakiness**: Fails in >25% of runs — quarantine immediately
-- **Moderate flakiness**: Fails in 5–25% of runs — investigate and fix soon
-- **Low/suspected flakiness**: Fails in 1–5% of runs — monitor; may be
-  genuinely rare failure
+不稳定性阈值：
+- **高度不稳定**：超过 25% 的运行失败 — 立即隔离
+- **中度不稳定**：5–25% 的运行失败 — 尽快调查并修复
+- **轻度/疑似不稳定**：1–5% 的运行失败 — 持续监控；也可能是真正的罕见故障
 
-For each flaky test, classify the likely cause:
+对每项不稳定测试的可能原因进行分类：
 
-### Cause classification
+### 原因分类
 
-| Cause | Symptoms | Fix direction |
+| 原因 | 表现 | 修复方向 |
 |-------|----------|---------------|
-| **Timing / async** | Fails after awaiting signals or timers; pass rate correlates with system load | Add explicit await/synchronisation; avoid time-based delays |
-| **Order dependency** | Fails when run after specific other tests; passes in isolation | Add proper setup/teardown; ensure test isolation |
-| **Random seed** | Fails intermittently with no pattern; involves RNG | Pass explicit seed; don't use `randf()` in tests |
-| **Resource leak** | Fails more often later in a test run | Fix cleanup in teardown; check orphan nodes (Godot) or object disposal (Unity) |
-| **External state** | Fails when a file, scene, or global exists from a prior test | Isolate test from file system; use in-memory mocks |
-| **Floating point** | Fails on comparisons like `== 0.5` | Use epsilon comparison (`is_equal_approx`, `Assert.AreApproximately`) |
-| **Scene/prefab load race** | Fails when scenes are not yet ready | Await one frame after instantiation; use `await get_tree().process_frame` |
+| **时序/异步** | 等待信号或计时器后失败；通过率与系统负载相关 | 添加显式等待/同步；避免基于时间的延迟 |
+| **顺序依赖** | 在特定其他测试之后运行时失败；单独运行时通过 | 添加正确的 setup/teardown；确保测试隔离 |
+| **随机种子** | 无明显规律地间歇性失败；涉及 RNG | 传入显式种子；不要在测试中使用 `randf()` |
+| **资源泄漏** | 越到测试运行后期越容易失败 | 修复 teardown 中的清理；检查孤立节点（Godot）或对象释放（Unity） |
+| **外部状态** | 先前测试遗留文件、场景或全局状态时失败 | 将测试与文件系统隔离；使用内存 mock |
+| **浮点数** | 在 `== 0.5` 等比较中失败 | 使用 epsilon 比较（`is_equal_approx`、`Assert.AreApproximately`） |
+| **场景/prefab 加载竞态** | 场景尚未就绪时失败 | 实例化后等待一帧；使用 `await get_tree().process_frame` |
 
-Use Grep to check the test file for timing calls, randf, global state access,
-or equality comparisons on floats to narrow down the cause.
-
----
-
-## 5. Recommend Action
-
-For each flaky test:
-
-**Quarantine (High flakiness):**
-> "Quarantine this test immediately. Disable it in CI by adding
-> `@pytest.mark.skip` / `[Ignore]` / `GdUnitSkip` annotation. Log it in
-> `tests/regression-suite.md` quarantine section. The test is now opt-in only.
-> Fix the root cause before removing quarantine."
-
-**Investigate and fix soon (Moderate):**
-> "This test is intermittently unreliable. Root cause appears to be [cause].
-> Suggested fix: [specific fix based on cause classification]. Do not quarantine
-> yet — fix the test directly."
-
-**Monitor (Low/suspected):**
-> "This test shows suspected flakiness. Collect more run data before
-> quarantining. Note it as 'suspected' in the regression suite."
+使用 Grep 检查测试文件中的时序调用、randf、全局状态访问或浮点数相等比较，
+以缩小原因范围。
 
 ---
 
-## 6. Generate Reports
+## 5. 建议操作
 
-### In-conversation summary
+针对每项不稳定测试：
+
+**隔离（高度不稳定）：**
+> “立即隔离此测试。添加 `@pytest.mark.skip` / `[Ignore]` / `GdUnitSkip`
+> 注解，在 CI 中禁用它。将其记录到 `tests/regression-suite.md` 的隔离区段。
+> 此测试现在仅可显式选择运行。必须修复根本原因后才能解除隔离。”
+
+**尽快调查并修复（中度不稳定）：**
+> “此测试存在间歇性不可靠问题。根本原因似乎是 [cause]。
+> 建议修复方式：[specific fix based on cause classification]。暂时不要隔离，
+> 直接修复测试。”
+
+**监控（轻度/疑似不稳定）：**
+> “此测试疑似存在不稳定性。隔离前应收集更多运行数据。
+> 在回归套件中将其标记为‘疑似’。”
+
+---
+
+## 6. 生成报告
+
+### 对话内摘要
 
 ```
-## Flakiness Detection Results
+## 不稳定性检测结果
 
-**Runs analysed**: [N]
-**Tests tracked**: [N]
+**已分析运行次数**：[N]
+**已跟踪测试数**：[N]
 
-### Flaky Tests Found
+### 发现的不稳定测试
 
-| Test | System | Fail Rate | Likely Cause | Recommendation |
+| 测试 | 系统 | 失败率 | 可能原因 | 建议 |
 |------|--------|-----------|--------------|----------------|
-| [test_name] | [system] | [N]% | Timing | Quarantine + fix async |
-| [test_name] | [system] | [N]% | Float comparison | Fix: use epsilon compare |
-| [test_name] | [system] | [N]% | Order dependency | Investigate teardown |
+| [test_name] | [system] | [N]% | 时序 | 隔离 + 修复异步问题 |
+| [test_name] | [system] | [N]% | 浮点数比较 | 修复：使用 epsilon 比较 |
+| [test_name] | [system] | [N]% | 顺序依赖 | 调查 teardown |
 
-### Clean Tests (no flakiness detected)
+### 稳定测试（未检测到不稳定性）
 
-[N] tests ran across [N] runs with consistent results — no flakiness detected.
+[N] 项测试在 [N] 次运行中的结果一致，未检测到不稳定性。
 
-### Data Limitations
+### 数据限制
 
 [Note if fewer than 5 runs were available — fewer runs = less statistical confidence]
 ```
 
 ---
 
-## 7. Update Regression Suite + Optional Report File
+## 7. 更新回归套件 + 可选报告文件
 
-Ask: "May I update the quarantine section of `tests/regression-suite.md`
-with the flaky tests found?"
+询问：“可以用发现的不稳定测试更新 `tests/regression-suite.md` 的隔离区段吗？”
 
-If yes: use `Edit` to append entries to the Quarantined Tests table.
-Never remove existing quarantine entries — only add new ones.
+如果同意：使用 `Edit` 将条目追加到 Quarantined Tests 表格。
+绝不要移除现有隔离条目，只添加新条目。
 
-Ask (separately): "May I write a full flakiness report to
-`production/qa/flakiness-report-[date].md`?"
+另行询问：“可以将完整的不稳定性报告写入
+`production/qa/flakiness-report-[date].md` 吗？”
 
-The full report includes per-test analysis with cause details and
-engine-specific fix snippets.
+完整报告应包含每项测试的分析、详细原因和引擎专用修复片段。
 
-After writing:
+写入后：
 
-- For each quarantined test: "Add the engine-specific skip annotation to
-  disable this test in CI. Re-enable after the root cause is fixed."
-- For fix-eligible tests: "The fix for [test] is straightforward —
-  change the equality comparison on line [N] to use `is_equal_approx`."
-- Summary: "Once all quarantine annotations are applied, CI should run green.
-  Schedule fix work for the [N] quarantined tests before the release gate."
+- 对每项已隔离测试：“添加引擎专用跳过注解，在 CI 中禁用此测试。
+  修复根本原因后重新启用。”
+- 对可直接修复的测试：“[test] 的修复很直接，将第 [N] 行的相等比较改为使用
+  `is_equal_approx`。”
+- 摘要：“应用所有隔离注解后，CI 应能通过。在发布门禁前安排修复这 [N] 项
+  已隔离测试。”
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-- **Never delete test files** — quarantine means annotate + list, not remove
-- **Statistical confidence matters** — with < 3 runs, flag findings as
-  "suspected" not "confirmed"; ask if more run data is available
-- **Fix is always the goal** — quarantine is temporary; surface the fix
-  direction even when recommending quarantine
-- **Ask before writing** — both the regression-suite update and the report
-  file require explicit approval. On write: Verdict: **COMPLETE** — flakiness report written. On decline: Verdict: **BLOCKED** — user declined write.
-- **Flakiness in CI is a team problem** — surface the list and recommended
-  actions clearly; do not just silently quarantine without the team knowing
+- **绝不要删除测试文件** — 隔离是添加注解并列入清单，而不是移除
+- **统计置信度很重要** — 运行少于 3 次时，将发现标记为“疑似”而非“确认”；
+  询问是否有更多运行数据
+- **修复始终是目标** — 隔离只是临时措施；即使建议隔离，也要明确修复方向
+- **写入前先询问** — 更新 regression-suite 和写入报告文件都需要明确批准。
+  写入后：Verdict: **COMPLETE** — 不稳定性报告已写入。拒绝时：Verdict: **BLOCKED** — 用户拒绝写入。
+- **CI 中的不稳定性是团队问题** — 清晰列出问题和建议操作；不要在团队不知情的情况下静默隔离

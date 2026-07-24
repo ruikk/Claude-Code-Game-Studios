@@ -1,6 +1,6 @@
 ---
 name: vertical-slice
-description: "Pre-Production validation — build a production-quality end-to-end build to confirm the full game loop is achievable before committing to Production. Run after GDDs, architecture, and UX specs are complete. Produces a PROCEED/PIVOT/KILL verdict that gates the Pre-Production → Production transition."
+description: "Pre-Production 验证：构建达到生产质量的端到端版本，确认完整游戏循环在投入 Production 前具备可实现性。在 GDD、架构和 UX 规格全部完成后运行。生成 PROCEED/PIVOT/KILL 结论，作为从 Pre-Production → Production 的阶段门禁。"
 argument-hint: "[--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion
@@ -9,351 +9,329 @@ agent: prototyper
 isolation: worktree
 ---
 
-## Purpose
+## 目的
 
-The **vertical slice** answers a different question from the concept prototype:
-*"Can we build this full game loop at production quality, on schedule?"*
+**垂直切片**回答的是一个不同于概念原型的问题：
+*“我们能否按计划、以生产质量构建出这个完整游戏循环？”*
 
-**Default use** — run late in Pre-Production, after GDDs, architecture, and UX
-specs are complete. It is a near-production-quality build demonstrating one complete
-[start → challenge → resolution] cycle.
+**默认用途**：在 Pre-Production 后期运行，此时 GDD、架构和 UX 规格均已完成。
+它是一个接近生产质量的版本，用于展示一个完整的
+[start → challenge → resolution] 循环。
 
-**Post-pivot?** If a PIVOT verdict from an earlier vertical slice sent you back to
-revise GDDs and architecture, run this again after revisions to re-validate. It can
-be run as many times as needed until a PROCEED or KILL verdict is reached.
+**在 PIVOT 之后？** 如果早先垂直切片的 PIVOT 结论让你返回修改 GDD 和架构，
+请在修改完成后再次运行本技能进行重新验证。可以按需多次运行，
+直到得出 PROCEED 或 KILL 结论。
 
-It validates:
+它验证：
 
-1. The pipeline (can the team actually produce this quality of content?)
-2. Execution feasibility (are the architecture decisions correct for this game?)
-3. Fun survival (does the fun from the concept prototype survive full design?)
-4. **Velocity** (how long did this take? That's your real production rate estimate.)
+1. 管线（团队真的能制作出这种质量的内容吗？）
+2. 执行可行性（架构决策适合这款游戏吗？）
+3. 乐趣留存（概念原型中的乐趣在完整设计后仍然存在吗？）
+4. **速度**（这花了多长时间？这就是对实际生产速率的估算。）
 
-**Earlier in the project?** If you haven't written GDDs yet and want to validate
-whether the core idea is worth designing, run `/prototype` (concept prototype) instead.
-
----
-
-## Phase 1: Resolve Review Mode and Load Context
-
-Resolve the review mode:
-1. If `--review [full|lean|solo]` was passed → use that
-2. Else read `production/review-mode.txt` → use that value
-3. Else → default to `lean`
-
-See `.claude/docs/director-gates.md` for the full check pattern.
-
-Read the following files to understand the full design intent:
-- `CLAUDE.md` — tech stack and engine
-- `design/gdd/game-concept.md` — core fantasy and game pillars
-- `design/gdd/systems-index.md` — MVP systems and their priorities
-- `docs/architecture/architecture.md` — layer structure
-- `docs/architecture/control-manifest.md` — technical rules for implementation
-- Key GDDs for the systems being sliced
+**还处于项目早期？** 如果尚未编写 GDD，而是想验证核心创意是否值得设计，
+请改为运行 `/prototype`（概念原型）。
 
 ---
 
-## Phase 2: Define the Slice Scope and Validation Question
+## 阶段 1：确定评审模式并加载上下文
 
-Before building, define the **falsifiable validation question**:
+确定评审模式：
+1. 如果传入了 `--review [full|lean|solo]` → 使用该值
+2. 否则读取 `production/review-mode.txt` → 使用其中的值
+3. 否则 → 默认为 `lean`
 
-> *"Does a player, starting from nothing, experience [core fantasy from game-concept.md]
-> within [N] minutes, without developer guidance — and can we build one such loop
-> in [X] days at representative quality?"*
+完整检查模式见 `.claude/docs/director-gates.md`。
 
-Both parts matter: player experience AND build feasibility.
-
-**Scope discipline:**
-- Include ALL core loop systems (minimum). If a system is required to complete one
-  [start → challenge → resolution] cycle, it must be in the slice.
-- **Target scope: 3–5 minutes of polished, continuous gameplay.** This is the
-  industry-standard vertical slice length — long enough to demonstrate mechanics
-  and tone, short enough to build at representative quality. If your slice would
-  take longer than 5 minutes to play through, cut content, not quality.
-- **Cut scope before cutting quality.** A low-quality slice that looks nothing like
-  the intended game cannot validate production feasibility.
-- If the scope feels too large to build in 1–3 weeks, the slice scope is wrong —
-  not too big to build, but the slice is trying to prove too much at once.
-
-**Scope creep warning:** The vertical slice is the highest-risk moment for scope
-creep in the pre-production phase. Features feel "almost there" and it's tempting
-to add "just one more system." Resist this. Cut, do not extend.
-
-Present scope to the user before building and get confirmation.
+读取以下文件，以了解完整的设计意图：
+- `CLAUDE.md`：技术栈和引擎
+- `design/gdd/game-concept.md`：核心幻想和游戏支柱
+- `design/gdd/systems-index.md`：MVP 系统及其优先级
+- `docs/architecture/architecture.md`：分层结构
+- `docs/architecture/control-manifest.md`：实现时必须遵守的技术规则
+- 本次切片所涉及系统的关键 GDD
 
 ---
 
-## Phase 3: Plan the Build
+## 阶段 2：定义切片范围和验证问题
 
-Define in bullet points:
-- Systems implemented (which GDD sections are being exercised)
-- The complete game loop cycle ([start] → [challenge] → [resolution] exactly)
-- Art and audio quality level (placeholder acceptable, representative preferred)
-- Specific, measurable success criteria for the validation question
-- Hard time limit: [X] days. If exceeded, scope was wrong — stop and reassess.
+构建前，先定义一个**可证伪的验证问题**：
 
-Ask the user to confirm scope before building.
+> *“玩家能否从一无所有开始，在 [N] 分钟内、无需开发者指导，
+> 体验到 [core fantasy from game-concept.md]；同时，我们能否用 [X] 天，
+> 以代表性质量构建出一个这样的循环？”*
 
-Once confirmed, write a session checkpoint to `production/session-state/active.md`
-(create `production/session-state/` if it does not exist). Include: concept name,
-validation question, systems in scope, art quality level, and current phase ("Phase
-4 — Implement"). Update this file at the end of each build day with what was
-completed. This is the primary recovery mechanism if the session ends mid-slice —
-multi-week Engine builds will span many sessions.
+两部分都很重要：玩家体验和构建可行性。
+
+**范围纪律：**
+- 至少包含所有核心循环系统。如果某个系统是完成一次
+  [start → challenge → resolution] 循环所必需的，它就必须进入切片。
+- **目标范围：3–5 分钟精心打磨、连续的游戏体验。** 这是行业标准的垂直切片长度：
+  足以展示机制和基调，又足够短，能以代表性质量完成。如果切片游玩时长会超过
+  5 分钟，应削减内容，而不是降低质量。
+- **降低质量前先缩小范围。** 与目标游戏观感完全不同的低质量切片，
+  无法验证生产可行性。
+- 如果这个范围感觉无法在 1–3 周内完成，说明切片范围有误：
+  不是它大到无法构建，而是这个切片试图一次证明太多事情。
+
+**范围蔓延警告：** 垂直切片是 Pre-Production 阶段最容易发生范围蔓延的时刻。
+功能看起来都“就差一点”，很容易让人想再加“最后一个系统”。请抵制这种冲动。
+削减，不要扩展。
+
+构建前向用户展示范围并取得确认。
 
 ---
 
-## Phase 4: Implement
+## 阶段 3：规划构建
 
-Ask: "May I create the vertical slice directory at
-`prototypes/[concept-name]-vertical-slice/` and begin implementation?"
+用要点定义：
+- 要实现的系统（会验证哪些 GDD 章节）
+- 完整的游戏循环（准确写明 [start] → [challenge] → [resolution]）
+- 美术和音频质量级别（可接受占位资源，最好使用代表性资源）
+- 针对验证问题的具体、可衡量成功标准
+- 硬性时间限制：[X] 天。若超时，说明范围有误，应停止并重新评估。
 
-If yes, create the directory. Every file must begin with:
+构建前请用户确认范围。
+
+确认后，将会话检查点写入 `production/session-state/active.md`
+（如果 `production/session-state/` 不存在，则创建它）。包括：概念名称、
+验证问题、范围内的系统、美术质量级别和当前阶段（"Phase 4 — Implement"）。
+每个构建日结束时更新此文件，记录已完成的内容。这是会话在切片中途结束时的
+主要恢复机制，因为持续数周的引擎构建会跨越多个会话。
+
+---
+
+## 阶段 4：实现
+
+询问：“可以创建垂直切片目录
+`prototypes/[concept-name]-vertical-slice/` 并开始实现吗？”
+
+如果可以，创建该目录。每个文件都必须以下列内容开头：
 
 ```
-// VERTICAL SLICE - NOT FOR PRODUCTION
-// Validation Question: [What this build is proving]
-// Date: [Current date]
+// 垂直切片 - 不得用于生产
+// 验证问题：[What this build is proving]
+// 日期：[Current date]
 ```
 
-**Quality standards** — higher than concept prototype, not full production:
-- Follow architecture layers from `docs/architecture/control-manifest.md`
-- Naming conventions from `.claude/docs/technical-preferences.md`
-- No hardcoded gameplay values — use constants or config files
-- Basic error handling on critical paths
-- Placeholder art acceptable; representative art preferred
+**质量标准**：高于概念原型，但不要求达到完整生产质量：
+- 遵循 `docs/architecture/control-manifest.md` 中的架构分层
+- 遵循 `.claude/docs/technical-preferences.md` 中的命名约定
+- 不得硬编码玩法数值，应使用常量或配置文件
+- 关键路径具备基本错误处理
+- 可接受占位美术资源，但最好使用代表性美术资源
 
-**Multi-turn loop:** After writing the initial files, ask the user to run the
-build and report what they observe. Iterate until the complete game loop cycle
-is demonstrable. Each round:
-1. User runs → reports errors or observations
-2. Agent fixes errors or adjusts systems
-3. Repeat until the full [start → challenge → resolution] cycle is playable
+**多轮循环：** 写入初始文件后，请用户运行构建并报告观察结果。
+持续迭代，直到可以展示完整的游戏循环。每轮流程：
+1. 用户运行 → 报告错误或观察结果
+2. 代理修复错误或调整系统
+3. 重复，直到完整的 [start → challenge → resolution] 循环可供游玩
 
-**Sunk cost checkpoint (day 3 of planned timeline):** If the full game loop cycle
-is not yet demonstrable, stop and reassess. Either the scope is too large or an
-architectural assumption is wrong. Surface the blocker explicitly rather than
-continuing to iterate.
+**沉没成本检查点（计划时间线的第 3 天）：** 如果此时仍无法展示完整游戏循环，
+请停止并重新评估。要么范围过大，要么某项架构假设有误。明确指出阻塞因素，
+不要继续迭代。
 
-Conduct at least 1 playtest session once the loop is demonstrable.
+游戏循环可供展示后，至少进行 1 次试玩。
 
-**Playtesting tip:** If you can get anyone who hasn't seen the game to play it —
-a friend, family member, online community — watch them silently without explaining
-anything. Don't guide them. Their confusion reveals what the game isn't
-communicating on its own. This gives much better signal than self-testing.
+**试玩提示：** 如果能找到从未见过这款游戏的人来试玩，例如朋友、家人或线上社区成员，
+请静静观察，不要解释任何内容，也不要引导。他们的困惑会暴露游戏未能自行传达的信息。
+相比自测，这能提供质量高得多的信号。
 
-**No external testers available?** Use rotation within the team: Dev A built
-system X, so Dev A is a naive tester for system Y. Even a two-person team can
-rotate effectively. Solo? Step away for 2-3 days then play through as a new
-player — you won't have perfect first-impression signal but you'll catch the
-critical blockers. Also try a "silent walkthrough": play your own slice in one
-sitting without stopping to fix anything and log every moment you hesitate.
+**没有外部测试者？** 在团队内轮换：开发者 A 构建了系统 X，
+那么开发者 A 就可以作为系统 Y 的新手测试者。即使只有两个人，也能有效轮换。
+单人开发？先离开 2–3 天，再以新玩家的身份完整试玩。虽然得不到完美的第一印象信号，
+但仍能发现关键阻塞问题。也可以尝试“静默走查”：一次性完整游玩自己的切片，
+期间不停止修复任何问题，并记录每个让你犹豫的时刻。
 
-**Want richer observation data?** Ask the tester to **think aloud** as they play —
-narrate what they're doing and why in real time. "I'm trying to figure out how to
-attack... I pressed E... nothing... is it click?" This surfaces confusion the
-instant it occurs rather than in retrospect. Best for onboarding and UI clarity
-validation. Silent observation is still better for feel testing; think-aloud
-changes the experience slightly but produces far more granular UX data.
+**想获得更丰富的观察数据？** 请测试者在游玩时**出声思考**，实时讲述正在做什么以及原因。
+“我在想怎么攻击……我按了 E……没反应……是要点击吗？”这样能在困惑出现的瞬间暴露问题，
+而不是事后回忆。它最适合验证引导流程和 UI 清晰度。静默观察仍更适合感受测试；
+出声思考会稍微改变体验，但能产生细致得多的 UX 数据。
 
-**Async remote option:** Record a Loom or OBS session — give someone the build,
-ask them to record their screen + audio, and send you the video. You get genuine
-first-impression data without synchronous scheduling. Works across timezones.
+**异步远程方案：** 使用 Loom 或 OBS 录制会话：把构建交给测试者，
+请他们录制屏幕和音频，再把视频发给你。无需同步安排时间，也能获得真实的第一印象数据。
+此方案适用于不同时区。
 
-**Testing AI, NPC, or complex system behavior before it's fully implemented?** Use the
-**Wizard of Oz** technique: one person plays normally while a second person secretly
-controls the NPC or system behavior in real time. The player believes it's automated.
-This validates the *design intent* of an AI or economy system before the implementation
-is complete — and reveals exactly what behaviors the system must produce to feel correct.
-Particularly useful for vertical slices where an AI system is in scope but not yet
-polished enough for unguided testing.
+**要在 AI、NPC 或复杂系统行为完全实现前进行测试？** 使用**绿野仙踪（Wizard of Oz）**技术：
+一人正常游玩，另一人在幕后实时控制 NPC 或系统行为，而玩家以为它是自动运行的。
+这样可以在实现完成前验证 AI 或经济系统的*设计意图*，并准确揭示系统需要表现出哪些行为，
+才能让体验显得正确。这尤其适用于 AI 系统已纳入垂直切片范围，
+但尚未完善到可供无引导测试的情况。
 
 ---
 
-## Phase 5: Playtest Debrief
+## 阶段 5：试玩复盘
 
-The loop is demonstrable. Before writing the report, collect structured observations
-from actually playing it. Do NOT skip to report generation — the report is only as
-good as the observations you capture here.
+游戏循环现已可供展示。编写报告前，通过实际游玩收集结构化观察结果。
+不得直接跳到报告生成，因为报告质量取决于此处捕获的观察结果。
 
-Say exactly this:
-> "Play through the complete [start → challenge → resolution] cycle from scratch,
-> as if you're a new player with no knowledge of how it was built. Don't skip ahead
-> or use developer shortcuts. Come back when you've completed the full loop —
-> or when you've hit something that stopped you."
+准确说出以下内容：
+> “请从头开始，像一名完全不了解其构建方式的新玩家一样，
+> 完整游玩 [start → challenge → resolution] 循环。不要跳过内容，
+> 也不要使用开发者捷径。完成整个循环后再回来，
+> 或者遇到让你无法继续的问题时回来。”
 
-Once the user returns, ask these questions **one at a time**:
+用户回来后，**一次只问一个**问题：
 
-1. **Loop completion:**
-   > "Did you complete the full [start → challenge → resolution] cycle on your own,
-   > without needing any guidance from me or prior knowledge of the build?"
+1. **循环完成情况：**
+   > “你是否在没有我的任何指导、也不了解这个构建的情况下，
+   > 独自完成了完整的 [start → challenge → resolution] 循环？”
 
-2. **Time check:**
-   > "How long did it take to reach the first meaningful action — the first moment
-   > where you felt like you were actually playing the game?"
+2. **时间检查：**
+   > “到达第一个有意义的操作，即第一次让你感觉自己真正开始玩游戏的时刻，
+   > 花了多长时间？”
 
-3. **Core fantasy:**
-   > "The game is supposed to make you feel [core fantasy from game-concept.md].
-   > Did it? Be honest — not 'kind of' but specifically what you felt and when."
+3. **核心幻想：**
+   > “这款游戏应该让你感受到 [core fantasy from game-concept.md]。
+   > 你感受到了吗？请诚实回答，不要只说‘有一点’，而要具体说明何时有何感受。”
 
-4. **Blockers:**
-   > "What stopped you, confused you, or pulled you out of the experience? Any
-   > moment where you weren't sure what to do, or where something broke?"
+4. **阻塞问题：**
+   > “什么事情阻止了你、让你困惑，或者让你从体验中出戏？
+   > 是否有任何时刻让你不知道该做什么，或者有任何内容出了故障？”
 
-5. **Pipeline check:**
-   > "As the developer — not the player — does this feel achievable at this quality
-   > for the full game? What surprised you about how long things took to build?"
+5. **管线检查：**
+   > “从开发者而非玩家的角度看，以这种质量完成整款游戏是否可行？
+   > 构建各项内容所需的时间中，有什么让你意外？”
 
-6. **Verdict:**
-   > "PROCEED, PIVOT, or KILL — and the specific reason."
+6. **结论：**
+   > “PROCEED、PIVOT 或 KILL，并说明具体原因。”
 
-If any answer is vague, ask: "Can you give me the specific moment where that happened?"
-Precise observations populate the report. Vague ones produce a useless report.
+如果任何回答含糊，请追问：“能否指出发生这种情况的具体时刻？”
+准确的观察结果才能填充报告，含糊的观察只会产生无用报告。
 
 ---
 
-## Phase 6: Generate Vertical Slice Report
+## 阶段 6：生成垂直切片报告
 
+在整个构建期间追踪速度。记录：
+- 第 1 天：构建了什么
+- 第 2 天：构建了什么
+- 依此类推
 
-Track velocity throughout the build. Log:
-- Day 1: what was built
-- Day 2: what was built
-- etc.
+这是你能获得的最诚实的生产速率数据。不要跳过，
+这些数据会直接用于迭代规划。
 
-This is the most honest data you will ever have about your production rate. Do not
-skip it. It feeds directly into sprint planning.
+读取 `.claude/docs/templates/vertical-slice-report.md` 获取报告结构。
+如果找不到模板文件，则使用以下备用结构：
+- `## 垂直切片报告 — [Game Title] — [Date]`
+- `### 执行摘要`（PROCEED / PIVOT / STOP 结论 + 两句话理由）
+- `### 核心循环验证`（测试了什么、哪些通过、哪些失败）
+- `### 体验评估`（动画、操作、反馈：主观记录）
+- `### 技术发现`（性能、引擎问题、架构风险）
+- `### 速度日志`（按天记录实际进展，不得跳过）
+- `### 建议的后续步骤`
 
-Read `.claude/docs/templates/vertical-slice-report.md` to get the report structure.
-If the template file is not found, use this fallback structure:
-- `## Vertical Slice Report — [Game Title] — [Date]`
-- `### Executive Summary` (PROCEED / PIVOT / STOP verdict + 2-sentence rationale)
-- `### Core Loop Validation` (what was tested, what passed, what failed)
-- `### Feel Assessment` (animation, controls, feedback — subjective notes)
-- `### Technical Findings` (performance, engine issues, architectural risks)
-- `### Velocity Log` (day-by-day actual progress — do not skip)
-- `### Recommended Next Steps`
+根据本次会话中的观察结果和构建内容填写每一节。
+速度日志必须反映每天的实际进展，而不是估算值，因为这是你能获得的
+最诚实的生产速率数据。用真实观察结果替换所有占位文本。
 
-Fill in every section based on what was observed and built during this session.
-The velocity log must reflect actual day-by-day progress, not estimates — this is
-the most honest production rate data you will ever have. Replace all placeholder
-text with real observations.
-
-### Lessons Learned
-- What assumptions were broken by actually building to near-production quality?
-- What surprised us about the pipeline or architecture?
-- What would we change about the slice scope if we ran this again?
+### 经验总结
+- 在以接近生产质量实际构建后，哪些假设被推翻了？
+- 管线或架构有哪些方面出乎意料？
+- 如果再次运行，我们会如何调整切片范围？
 ```
 
-Ask: "May I write this report to
-`prototypes/[concept-name]-vertical-slice/REPORT.md`?"
+询问：“可以将此报告写入
+`prototypes/[concept-name]-vertical-slice/REPORT.md` 吗？”
 
-If yes, write the file. Then update `prototypes/index.md` (create if it does not
-exist) — append one row to the vertical slice table: concept name, date, verdict,
-and a link to the REPORT.md. Note whether this was a first-run slice or a re-run
-after a PIVOT. The velocity log in this report is some of the most valuable data in
-the project — cross-reference it with sprint estimates.
-
----
-
-## Phase 7: Creative Director Review
-
-**Review mode check:**
-- `solo` → skip. Note: "CD-PLAYTEST skipped — Solo mode."
-- `lean` → skip (not a PHASE-GATE). Note: "CD-PLAYTEST skipped — Lean mode."
-- `full` → spawn `creative-director` via Task using gate **CD-PLAYTEST**
-  (`.claude/docs/director-gates.md`).
-
-Pass: the full REPORT.md content, the validation question, game pillars and core
-fantasy from `design/gdd/game-concept.md`.
-
-The creative director evaluates the vertical slice result against the game's
-creative vision and pillars, then confirms, modifies, or overrides the
-recommendation. Their verdict is final. Update REPORT.md if the verdict differs.
+如果可以，写入该文件。然后更新 `prototypes/index.md`（如果不存在则创建）：
+在垂直切片表格中追加一行，包含概念名称、日期、结论和 REPORT.md 链接。
+注明这是第一次运行切片，还是 PIVOT 后的重新运行。本报告中的速度日志是项目中
+最有价值的数据之一，应与迭代估算交叉对照。
 
 ---
 
-## Phase 8: Summary and Next Steps
+## 阶段 7：创意总监评审
 
-Output a summary: the validation question, velocity data, and final recommendation.
-Link to `prototypes/[concept-name]-vertical-slice/REPORT.md`.
+**评审模式检查：**
+- `solo` → 跳过。注明："CD-PLAYTEST skipped — Solo mode."
+- `lean` → 跳过（不是 PHASE-GATE）。注明："CD-PLAYTEST skipped — Lean mode."
+- `full` → 通过 Task 生成 `creative-director`，使用门禁 **CD-PLAYTEST**
+  （`.claude/docs/director-gates.md`）。
 
-**If PROCEED:**
-Your vertical slice validated the full game loop. The project is ready for
-Production.
+传入：完整的 REPORT.md 内容、验证问题，以及来自
+`design/gdd/game-concept.md` 的游戏支柱和核心幻想。
 
-Recommended next steps:
-- `/create-epics layer:foundation` — plan Foundation layer epics
-- `/create-epics layer:core` — plan Core layer epics
-- `/create-stories [epic-slug]` — break each epic into implementable stories
-- `/sprint-plan` — plan the first sprint using velocity data from the slice
-- `/gate-check pre-production` — formally advance the stage to Production
+创意总监根据游戏的创意愿景和支柱评估垂直切片结果，
+然后确认、修改或推翻建议。其结论为最终结论。如果结论不同，请更新 REPORT.md。
 
-**Playtest note:** `/gate-check` will look for documented playtest evidence.
-At minimum, 1 documented session with a REPORT.md showing PROCEED is required
-to pass the gate. More sessions give more reliable signal — 3+ is recommended
-before committing the full team to Production, but is not a hard gate.
+---
 
-**If PIVOT:**
+## 阶段 8：总结和后续步骤
 
-Before routing back to GDD revision, capture the carry-forward note. Ask these
-two questions (plain text, one at a time):
+输出摘要：验证问题、速度数据和最终建议。
+链接到 `prototypes/[concept-name]-vertical-slice/REPORT.md`。
 
-1. "What systems or mechanics worked at this quality level and should be preserved in the revised design?"
-2. "What specifically failed — the core loop, the architecture, the pipeline, or the fun?"
+**如果是 PROCEED：**
+垂直切片已经验证完整游戏循环，项目已准备进入 Production。
 
-Ask: "May I write this to `prototypes/[concept-name]-vertical-slice/PIVOT-NOTE.md`?"
+建议的后续步骤：
+- `/create-epics layer:foundation`：规划 Foundation 层史诗
+- `/create-epics layer:core`：规划 Core 层史诗
+- `/create-stories [epic-slug]`：将每个史诗拆分为可实现的故事
+- `/sprint-plan`：使用切片的速度数据规划第一个迭代
+- `/gate-check pre-production`：正式将阶段推进到 Production
 
-If yes, write the file with: what worked, what failed, the specific systems or
-architecture decisions that need revision, and what the next slice should prove
-differently. When `/vertical-slice` is next run after a PIVOT, check the
-`prototypes/` directory for a `PIVOT-NOTE.md` — use it to frame the new validation
-question and inform scope decisions.
+**试玩说明：** `/gate-check` 会查找已记录的试玩证据。
+要通过门禁，至少需要 1 次有记录的会话，以及一份结论为 PROCEED 的 REPORT.md。
+更多会话能提供更可靠的信号。建议在整个团队投入 Production 前进行 3 次以上会话，
+但这不是硬性门禁。
 
-- Revise affected GDDs with `/design-system [mechanic]`
-- Address architecture issues via `/architecture-decision`
-- Then re-run `/vertical-slice` to validate the revised direction
+**如果是 PIVOT：**
 
-**If KILL:**
+在返回修改 GDD 前，先记录供后续沿用的信息。逐一以纯文本询问以下两个问题：
 
-Before abandoning the concept, confirm the verdict is sound:
+1. “哪些系统或机制在此质量水平下表现良好，应在修改后的设计中保留？”
+2. “具体失败的是哪一部分：核心循环、架构、管线，还是乐趣？”
 
-- [ ] Full game loop takes >5 minutes even for an experienced player?
-- [ ] No emotional high point (delight, surprise, satisfaction) observed in any playtest session?
-- [ ] 50%+ of testers confused or stuck at the same point after 2+ slice attempts?
-- [ ] Architecture issues would require rebuilding more than 50% of what was built?
-- [ ] This is the 3rd vertical slice attempt on the same concept?
+询问：“可以将这些内容写入 `prototypes/[concept-name]-vertical-slice/PIVOT-NOTE.md` 吗？”
 
-If 2+ boxes apply → KILL verdict is sound. If 0–1 apply → one targeted PIVOT may recover the concept.
+如果可以，写入该文件，包含：有效的部分、失败的部分、需要修改的具体系统或架构决策，
+以及下一次切片应以不同方式证明什么。PIVOT 后下次运行 `/vertical-slice` 时，
+检查 `prototypes/` 目录中是否存在 `PIVOT-NOTE.md`，并用它构建新的验证问题、
+辅助范围决策。
 
-**Document the kill in `prototypes/GRAVEYARD.md`** (create if it doesn't exist).
-Ask: "May I append this to `prototypes/GRAVEYARD.md`?" If yes, add one entry:
+- 使用 `/design-system [mechanic]` 修改受影响的 GDD
+- 通过 `/architecture-decision` 处理架构问题
+- 然后重新运行 `/vertical-slice`，验证修改后的方向
+
+**如果是 KILL：**
+
+放弃概念前，确认结论依据充分：
+
+- [ ] 即使对熟练玩家，完整游戏循环仍需 >5 分钟？
+- [ ] 所有试玩中都没有观察到情绪高点（愉悦、惊喜、满足感）？
+- [ ] 经过 2 次以上切片尝试，仍有 50% 以上测试者在同一位置困惑或卡住？
+- [ ] 架构问题需要重建已完成内容的 50% 以上？
+- [ ] 这是同一概念的第 3 次垂直切片尝试？
+
+如果有 2 项以上符合 → KILL 结论依据充分。如果只有 0–1 项符合 → 一次有针对性的 PIVOT 可能挽救该概念。
+
+**将终止记录写入 `prototypes/GRAVEYARD.md`**（如果不存在则创建）。
+询问：“可以将此内容追加到 `prototypes/GRAVEYARD.md` 吗？”如果可以，添加一条记录：
 
 ```
-## [Concept Name] Vertical Slice — YYYY-MM-DD
-- **Kill reason:** [what specifically prevented the player from experiencing the core fantasy]
-- **What worked at slice quality:** [systems or mechanics that held up]
-- **What failed:** [core loop issue, architecture decision, or pipeline blocker]
-- **Next time:** [one specific change for the next time a similar concept is attempted]
+## [Concept Name] 垂直切片 — YYYY-MM-DD
+- **终止原因：** [what specifically prevented the player from experiencing the core fantasy]
+- **达到切片质量且表现良好的内容：** [systems or mechanics that held up]
+- **失败内容：** [core loop issue, architecture decision, or pipeline blocker]
+- **下次改进：** [one specific change for the next time a similar concept is attempted]
 ```
 
-- Return to `/brainstorm` with what you learned
-- Or run `/prototype [new-concept]` to test a new direction cheaply first
+- 带着经验返回 `/brainstorm`
+- 或运行 `/prototype [new-concept]`，先低成本测试新方向
 
 ---
 
-### Important Constraints
+### 重要约束
 
-- Vertical slice code must NEVER be refactored into production — it is reference only
-- Production code must NEVER import from `prototypes/`
-- If recommendation is PROCEED, production implementation is written from scratch
-  using the slice as a design reference only
-- Scope cuts are acceptable; quality cuts are not — a low-quality slice proves nothing
-- Total effort: 1–3 weeks. If longer, scope is too large — cut the slice, not the quality.
-- Day 3 sunk cost rule: if the full game loop cycle is not demonstrable by then,
-  stop and surface the blocker
-- **Networked/multiplayer games:** A local vertical slice cannot validate the feel
-  of a networked mechanic. Latency fundamentally changes how combat, movement, and
-  prediction feel — testing locally at 0ms will feel entirely different at 80ms
-  network delay. The slice can validate that the game loop is interesting and
-  complete; it cannot validate that networked mechanics feel good under real
-  conditions. Network feel requires real peers or simulated latency.
+- 垂直切片代码绝不能重构进生产代码，只能作为参考
+- 生产代码绝不能从 `prototypes/` 导入内容
+- 如果建议为 PROCEED，生产实现必须从头编写，切片仅作为设计参考
+- 可以削减范围，但不能降低质量，因为低质量切片无法证明任何事情
+- 总投入：1–3 周。如果耗时更长，说明范围过大，应削减切片，而不是降低质量。
+- 第 3 天沉没成本规则：如果届时仍无法展示完整游戏循环，应停止并指出阻塞因素
+- **联网/多人游戏：** 本地垂直切片无法验证联网机制的体验。延迟会从根本上改变战斗、
+  移动和预测的感受：在本地 0ms 下测试，与 80ms 网络延迟下的体验完全不同。
+  切片可以验证游戏循环是否有趣且完整，但无法验证联网机制在真实条件下是否有良好体验。
+  网络体验需要真实对端或模拟延迟才能验证。

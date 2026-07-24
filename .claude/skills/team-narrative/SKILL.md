@@ -1,126 +1,125 @@
 ---
 name: team-narrative
-description: "Orchestrate the narrative team: coordinates narrative-director, writer, world-builder, and level-designer to create cohesive story content, world lore, and narrative-driven level design."
+description: "编排叙事团队：协调 narrative-director、writer、world-builder 和 level-designer，创作连贯的故事内容、世界背景和叙事驱动的关卡设计。"
 argument-hint: "[narrative content description] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Task, AskUserQuestion, TodoWrite
 model: sonnet
 ---
-If no argument is provided, output usage guidance and exit without spawning any agents:
-> Usage: `/team-narrative [narrative content description]` — describe the story content, scene, or narrative area to work on (e.g., `boss encounter cutscene`, `faction intro dialogue`, `tutorial narrative`). Do not use `AskUserQuestion` here; output the guidance directly.
+如果未提供参数，输出使用说明并退出，不生成任何代理：
+> 用法：`/team-narrative [narrative content description]`——描述要处理的故事内容、场景或叙事区域（例如 `boss encounter cutscene`、`faction intro dialogue`、`tutorial narrative`）。此处不要使用 `AskUserQuestion`；直接输出说明。
 
-When this skill is invoked with an argument, orchestrate the narrative team through a structured pipeline.
+使用参数调用此技能时，通过结构化流程编排叙事团队。
 
-**Decision Points:** At each phase transition, use `AskUserQuestion` to present
-the user with the subagent's proposals as selectable options. Write the agent's
-full analysis in conversation, then capture the decision with concise labels.
-The user must approve before moving to the next phase.
+**决策点：** 每次阶段转换时，使用 `AskUserQuestion` 将子代理的提案作为可选项
+呈现给用户。先在对话中写出代理的完整分析，再用简洁的标签记录决定。
+进入下一阶段前必须获得用户批准。
 
-## Phase 0: Resolve Review Mode
+## 阶段 0：确定评审模式
 
-1. If `--review [mode]` was passed as an argument, use that mode.
-2. Else read `production/review-mode.txt` — use whatever is written there.
-3. Else default to `lean`.
+1. 如果参数中传入了 `--review [mode]`，使用该模式。
+2. 否则读取 `production/review-mode.txt`——使用其中指定的模式。
+3. 如果仍未指定，默认为 `lean`。
 
-Modes:
-- `full` — spawn all director and lead gates as described
-- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
-- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+模式：
+- `full`——按说明生成所有总监和主管门禁
+- `lean`——跳过总监门禁，除非其类型为 PHASE-GATE（CD-PHASE-GATE、TD-PHASE-GATE、PR-PHASE-GATE、AD-PHASE-GATE）
+- `solo`——完全跳过所有总监门禁的生成；运行技能时不使用任何代理门禁
 
-Store the resolved mode for use in all subsequent phases.
+保存确定后的模式，供后续所有阶段使用。
 
-## Team Composition
-- **narrative-director** — Story arcs, character design, dialogue strategy, narrative vision
-- **writer** — Dialogue writing, lore entries, item descriptions, in-game text
-- **world-builder** — World rules, faction design, history, geography, environmental storytelling
-- **art-director** — Character visual design, environmental visual storytelling, cutscene/cinematic tone
-- **level-designer** — Level layouts that serve the narrative, pacing, environmental storytelling beats
-- **localization-lead** — Localization readiness — flags non-localizable strings, cultural assumptions, and i18n gaps
+## 团队构成
+- **narrative-director**——故事弧、角色设计、对白策略、叙事愿景
+- **writer**——对白写作、背景条目、物品描述、游戏内文本
+- **world-builder**——世界规则、派系设计、历史、地理、环境叙事
+- **art-director**——角色视觉设计、环境视觉叙事、过场/电影化基调
+- **level-designer**——服务于叙事的关卡布局、节奏、环境叙事节点
+- **localization-lead**——本地化就绪度——标记不可本地化的字符串、文化预设和 i18n 缺口
 
-## How to Delegate
+## 如何委派
 
-Use the Task tool to spawn each team member as a subagent:
-- `subagent_type: narrative-director` — Story arcs, character design, narrative vision
-- `subagent_type: writer` — Dialogue writing, lore entries, in-game text
-- `subagent_type: world-builder` — World rules, faction design, history, geography
-- `subagent_type: art-director` — Character visual profiles, environmental visual storytelling, cinematic tone
-- `subagent_type: level-designer` — Level layouts that serve the narrative, pacing
-- `subagent_type: localization-lead` — Localization readiness — flags non-localizable strings, cultural assumptions, and i18n gaps
+使用 Task 工具将每位团队成员生成为子代理：
+- `subagent_type: narrative-director`——故事弧、角色设计、叙事愿景
+- `subagent_type: writer`——对白写作、背景条目、游戏内文本
+- `subagent_type: world-builder`——世界规则、派系设计、历史、地理
+- `subagent_type: art-director`——角色视觉档案、环境视觉叙事、电影化基调
+- `subagent_type: level-designer`——服务于叙事的关卡布局、节奏
+- `subagent_type: localization-lead`——本地化就绪度——标记不可本地化的字符串、文化预设和 i18n 缺口
 
-Always provide full context in each agent's prompt (narrative brief, lore dependencies, character profiles). Launch independent agents in parallel where the pipeline allows it (e.g., Phase 2 agents can run simultaneously).
+始终在每个代理的提示词中提供完整上下文（叙事简报、背景设定依赖、角色档案）。在流程允许时并行启动相互独立的代理（例如，阶段 2 的代理可以同时运行）。
 
-## Pipeline
+## 流程
 
-### Phase 1: Narrative Direction
-Delegate to **narrative-director**:
-- Define the narrative purpose of this content: what story beat does it serve?
-- Identify characters involved, their motivations, and how this fits the overall arc
-- Set the emotional tone and pacing targets
-- Specify any lore dependencies or new lore this introduces
-- Output: narrative brief with story requirements
+### 阶段 1：叙事方向
+委派给 **narrative-director**：
+- 定义此内容的叙事目的：它服务于哪个故事节点？
+- 确定涉及的角色、他们的动机，以及此内容如何融入整体故事弧
+- 设定情感基调和节奏目标
+- 指明所有背景设定依赖，或此内容引入的新背景设定
+- 输出：包含故事要求的叙事简报
 
-### Phase 2: World Foundation (parallel)
-Delegate in parallel — issue all three Task calls simultaneously before waiting for any result:
-- **world-builder**: Create or update lore entries for factions, locations, and history relevant to this content. Cross-reference against existing lore for contradictions. Set canon level for new entries.
-- **writer**: Draft character dialogue using voice profiles. Ensure all lines are under 120 characters, use named placeholders for variables, and are localization-ready.
-- **art-director**: Define character visual design direction for key characters appearing in this content (silhouette, visual archetype, distinguishing features). Specify environmental visual storytelling elements for each key space (prop composition, lighting notes, spatial arrangement). Define tone palette and cinematic direction for any cutscenes or scripted sequences.
+### 阶段 2：世界基础（并行）
+并行委派——在等待任何结果之前，同时发出全部三个 Task 调用：
+- **world-builder**：创建或更新与此内容相关的派系、地点和历史背景条目。与现有背景设定交叉核对，检查是否存在矛盾。为新条目设定正史级别。
+- **writer**：依据角色语言风格档案起草对白。确保每行不超过 120 个字符，变量使用命名占位符，并达到本地化就绪状态。
+- **art-director**：为此内容中出现的关键角色确定视觉设计方向（剪影、视觉原型、辨识特征）。为每个关键空间指定环境视觉叙事元素（道具构成、灯光说明、空间布局）。为所有过场或脚本序列确定色调方案和电影化方向。
 
-### Phase 3: Level Narrative Integration
-Delegate to **level-designer**:
-- Review the narrative brief and lore foundation
-- Design environmental storytelling elements in the level
-- Place narrative triggers, dialogue zones, and discovery points
-- Ensure pacing serves both gameplay and story
+### 阶段 3：关卡叙事整合
+委派给 **level-designer**：
+- 审查叙事简报和背景设定基础
+- 设计关卡中的环境叙事元素
+- 放置叙事触发器、对白区域和探索点
+- 确保节奏同时服务于玩法和故事
 
-### Phase 4: Review and Consistency
-Delegate to **narrative-director**:
-- Review all dialogue against character voice profiles
-- Verify lore consistency across new and existing entries
-- Confirm narrative pacing aligns with level design
-- Check that all mysteries have documented "true answers"
+### 阶段 4：评审与一致性
+委派给 **narrative-director**：
+- 根据角色语言风格档案审查所有对白
+- 验证新旧背景条目之间的一致性
+- 确认叙事节奏与关卡设计一致
+- 检查所有谜团是否都有记录在案的“真实答案”
 
-### Phase 5: Polish (parallel)
-Delegate in parallel:
-- **writer**: Final self-review — verify no line exceeds dialogue box constraints, all text uses string keys (not raw strings), placeholder variable names are consistent
-- **localization-lead**: Validate i18n compliance — check string key naming conventions, flag any strings with hardcoded formatting that won't survive translation, verify character limit headroom for languages that expand (German/Finnish typically +30%), confirm no cultural assumptions in text that would need locale-specific variants
-- **world-builder**: Finalize canon levels for all new lore entries
+### 阶段 5：润色（并行）
+并行委派：
+- **writer**：最终自审——验证没有任何一行超出对白框限制、所有文本均使用字符串键（而非原始字符串），且占位符变量名保持一致
+- **localization-lead**：验证 i18n 合规性——检查字符串键命名约定，标记所有含有无法适应翻译的硬编码格式的字符串，验证容易发生文本膨胀的语言是否留有足够的字符上限余量（德语/芬兰语通常增加 30%），确认文本中不存在需要特定区域变体的文化预设
+- **world-builder**：最终确定所有新背景条目的正史级别
 
-## Error Recovery Protocol
+## 错误恢复协议
 
-If any spawned agent (via Task) returns BLOCKED, errors, or cannot complete:
+如果通过 Task 生成的任何代理返回 BLOCKED、发生错误或无法完成任务：
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" to the user before continuing to dependent phases
-2. **Assess dependencies**: Check whether the blocked agent's output is required by subsequent phases. If yes, do not proceed past that dependency point without user input.
-3. **Offer options** via AskUserQuestion with choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed. Never discard work because one agent blocked.
+1. **立即告知**：在继续执行依赖该代理的阶段之前，向用户报告“[AgentName]: BLOCKED — [reason]”
+2. **评估依赖关系**：检查后续阶段是否需要被阻塞代理的输出。如果需要，则在没有用户输入的情况下，不得越过该依赖点继续执行。
+3. **提供选项**：通过 AskUserQuestion 提供以下选择：
+   - 跳过此代理，并在最终报告中注明缺口
+   - 缩小范围后重试
+   - 在此停止，先解决阻塞问题
+4. **始终生成部分报告**——输出所有已完成的内容。绝不能因为一个代理被阻塞而丢弃已有工作。
 
-Common blockers:
-- Input file missing (story not found, GDD absent) → redirect to the skill that creates it
-- ADR status is Proposed → do not implement; run `/architecture-decision` first
-- Scope too large → split into two stories via `/create-stories`
-- Conflicting instructions between ADR and story → surface the conflict, do not guess
+常见阻塞问题：
+- 缺少输入文件（找不到故事、缺少 GDD）→ 转到创建该文件的技能
+- ADR 状态为 Proposed → 不要实施；先运行 `/architecture-decision`
+- 范围过大 → 通过 `/create-stories` 拆分为两个故事
+- ADR 与故事中的指示冲突 → 明确指出冲突，不要猜测
 
-## File Write Protocol
+## 文件写入协议
 
-All file writes (narrative docs, dialogue files, lore entries) are delegated to
-sub-agents spawned via Task. Each sub-agent enforces the "May I write to [path]?"
-protocol. This orchestrator does not write files directly.
+所有文件写入操作（叙事文档、对白文件、背景条目）均委派给通过 Task 生成的
+子代理。每个子代理都执行“可以写入 [path] 吗？”协议。
+此编排器不直接写入文件。
 
-## Output
+## 输出
 
-A summary report covering: narrative brief status, lore entries created/updated, dialogue lines written, level narrative integration points, consistency review results, and any unresolved contradictions.
+生成一份摘要报告，涵盖：叙事简报状态、已创建/更新的背景条目、已编写的对白、关卡叙事整合点、一致性评审结果，以及所有尚未解决的矛盾。
 
-Verdict: **COMPLETE** — narrative content delivered.
+结论：**COMPLETE**——叙事内容已交付。
 
-If the pipeline stops because a dependency is unresolved (e.g., lore contradiction or missing prerequisite not resolved by the user):
+如果流程因依赖关系未解决而停止（例如，背景设定矛盾，或用户尚未解决的前置条件缺失）：
 
-Verdict: **BLOCKED** — [reason]
+结论：**BLOCKED**——[reason]
 
-## Next Steps
+## 后续步骤
 
-- Run `/design-review` on the narrative documents for consistency validation.
-- Run `/localize extract` to extract new strings for translation after dialogue is finalized.
-- Run `/dev-story` to implement dialogue triggers and narrative events in-engine.
+- 对叙事文档运行 `/design-review`，验证一致性。
+- 对白定稿后运行 `/localize extract`，提取待翻译的新字符串。
+- 运行 `/dev-story`，在引擎中实现对白触发器和叙事事件。

@@ -1,11 +1,11 @@
 #!/bin/bash
-# Claude Code PostToolUse hook: Advises running skill-test after skill file changes
-# Fires when any file inside .claude/skills/ is written or edited.
+# Claude Code 工具调用后钩子：修改技能文件后建议执行 skill-test
+# 当 .claude/skills/ 目录内任意文件发生写入或编辑操作时触发。
 #
-# Exit behavior:
-#   exit 0 = advisory only (non-blocking)
+# 退出码规则:
+#   exit 0 =  仅提示建议（非阻塞，不会中断流程）
 #
-# Input schema (PostToolUse for Write|Edit):
+# 输入格式 (PostToolUse for Write|Edit):
 # { "tool_name": "Write", "tool_input": { "file_path": "...", "content": "..." } }
 
 INPUT=$(cat)
@@ -32,8 +32,8 @@ if [ -z "$SKILL_NAME" ]; then
     exit 0
 fi
 
-echo "=== Skill Modified: $SKILL_NAME ===" >&2
-echo "Run /skill-test static $SKILL_NAME to validate structural compliance." >&2
+echo "=== 技能修改: $SKILL_NAME ===" >&2
+echo "执行命令 /skill-test static $SKILL_NAME 校验结构规范符合性。" >&2
 echo "====================================" >&2
 
 exit 0

@@ -1,251 +1,245 @@
 ---
 name: test-evidence-review
-description: "Quality review of test files and manual evidence documents. Goes beyond existence checks — evaluates assertion coverage, edge case handling, naming conventions, and evidence completeness. Produces ADEQUATE/INCOMPLETE/MISSING verdict per story. Run before QA sign-off or on demand."
+description: "对测试文件和手动证据文档进行质量审查。不仅检查是否存在，还会评估断言覆盖率、边界情况处理、命名约定和证据完整性。为每个故事给出 ADEQUATE/INCOMPLETE/MISSING 结论。在 QA 签核前或按需运行。"
 argument-hint: "[story-path | sprint | system-name]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write
 model: sonnet
 ---
 
-# Test Evidence Review
+# 测试证据审查
 
-`/smoke-check` verifies that test files **exist** and **pass**. This skill
-goes further — it reviews the **quality** of those tests and evidence documents.
-A test file that exists and passes may still leave critical behaviour uncovered.
-A manual evidence doc that exists may lack the sign-offs required for closure.
+`/smoke-check` 验证测试文件是否**存在**并且能否**通过**。本技能
+会进一步审查这些测试和证据文档的**质量**。
+即使测试文件存在且测试通过，也仍可能遗漏关键行为。
+即使手动证据文档存在，也可能缺少关闭故事所需的签核。
 
-**Output:** Summary report (in conversation) + optional `production/qa/evidence-review-[date].md`
+**输出：** 摘要报告（在对话中）+ 可选的 `production/qa/evidence-review-[date].md`
 
-**When to run:**
-- Before QA hand-off sign-off (`/team-qa` Phase 5)
-- On any story where test quality is in question
-- As part of milestone review for Logic and Integration story quality audit
-
----
-
-## 1. Parse Arguments
-
-**Modes:**
-- `/test-evidence-review [story-path]` — review a single story's evidence
-- `/test-evidence-review sprint` — review all stories in the current sprint
-- `/test-evidence-review [system-name]` — review all stories in an epic/system
-- No argument — ask which scope: "Single story", "Current sprint", "A system"
+**运行时机：**
+- QA 移交签核前（`/team-qa` Phase 5）
+- 任何测试质量存疑的故事
+- 作为里程碑审查的一部分，对 Logic 和 Integration 故事进行质量审计
 
 ---
 
-## 2. Load Stories in Scope
+## 1. 解析参数
 
-Based on the argument:
-
-**Single story**: Read the story file directly. Extract: Story Type, Test
-Evidence section, story slug, system name.
-
-**Sprint**: Read the most recently modified file in `production/sprints/`.
-Extract the list of story file paths from the sprint plan. Read each story file.
-
-**System**: Glob `production/epics/[system-name]/story-*.md`. Read each.
-
-For each story, collect:
-- `Type:` field (Logic / Integration / Visual/Feel / UI / Config/Data)
-- `## Test Evidence` section — the stated expected test file path or evidence doc
-- Story slug (from file name)
-- System name (from directory path)
-- Acceptance Criteria list (all checkbox items)
+**模式：**
+- `/test-evidence-review [story-path]` — 审查单个故事的证据
+- `/test-evidence-review sprint` — 审查当前迭代中的所有故事
+- `/test-evidence-review [system-name]` — 审查某个史诗/系统中的所有故事
+- 无参数 — 询问审查范围："单个故事"、"当前迭代"、"一个系统"
 
 ---
 
-## 3. Locate Evidence Files
+## 2. 加载范围内的故事
 
-For each story, find the evidence:
+根据参数执行：
 
-**Logic stories**: Glob `tests/unit/[system]/[story-slug]_test.*`
-  - If not found, also try: Grep in `tests/unit/[system]/` for files
-    containing the story slug
+**单个故事**：直接读取故事文件。提取 Story Type、Test
+Evidence 章节、故事 slug 和系统名称。
 
-**Integration stories**: Glob `tests/integration/[system]/[story-slug]_test.*`
-  - Also check `production/session-logs/` for playtest records mentioning the story
+**迭代**：读取 `production/sprints/` 中最近修改的文件。
+从迭代计划中提取故事文件路径列表。读取每个故事文件。
 
-**Visual/Feel and UI stories**: Glob `production/qa/evidence/[story-slug]-evidence.*`
+**系统**：使用 Glob 匹配 `production/epics/[system-name]/story-*.md`。逐个读取。
 
-**Config/Data stories**: Glob `production/qa/smoke-*.md` (any smoke check report)
-
-Note what was found (path) or not found (gap) for each story.
-
----
-
-## 4. Review Automated Test Quality (Logic / Integration)
-
-For each test file found, read it and evaluate:
-
-### Assertion coverage
-
-Count the number of distinct assertions (lines containing assert, expect,
-check, verify, or engine-specific assertion patterns). Low assertion count is
-a quality signal — a test that makes only 1 assertion per test function may
-not cover the range of expected behaviour.
-
-Thresholds:
-- **3+ assertions per test function** → normal
-- **1-2 assertions per test function** → note as potentially thin
-- **0 assertions** (test exists but no asserts) → flag as BLOCKING — the
-  test passes vacuously and proves nothing
-
-### Edge case coverage
-
-For each acceptance criterion in the story that contains a number, threshold,
-or "when X happens" conditional: check whether a test function name or
-test body references that specific case.
-
-Heuristics:
-- Grep test file for "zero", "max", "null", "empty", "min", "invalid",
-  "boundary", "edge" — presence of any is a positive signal
-- If the story has a Formulas section with specific bounds: check whether
-  tests exercise at minimum/maximum values
-
-### Naming quality
-
-Test function names should describe: the scenario + the expected result.
-Pattern: `test_[scenario]_[expected_outcome]`
-
-Flag functions named generically (`test_1`, `test_run`, `testBasic`) as
-**naming issues** — they make failures harder to diagnose.
-
-### Formula traceability
-
-For Logic stories where the GDD has a Formulas section: check that the test
-file contains at least one test whose name or comment references the formula
-name or a formula value. A test that exercises a formula without mentioning
-it by name is harder to maintain when the formula changes.
+为每个故事收集：
+- `Type:` 字段（Logic / Integration / Visual/Feel / UI / Config/Data）
+- `## Test Evidence` 章节 — 声明的预期测试文件路径或证据文档
+- 故事 slug（来自文件名）
+- 系统名称（来自目录路径）
+- Acceptance Criteria 列表（所有复选框条目）
 
 ---
 
-## 5. Review Manual Evidence Quality (Visual/Feel / UI)
+## 3. 定位证据文件
 
-For each evidence document found, read it and evaluate:
+为每个故事查找证据：
 
-### Criterion linkage
+**Logic 故事**：使用 Glob 匹配 `tests/unit/[system]/[story-slug]_test.*`
+  - 如果未找到，还应尝试：使用 Grep 在 `tests/unit/[system]/` 中查找
+    包含故事 slug 的文件
 
-The evidence doc should reference each acceptance criterion from the story.
-Check: does the evidence doc contain each criterion (or a clear rephrasing)?
-Missing criteria mean a criterion was never verified.
+**Integration 故事**：使用 Glob 匹配 `tests/integration/[system]/[story-slug]_test.*`
+  - 同时检查 `production/session-logs/` 中提及该故事的试玩记录
 
-### Sign-off completeness
+**Visual/Feel 和 UI 故事**：使用 Glob 匹配 `production/qa/evidence/[story-slug]-evidence.*`
 
-Check for three sign-off lines (or equivalent fields):
-- Developer sign-off
-- Designer / art-lead sign-off (for Visual/Feel)
-- QA lead sign-off
+**Config/Data 故事**：使用 Glob 匹配 `production/qa/smoke-*.md`（任意冒烟检查报告）
 
-If any are missing or blank: flag as INCOMPLETE — the story cannot be fully
-closed without all required sign-offs.
-
-### Screenshot / artefact completeness
-
-For Visual/Feel stories: check whether screenshot file paths are referenced
-in the evidence doc. If referenced, Glob for them to confirm they exist.
-
-For UI stories: check whether a walkthrough sequence (step-by-step interaction
-log) is present.
-
-### Date coverage
-
-Evidence doc should have a date. If the date is earlier than the story's
-last major change (heuristic: compare against sprint start date from the sprint
-plan), flag as POTENTIALLY STALE — the evidence may not cover the final
-implementation.
+记录每个故事找到的内容（路径），或未找到的内容（缺口）。
 
 ---
 
-## 6. Build the Review Report
+## 4. 审查自动化测试质量（Logic / Integration）
 
-For each story, assign a verdict:
+读取找到的每个测试文件并评估：
 
-| Verdict | Meaning |
+### 断言覆盖率
+
+统计不同断言的数量（包含 assert、expect、check、verify 或
+引擎专用断言模式的行）。断言数量少是一个质量信号：如果每个测试函数
+仅有 1 个断言，可能无法覆盖预期行为的完整范围。
+
+阈值：
+- **每个测试函数 3 个以上断言** → 正常
+- **每个测试函数 1-2 个断言** → 标记为可能过于薄弱
+- **0 个断言**（测试存在但无断言）→ 标记为 BLOCKING：
+  测试会空洞地通过，无法证明任何内容
+
+### 边界情况覆盖率
+
+对于故事中每个包含数值、阈值或“当 X 发生时”条件的验收标准：
+检查测试函数名称或测试主体是否引用了该具体情况。
+
+启发式检查：
+- 使用 Grep 在测试文件中查找 "zero"、"max"、"null"、"empty"、"min"、"invalid"、
+  "boundary"、"edge"，出现任意一个都是积极信号
+- 如果故事包含具有明确边界的 Formulas 章节：检查测试是否覆盖
+  最小值/最大值
+
+### 命名质量
+
+测试函数名称应描述：场景 + 预期结果。
+格式：`test_[scenario]_[expected_outcome]`
+
+将使用通用名称的函数（`test_1`、`test_run`、`testBasic`）标记为
+**命名问题**，因为这类名称会增加诊断失败的难度。
+
+### 公式可追溯性
+
+对于 GDD 中包含 Formulas 章节的 Logic 故事：检查测试文件中是否至少有一个
+测试，其名称或注释引用了公式名称或公式值。如果测试覆盖了公式却未提及其
+名称，公式变更时会更难维护。
+
+---
+
+## 5. 审查手动证据质量（Visual/Feel / UI）
+
+读取找到的每份证据文档并评估：
+
+### 标准关联
+
+证据文档应引用故事中的每项验收标准。
+检查证据文档是否包含每项标准（或清晰的改写）。
+缺少标准意味着该标准从未得到验证。
+
+### 签核完整性
+
+检查是否有三行签核记录（或等效字段）：
+- 开发人员签核
+- 设计师/美术负责人签核（适用于 Visual/Feel）
+- QA 负责人签核
+
+如果任何一项缺失或为空：标记为 INCOMPLETE，因为缺少任何必要签核时，
+故事都不能完全关闭。
+
+### 截图/产物完整性
+
+对于 Visual/Feel 故事：检查证据文档是否引用了截图文件路径。
+如果有引用，使用 Glob 确认文件存在。
+
+对于 UI 故事：检查是否有演练序列（逐步交互日志）。
+
+### 日期覆盖范围
+
+证据文档应包含日期。如果日期早于故事最后一次重大变更
+（启发式方法：与迭代计划中的迭代开始日期比较），则标记为 POTENTIALLY STALE，
+因为该证据可能未覆盖最终实现。
+
+---
+
+## 6. 生成审查报告
+
+为每个故事给出结论：
+
+| 结论 | 含义 |
 |---------|---------|
-| **ADEQUATE** | Test/evidence exists, passes quality checks, all criteria covered |
-| **INCOMPLETE** | Test/evidence exists but has quality gaps (thin assertions, missing sign-offs) |
-| **MISSING** | No test or evidence found for a story type that requires it |
+| **ADEQUATE** | 测试/证据存在，通过质量检查，且覆盖所有标准 |
+| **INCOMPLETE** | 测试/证据存在，但有质量缺口（断言薄弱、缺少签核） |
+| **MISSING** | 对于需要测试或证据的故事类型，未找到相应内容 |
 
-The overall sprint/system verdict is the worst story verdict present.
+迭代/系统的总体结论取现有故事结论中最差的一项。
 
 ```markdown
-## Test Evidence Review
+## 测试证据审查
 
-> **Date**: [date]
-> **Scope**: [single story path | Sprint [N] | [system name]]
-> **Stories reviewed**: [N]
-> **Overall verdict**: ADEQUATE / INCOMPLETE / MISSING
+> **日期**：[date]
+> **范围**：[single story path | Sprint [N] | [system name]]
+> **已审查故事数**：[N]
+> **总体结论**：ADEQUATE / INCOMPLETE / MISSING
 
 ---
 
-### Story-by-Story Results
+### 逐故事结果
 
 #### [Story Title] — [Type] — [ADEQUATE/INCOMPLETE/MISSING]
 
-**Test/evidence path**: `[path]` (found) / (not found)
+**测试/证据路径**：`[path]`（已找到）/（未找到）
 
-**Automated test quality** *(Logic/Integration only)*:
-- Assertion coverage: [N per function on average] — [adequate / thin / none]
-- Edge cases: [covered / partial / not found]
-- Naming: [consistent / [N] generic names flagged]
-- Formula traceability: [yes / no — formula names not referenced in tests]
+**自动化测试质量** *（仅适用于 Logic/Integration）*：
+- 断言覆盖率：[N per function on average] — [adequate / thin / none]
+- 边界情况：[covered / partial / not found]
+- 命名：[consistent / [N] generic names flagged]
+- 公式可追溯性：[yes / no — formula names not referenced in tests]
 
-**Manual evidence quality** *(Visual/Feel/UI only)*:
-- Criterion linkage: [N/M criteria referenced]
-- Sign-offs: [Developer ✓ | Designer ✗ | QA Lead ✗]
-- Artefacts: [screenshots present / missing / N/A]
-- Freshness: [dated [date] — current / potentially stale]
+**手动证据质量** *（仅适用于 Visual/Feel/UI）*：
+- 标准关联：[N/M criteria referenced]
+- 签核：[Developer ✓ | Designer ✗ | QA Lead ✗]
+- 产物：[screenshots present / missing / N/A]
+- 时效性：[dated [date] — current / potentially stale]
 
-**Issues**:
-- BLOCKING: [description] *(prevents story-done)*
-- ADVISORY: [description] *(should fix before release)*
+**问题**：
+- BLOCKING：[description] *（阻止 story-done）*
+- ADVISORY：[description] *（应在发布前修复）*
 
 ---
 
-### Summary
+### 摘要
 
-| Story | Type | Verdict | Issues |
+| 故事 | Type | 结论 | 问题 |
 |-------|------|---------|--------|
-| [title] | Logic | ADEQUATE | None |
-| [title] | Integration | INCOMPLETE | Thin assertions (avg 1.2/function) |
-| [title] | Visual/Feel | INCOMPLETE | QA lead sign-off missing |
-| [title] | Logic | MISSING | No test file found |
+| [title] | Logic | ADEQUATE | 无 |
+| [title] | Integration | INCOMPLETE | 断言薄弱（avg 1.2/function） |
+| [title] | Visual/Feel | INCOMPLETE | 缺少 QA 负责人签核 |
+| [title] | Logic | MISSING | 未找到测试文件 |
 
-**BLOCKING items** (must resolve before story can be closed): [N]
-**ADVISORY items** (should address before release): [N]
+**BLOCKING 项**（必须先解决，故事才能关闭）：[N]
+**ADVISORY 项**（应在发布前处理）：[N]
 ```
 
 ---
 
-## 7. Write Output (Optional)
+## 7. 写入输出（可选）
 
-Present the report in conversation.
+在对话中展示报告。
 
-Ask: "May I write this test evidence review to
-`production/qa/evidence-review-[date].md`?"
+询问："可以将这份测试证据审查写入
+`production/qa/evidence-review-[date].md` 吗？"
 
-This is optional — the report is useful standalone. Write only if the user
-wants a persistent record.
+此步骤可选，报告本身可独立使用。仅在用户希望保留持久记录时写入。
 
-After the report:
+报告之后：
 
-- For BLOCKING items: "These must be resolved before `/story-done` can mark the
-  story Complete. Would you like to address any of them now?"
-- For thin assertions: "Consider running `/test-helpers [system]` to see
-  scaffolded assertion patterns for common cases."
-- For missing sign-offs: "Manual sign-off is required from [role]. Share
-  `[evidence-path]` with them to complete sign-off."
+- 对于 BLOCKING 项："必须先解决这些问题，`/story-done` 才能将故事标记为
+  Complete。你想现在处理其中的任何问题吗？"
+- 对于断言薄弱问题："可以考虑运行 `/test-helpers [system]`，查看
+  常见情况的脚手架断言模式。"
+- 对于缺少签核的问题："需要 [role] 进行手动签核。请与其共享
+  `[evidence-path]` 以完成签核。"
 
-Verdict: **COMPLETE** — evidence review finished. Use CONCERNS if BLOCKING items were found.
+结论：**COMPLETE** — 证据审查已完成。如果发现 BLOCKING 项，则使用 CONCERNS。
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-- **Report quality issues, do not fix them** — this skill reads and evaluates;
-  it does not modify test files or evidence documents
-- **ADEQUATE means adequate for shipping, not perfect** — avoid nitpicking
-  tests that are functioning and comprehensive enough to give confidence
-- **BLOCKING vs. ADVISORY distinction is important** — only flag BLOCKING when
-  the gap leaves a story criterion genuinely unverified
-- **Ask before writing** — the report file is optional; always confirm before writing
+- **报告质量问题，不要修复问题**：本技能只读取和评估，
+  不修改测试文件或证据文档
+- **ADEQUATE 表示足以发布，而非完美**：不要吹毛求疵地挑剔
+  已正常运行且足够全面、足以建立信心的测试
+- **区分 BLOCKING 与 ADVISORY 很重要**：仅当缺口导致
+  某项故事标准确实未验证时，才标记为 BLOCKING
+- **写入前先询问**：报告文件是可选的，写入前始终需要确认

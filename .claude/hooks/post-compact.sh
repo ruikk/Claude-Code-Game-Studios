@@ -1,19 +1,19 @@
 #!/usr/bin/env bash
 # post-compact.sh — fires after conversation compaction
-# Reminds Claude to restore session state from the file-backed checkpoint.
+# 提示 Claude 从基于文件的检查点恢复会话状态。
 
 ACTIVE="production/session-state/active.md"
 
-echo "=== Context Restored After Compaction ==="
+echo "=== 压缩完成，上下文已恢复 ==="
 
 if [ -f "$ACTIVE" ]; then
   SIZE=$(wc -l < "$ACTIVE" 2>/dev/null || echo "?")
-  echo "Session state file exists: $ACTIVE ($SIZE lines)"
-  echo "IMPORTANT: Read this file now to restore your working context."
-  echo "It contains: current task, decisions made, files in progress, open questions."
+  echo "会话状态文件已存在: $ACTIVE ($SIZE 行)"
+  echo "重要：立即读取该文件以恢复工作上下文。"
+  echo "文件包含：当前任务、已作出的决策、正在编辑的文件、待解决问题。"
 else
-  echo "No session state file found at $ACTIVE"
-  echo "If you were mid-task, check production/session-logs/ for the last session audit."
+  echo "未在 $ACTIVE 路径找到会话状态文件"
+  echo "如果正在执行任务，请检查 production/session-logs/ 目录查看上一次会话审计记录。"
 fi
 
 echo "========================================="

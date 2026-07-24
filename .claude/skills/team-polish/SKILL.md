@@ -1,140 +1,139 @@
 ---
 name: team-polish
-description: "Orchestrate the polish team: coordinates performance-analyst, technical-artist, sound-designer, and qa-tester to optimize, polish, and harden a feature or area for release quality."
+description: "编排打磨团队：协调 performance-analyst、technical-artist、sound-designer 和 qa-tester，对功能或区域进行优化、打磨和加固，使其达到发布质量。"
 argument-hint: "[feature or area to polish] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Task, AskUserQuestion, TodoWrite
 model: sonnet
 ---
-If no argument is provided, output usage guidance and exit without spawning any agents:
-> Usage: `/team-polish [feature or area]` — specify the feature or area to polish (e.g., `combat`, `main menu`, `inventory system`, `level-1`). Do not use `AskUserQuestion` here; output the guidance directly.
+如果未提供参数，则输出使用说明并退出，不生成任何代理：
+> 用法：`/team-polish [feature or area]` — 指定要打磨的功能或区域（例如 `combat`、`main menu`、`inventory system`、`level-1`）。此处不要使用 `AskUserQuestion`；直接输出说明。
 
-When this skill is invoked with an argument, orchestrate the polish team through a structured pipeline.
+使用参数调用此技能时，通过结构化管线编排打磨团队。
 
-**Decision Points:** At each phase transition, use `AskUserQuestion` to present
-the user with the subagent's proposals as selectable options. Write the agent's
-full analysis in conversation, then capture the decision with concise labels.
-The user must approve before moving to the next phase.
+**决策点：** 在每次阶段转换时，使用 `AskUserQuestion` 将子代理的提案作为
+可选项呈现给用户。先在对话中写出代理的完整分析，再用简洁标签记录决策。
+必须获得用户批准后才能进入下一阶段。
 
-## Phase 0: Resolve Review Mode
+## 阶段 0：确定审查模式
 
-1. If `--review [mode]` was passed as an argument, use that mode.
-2. Else read `production/review-mode.txt` — use whatever is written there.
-3. Else default to `lean`.
+1. 如果参数中传入了 `--review [mode]`，则使用该模式。
+2. 否则读取 `production/review-mode.txt`，使用其中记录的模式。
+3. 否则默认为 `lean`。
 
-Modes:
-- `full` — spawn all director and lead gates as described
-- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
-- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+模式：
+- `full` — 按说明启动所有总监和主管门禁
+- `lean` — 跳过总监门禁，除非它们属于 PHASE-GATE 类型（CD-PHASE-GATE、TD-PHASE-GATE、PR-PHASE-GATE、AD-PHASE-GATE）
+- `solo` — 完全跳过所有总监门禁；运行技能时不使用任何代理门禁
 
-Store the resolved mode for use in all subsequent phases.
+保存确定的模式，供所有后续阶段使用。
 
-**Director gate skip rule**: Before spawning any Tier 1 director or lead for review (outside of PHASE-GATE triggers), apply the resolved mode: skip if solo mode; skip if lean mode and this is not a PHASE-GATE.
+**总监门禁跳过规则：** 在生成任何 Tier 1 总监或主管进行审查前（PHASE-GATE 触发器除外），应用已确定的模式：`solo` 模式下跳过；`lean` 模式下，如果不是 PHASE-GATE，则跳过。
 
-## Team Composition
-- **performance-analyst** — Profiling, optimization, memory analysis, frame budget
-- **engine-programmer** — Engine-level bottlenecks: rendering pipeline, memory, resource loading (invoke when performance-analyst identifies low-level root causes)
-- **technical-artist** — VFX polish, shader optimization, visual quality
-- **sound-designer** — Audio polish, mixing, ambient layers, feedback sounds
-- **tools-programmer** — Content pipeline tool verification, editor tool stability, automation fixes (invoke when content authoring tools are involved in the polished area)
-- **qa-tester** — Edge case testing, regression testing, soak testing
+## 团队构成
+- **performance-analyst** — 性能分析、优化、内存分析、帧预算
+- **engine-programmer** — 引擎级瓶颈：渲染管线、内存、资源加载（当 performance-analyst 发现底层根因时调用）
+- **technical-artist** — VFX 打磨、着色器优化、视觉质量
+- **sound-designer** — 音频打磨、混音、环境音层、反馈音效
+- **tools-programmer** — 内容管线工具验证、编辑器工具稳定性、自动化修复（当打磨区域涉及内容创作工具时调用）
+- **qa-tester** — 边界情况测试、回归测试、浸泡测试
 
-## How to Delegate
+## 如何委派
 
-Use the Task tool to spawn each team member as a subagent:
-- `subagent_type: performance-analyst` — Profiling, optimization, memory analysis
-- `subagent_type: engine-programmer` — Engine-level fixes for rendering, memory, resource loading
-- `subagent_type: technical-artist` — VFX polish, shader optimization, visual quality
-- `subagent_type: sound-designer` — Audio polish, mixing, ambient layers
-- `subagent_type: tools-programmer` — Content pipeline and editor tool verification
-- `subagent_type: qa-tester` — Edge case testing, regression testing, soak testing
+使用 Task 工具将每位团队成员作为子代理启动：
+- `subagent_type: performance-analyst` — 性能分析、优化、内存分析
+- `subagent_type: engine-programmer` — 针对渲染、内存、资源加载的引擎级修复
+- `subagent_type: technical-artist` — VFX 打磨、着色器优化、视觉质量
+- `subagent_type: sound-designer` — 音频打磨、混音、环境音层
+- `subagent_type: tools-programmer` — 内容管线和编辑器工具验证
+- `subagent_type: qa-tester` — 边界情况测试、回归测试、浸泡测试
 
-Always provide full context in each agent's prompt (target feature/area, performance budgets, known issues). Launch independent agents in parallel where the pipeline allows it (e.g., Phases 3 and 4 can run simultaneously).
+始终在每个代理的提示词中提供完整上下文（目标功能/区域、性能预算、已知问题）。在管线允许时并行启动相互独立的代理（例如，阶段 3 和阶段 4 可以同时运行）。
 
-## Pipeline
+## 管线
 
-### Phase 1: Assessment
-Delegate to **performance-analyst**:
-- Profile the target feature/area using `/perf-profile`
-- Identify performance bottlenecks and frame budget violations
-- Measure memory usage and check for leaks
-- Benchmark against target hardware specs
-- Output: performance report with prioritized optimization list
+### 阶段 1：评估
+委派给 **performance-analyst**：
+- 使用 `/perf-profile` 分析目标功能/区域的性能
+- 识别性能瓶颈和帧预算超标问题
+- 测量内存使用量并检查泄漏
+- 按目标硬件规格进行基准测试
+- 输出：包含按优先级排序的优化清单的性能报告
 
-### Phase 2: Optimization
-Delegate to **performance-analyst** (with relevant programmers as needed):
-- Fix performance hotspots identified in Phase 1
-- Optimize draw calls, reduce overdraw
-- Fix memory leaks and reduce allocation pressure
-- Verify optimizations don't change gameplay behavior
-- Output: optimized code with before/after metrics
+### 阶段 2：优化
+委派给 **performance-analyst**（按需配合相关程序员）：
+- 修复阶段 1 中发现的性能热点
+- 优化绘制调用，减少过度绘制
+- 修复内存泄漏并降低分配压力
+- 验证优化不会改变游戏行为
+- 输出：优化后的代码及优化前后指标
 
-If Phase 1 identified engine-level root causes (rendering pipeline, resource loading, memory allocator), delegate those fixes to **engine-programmer** in parallel:
-- Optimize hot paths in engine systems
-- Fix allocation pressure in core loops
-- Output: engine-level fixes with profiler validation
+如果阶段 1 发现了引擎级根因（渲染管线、资源加载、内存分配器），则并行将这些修复委派给 **engine-programmer**：
+- 优化引擎系统中的热点路径
+- 修复核心循环中的分配压力
+- 输出：经性能分析器验证的引擎级修复
 
-### Phase 3: Visual Polish (parallel with Phase 2)
-Delegate to **technical-artist**:
-- Review VFX for quality and consistency with art bible
-- Optimize particle systems and shader effects
-- Add screen shake, camera effects, and visual juice where appropriate
-- Ensure effects degrade gracefully on lower settings
-- Output: polished visual effects
+### 阶段 3：视觉打磨（与阶段 2 并行）
+委派给 **technical-artist**：
+- 审查 VFX 的质量及其与美术圣经的一致性
+- 优化粒子系统和着色器效果
+- 在适当位置添加屏幕震动、镜头效果和视觉表现增强
+- 确保效果在较低设置下平稳降级
+- 输出：打磨后的视觉效果
 
-### Phase 4: Audio Polish (parallel with Phase 2)
-Delegate to **sound-designer**:
-- Review audio events for completeness (are any actions missing sound feedback?)
-- Check audio mix levels — nothing too loud or too quiet relative to the mix
-- Add ambient audio layers for atmosphere
-- Verify audio plays correctly with spatial positioning
-- Output: audio polish list and mixing notes
+### 阶段 4：音频打磨（与阶段 2 并行）
+委派给 **sound-designer**：
+- 审查音频事件的完整性（是否有任何操作缺少声音反馈？）
+- 检查音频混音电平，确保相对于整体混音没有声音过响或过轻
+- 添加环境音层以营造氛围
+- 验证音频能够按空间定位正确播放
+- 输出：音频打磨清单和混音说明
 
-### Phase 5: Hardening
-Delegate to **qa-tester**:
-- Test all edge cases: boundary conditions, rapid inputs, unusual sequences
-- Soak test: run the feature for extended periods checking for degradation
-- Stress test: maximum entities, worst-case scenarios
-- Regression test: verify polish changes haven't broken existing functionality
-- Test on minimum spec hardware (if available)
-- Output: test results with any remaining issues
+### 阶段 5：加固
+委派给 **qa-tester**：
+- 测试所有边界情况：边界条件、快速输入、异常操作序列
+- 浸泡测试：长时间运行该功能，检查是否出现性能或质量衰退
+- 压力测试：最大实体数量、最坏情况场景
+- 回归测试：验证打磨变更未破坏现有功能
+- 在最低规格硬件上测试（如果可用）
+- 输出：测试结果及所有遗留问题
 
-### Phase 6: Sign-off
-- Collect results from all team members
-- Compare performance metrics against budgets
-- Report: READY FOR RELEASE / NEEDS MORE WORK
-- List any remaining issues with severity and recommendations
+### 阶段 6：签核
+- 汇总所有团队成员的结果
+- 将性能指标与预算进行比较
+- 报告：READY FOR RELEASE / NEEDS MORE WORK
+- 列出所有遗留问题及其严重程度和建议
 
-## Error Recovery Protocol
+## 错误恢复协议
 
-If any spawned agent (via Task) returns BLOCKED, errors, or cannot complete:
+如果任何通过 Task 启动的代理返回 BLOCKED、发生错误或无法完成任务：
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" to the user before continuing to dependent phases
-2. **Assess dependencies**: Check whether the blocked agent's output is required by subsequent phases. If yes, do not proceed past that dependency point without user input.
-3. **Offer options** via AskUserQuestion with choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed. Never discard work because one agent blocked.
+1. **立即告知：** 在继续执行依赖阶段前，向用户报告 "[AgentName]: BLOCKED — [reason]"
+2. **评估依赖项：** 检查后续阶段是否需要被阻塞代理的输出。如果需要，未经用户确认，不得越过该依赖点继续执行。
+3. **提供选项：** 通过 AskUserQuestion 提供以下选择：
+   - 跳过此代理，并在最终报告中注明缺失项
+   - 缩小范围后重试
+   - 在此停止，优先解决阻塞项
+4. **始终生成部分报告：** 输出所有已完成的内容。绝不能因一个代理受阻而丢弃工作成果。
 
-Common blockers:
-- Input file missing (story not found, GDD absent) → redirect to the skill that creates it
-- ADR status is Proposed → do not implement; run `/architecture-decision` first
-- Scope too large → split into two stories via `/create-stories`
-- Conflicting instructions between ADR and story → surface the conflict, do not guess
+常见阻塞项：
+- 缺少输入文件（未找到故事、缺少 GDD）→ 转到创建该文件的技能
+- ADR 状态为 Proposed → 不要实施；先运行 `/architecture-decision`
+- 范围过大 → 通过 `/create-stories` 拆分为两个故事
+- ADR 与故事的指令冲突 → 明确指出冲突，不要猜测
 
-## File Write Protocol
+## 文件写入协议
 
-All file writes (performance reports, test results, evidence docs) are delegated to
-sub-agents spawned via Task. Each sub-agent enforces the "May I write to [path]?"
-protocol. This orchestrator does not write files directly.
+所有文件写入（性能报告、测试结果、证据文档）均委派给通过 Task 启动的
+子代理。每个子代理都执行“可以将此内容写入 [path] 吗？”协议。
+此编排器不直接写入文件。
 
-## Output
+## 输出
 
-A summary report covering: performance before/after metrics, visual polish changes, audio polish changes, test results, and release readiness assessment.
+一份汇总报告，涵盖：优化前后性能指标、视觉打磨变更、音频打磨变更、测试结果和发布就绪度评估。
 
-## Next Steps
+## 后续步骤
 
-- If READY FOR RELEASE: run `/release-checklist` for the final pre-release validation.
-- If NEEDS MORE WORK: schedule remaining issues in `/sprint-plan update` and re-run `/team-polish` after fixes.
-- Run `/gate-check` for a formal phase gate verdict before handing off to release.
+- 如果为 READY FOR RELEASE：运行 `/release-checklist` 进行最终发布前验证。
+- 如果为 NEEDS MORE WORK：在 `/sprint-plan update` 中安排遗留问题，并在修复后重新运行 `/team-polish`。
+- 移交发布前，运行 `/gate-check` 获取正式的阶段门禁结论。

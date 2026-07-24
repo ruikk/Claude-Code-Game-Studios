@@ -3,16 +3,14 @@ paths:
   - "design/gdd/**"
 ---
 
-# Design Document Rules
+# 设计文档规则
 
-- Every design document MUST contain these 8 sections: Overview, Player Fantasy, Detailed Rules, Formulas, Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria
-- Formulas must include variable definitions, expected value ranges, and example calculations
-- Edge cases must explicitly state what happens, not just "handle gracefully"
-- Dependencies must be bidirectional — if system A depends on B, B's doc must mention A
-- Tuning knobs must specify safe ranges and what gameplay aspect they affect
-- Acceptance criteria must be testable — a QA tester must be able to verify pass/fail
-- No hand-waving: "the system should feel good" is not a valid specification
-- Balance values must link to their source formula or rationale
-- Design documents MUST be written incrementally: create skeleton first, then fill
-  each section one at a time with user approval between sections. Write each
-  approved section to the file immediately to persist decisions and manage context
+- 每份设计文档必须包含以下 8 个章节：概述 (Overview)、玩家幻想 (Player Fantasy)、详细规则、公式 (Formulas)、边界情况 (Edge Cases)、依赖关系、调节旋钮 (Tuning Knobs)、验收标准 (Acceptance Criteria)
+- 公式必须包含变量定义、期望值范围和示例计算
+- 边界情况必须明确说明会发生什么，而不能只写"妥善处理"
+- 依赖关系必须是双向的——如果系统 A 依赖 B，那么 B 的文档中也必须提及 A
+- 调节旋钮必须指定安全范围及其影响的游戏方面
+- 验收标准必须是可测试的——QA 测试人员必须能够验证通过/失败
+- 不允许含糊其辞："系统应该感觉良好"不是有效的规格说明
+- 平衡数值必须关联到其来源公式或理由
+- 设计文档必须增量编写：先创建骨架，然后逐一填充各章节，章节之间需获得用户批准。每个批准的章节应立即写入文件，以持久化决策并管理上下文

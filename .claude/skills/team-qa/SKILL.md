@@ -1,6 +1,6 @@
 ---
 name: team-qa
-description: "Orchestrate the QA team through a full testing cycle. Coordinates qa-lead (strategy + test plan) and qa-tester (test case writing + bug reporting) to produce a complete QA package for a sprint or feature. Covers: test plan generation, test case writing, smoke check gate, manual QA execution, and sign-off report."
+description: "编排 QA 团队完成完整测试周期。协调 qa-lead（策略 + 测试计划）和 qa-tester（测试用例编写 + 缺陷报告），为迭代或功能生成完整的 QA 交付包。涵盖：测试计划生成、测试用例编写、冒烟检查门禁、手动 QA 执行和签核报告。"
 argument-hint: "[sprint | feature: system-name] [--review full|lean|solo]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Task, AskUserQuestion
@@ -8,236 +8,233 @@ model: sonnet
 agent: qa-lead
 ---
 
-When this skill is invoked, orchestrate the QA team through a structured testing cycle.
+调用此技能时，编排 QA 团队完成结构化测试周期。
 
-**Decision Points:** At each phase transition, use `AskUserQuestion` to present
-the user with the subagent's proposals as selectable options. Write the agent's
-full analysis in conversation, then capture the decision with concise labels.
-The user must approve before moving to the next phase.
+**决策点：** 每次阶段转换时，使用 `AskUserQuestion` 将子代理的提案作为可选项呈现给用户。先在对话中写出代理的完整分析，再用简洁的标签记录决定。进入下一阶段前必须获得用户批准。
 
-## Phase 0: Resolve Review Mode
+## 阶段 0：确定审查模式
 
-1. If `--review [mode]` was passed as an argument, use that mode.
-2. Else read `production/review-mode.txt` — use whatever is written there.
-3. Else default to `lean`.
+1. 如果参数中传入了 `--review [mode]`，使用该模式。
+2. 否则读取 `production/review-mode.txt`，使用其中指定的模式。
+3. 如果仍未指定，默认使用 `lean`。
 
-Modes:
-- `full` — spawn all director and lead gates as described
-- `lean` — skip director gates unless they are PHASE-GATE type (CD-PHASE-GATE, TD-PHASE-GATE, PR-PHASE-GATE, AD-PHASE-GATE)
-- `solo` — skip all director gate spawning entirely; run the skill without any agent gates
+模式：
+- `full`：按说明生成所有总监和主管门禁
+- `lean`：跳过总监门禁，除非其类型为 PHASE-GATE（CD-PHASE-GATE、TD-PHASE-GATE、PR-PHASE-GATE、AD-PHASE-GATE）
+- `solo`：完全不生成任何总监门禁；运行技能时不使用任何代理门禁
 
-Store the resolved mode for use in all subsequent phases.
+保存确定后的模式，供后续所有阶段使用。
 
-## Team Composition
+## 团队构成
 
-- **qa-lead** — QA strategy, test plan generation, story classification, sign-off report
-- **qa-tester** — Test case writing, bug report writing, manual QA documentation
+- **qa-lead**：QA 策略、测试计划生成、故事分类、签核报告
+- **qa-tester**：测试用例编写、缺陷报告编写、手动 QA 文档
 
-## How to Delegate
+## 委派方式
 
-Use the Task tool to spawn each team member as a subagent:
-- `subagent_type: qa-lead` — Strategy, planning, classification, sign-off
-- `subagent_type: qa-tester` — Test case writing and bug report writing
+使用 Task 工具将每位团队成员生成为子代理：
+- `subagent_type: qa-lead`：策略、规划、分类、签核
+- `subagent_type: qa-tester`：测试用例和缺陷报告编写
 
-Always provide full context in each agent's prompt (story file paths, QA plan path, scope constraints). Launch independent qa-tester tasks in parallel where possible (e.g., multiple stories in Phase 5 can be scaffolded simultaneously).
+始终在每个代理的提示词中提供完整上下文（故事文件路径、QA 计划路径、范围约束）。尽可能并行启动相互独立的 qa-tester 任务（例如，可以同时为阶段 5 中的多个故事搭建测试内容）。
 
-## Pipeline
+## 流程
 
-### Phase 1: Load Context
+### 阶段 1：加载上下文
 
-Before doing anything else, gather the full scope:
+执行其他操作前，先收集完整范围：
 
-1. Detect the current sprint or feature scope from the argument:
-   - If argument is a sprint identifier (e.g., `sprint-03`): Glob `production/sprints/` for files matching `*[sprint-identifier]*.md`. Read the matched file. If multiple match, use the most recently modified.
-   - If argument is `feature: [system-name]`: glob story files tagged for that system
-   - If no argument: read `production/session-state/active.md` and `production/sprint-status.yaml` (if present) to infer the active sprint
+1. 根据参数确定当前迭代或功能范围：
+   - 如果参数是迭代标识符（例如 `sprint-03`）：使用 Glob 在 `production/sprints/` 中查找匹配 `*[sprint-identifier]*.md` 的文件。读取匹配文件；如果匹配多个文件，使用最近修改的文件。
+   - 如果参数是 `feature: [system-name]`：查找标记为该系统的故事文件
+   - 如果没有参数：读取 `production/session-state/active.md` 和 `production/sprint-status.yaml`（如存在），推断当前迭代
 
-2. Read `production/stage.txt` to confirm the current project phase.
+2. 读取 `production/stage.txt`，确认当前项目阶段。
 
-3. Count stories found and report to the user:
-   > "QA cycle starting for [sprint/feature]. Found [N] stories. Current stage: [stage]. Ready to begin QA strategy?"
+3. 统计找到的故事数量并向用户报告：
+   > "即将为 [sprint/feature] 启动 QA 周期。找到 [N] 个故事。当前阶段：[stage]。准备开始制定 QA 策略吗？"
 
-### Phase 2: QA Strategy (qa-lead)
+### 阶段 2：QA 策略（qa-lead）
 
-Spawn `qa-lead` via Task to review all in-scope stories and produce a QA strategy.
+通过 Task 生成 `qa-lead`，审查范围内的所有故事并制定 QA 策略。
 
-Prompt the qa-lead to:
-- Read each story file
-- Classify each story by type: **Logic** / **Integration** / **Visual/Feel** / **UI** / **Config/Data**
-- Identify which stories require automated test evidence vs. manual QA
-- Flag any stories with missing acceptance criteria or missing test evidence that would block QA
-- Estimate manual QA effort (number of test sessions needed)
-- **Before assessing smoke status, check for an existing smoke check report**: Glob `production/qa/smoke-*.md` and read the most recently modified file (if found). If a report exists, use its verdict and findings directly — do not re-interview the user. If no report exists, note: "No prior smoke check report found — run `/smoke-check sprint` before proceeding." and set smoke check status to UNKNOWN (treat as PASS WITH WARNINGS for the purpose of continuing). Produce a smoke check verdict: **PASS** / **PASS WITH WARNINGS [list]** / **FAIL [list of failures]** / **UNKNOWN (no report found)**
-- Produce a strategy summary table and smoke check result:
+要求 qa-lead：
+- 读取每个故事文件
+- 按类型对每个故事分类：**Logic** / **Integration** / **Visual/Feel** / **UI** / **Config/Data**
+- 确定哪些故事需要自动化测试证据，哪些需要手动 QA
+- 标记会因缺少验收标准或测试证据而阻塞 QA 的故事
+- 估算手动 QA 工作量（所需测试会话数）
+- **评估冒烟状态前，检查是否已有冒烟检查报告**：使用 Glob 查找 `production/qa/smoke-*.md`，并读取最近修改的文件（如找到）。如果报告存在，直接使用其结论和发现，不要再次询问用户。如果报告不存在，注明："未找到之前的冒烟检查报告，请先运行 `/smoke-check sprint` 再继续。"，并将冒烟检查状态设为 UNKNOWN（为继续流程，将其视为 PASS WITH WARNINGS）。生成冒烟检查结论：**PASS** / **PASS WITH WARNINGS [list]** / **FAIL [list of failures]** / **UNKNOWN (no report found)**
+- 生成策略汇总表和冒烟检查结果：
 
-  | Story | Type | Automated Required | Manual Required | Blocker? |
-  |-------|------|--------------------|-----------------|----------|
+  | 故事 | 类型 | 需要自动化测试 | 需要手动测试 | 是否阻塞？ |
+  |------|------|----------------|--------------|-----------|
 
-  **Smoke Check**: [PASS / PASS WITH WARNINGS / FAIL / UNKNOWN] — [source: `production/qa/smoke-[date].md` or "no report found"] — [details if not PASS]
+  **冒烟检查**：[PASS / PASS WITH WARNINGS / FAIL / UNKNOWN] - [来源：`production/qa/smoke-[date].md` 或 "未找到报告"] - [非 PASS 时的详细信息]
 
-If the smoke check result is **FAIL**, the qa-lead must list the failures prominently. QA cannot proceed past the strategy phase with a failed smoke check.
+如果冒烟检查结果为 **FAIL**，qa-lead 必须醒目列出失败项。冒烟检查失败时，QA 不得越过策略阶段继续执行。
 
-Present the qa-lead's full strategy to the user, then use `AskUserQuestion`:
+向用户展示 qa-lead 的完整策略，然后使用 `AskUserQuestion`：
 
 ```
-question: "QA Strategy Review"
+question: "QA 策略审查"
 options:
-  - "Looks good — proceed to test plan"
-  - "Adjust story types before proceeding"
-  - "Skip blocked stories and proceed with the rest"
-  - "Smoke check failed — fix issues and re-run /team-qa"
-  - "Cancel — resolve blockers first"
+  - "策略符合预期，继续制定测试计划"
+  - "先调整故事类型，再继续"
+  - "跳过被阻塞的故事，继续处理其余故事"
+  - "冒烟检查失败，修复问题后重新运行 /team-qa"
+  - "取消，先解决阻塞项"
 ```
 
-If smoke check **FAIL**: do not proceed to Phase 3. Surface the failures from the smoke check report and stop. The user must fix them, re-run `/smoke-check sprint`, and then re-run `/team-qa`.
-If smoke check **UNKNOWN**: surface a warning — "No smoke check report found. Recommend running `/smoke-check sprint` before QA. Proceeding with caution."
-If smoke check **PASS WITH WARNINGS**: note the warnings for the sign-off report and continue.
-If blockers are present: list them explicitly. The user may choose to skip blocked stories or cancel the cycle.
+如果冒烟检查为 **FAIL**：不要进入阶段 3。展示冒烟检查报告中的失败项并停止。用户必须修复这些问题，重新运行 `/smoke-check sprint`，然后重新运行 `/team-qa`。
+如果冒烟检查为 **UNKNOWN**：显示警告："未找到冒烟检查报告。建议在 QA 前运行 `/smoke-check sprint`。当前将谨慎继续。"
+如果冒烟检查为 **PASS WITH WARNINGS**：记录警告以供签核报告使用，然后继续。
+如果存在阻塞项：明确列出。用户可以选择跳过被阻塞的故事或取消此周期。
 
-### Phase 3: Test Plan Generation
+### 阶段 3：生成测试计划
 
-Using the strategy from Phase 2, produce a structured test plan document.
+使用阶段 2 的策略生成结构化测试计划文档。
 
-The test plan should cover:
-- **Scope**: sprint/feature name, story count, dates
-- **Story Classification Table**: from Phase 2 strategy
-- **Automated Test Requirements**: which stories need test files, expected paths in `tests/`
-- **Manual QA Scope**: which stories need manual walkthrough and what to validate
-- **Out of Scope**: what is explicitly not being tested this cycle and why
-- **Entry Criteria**: what must be true before QA can begin. Always include: (1) Smoke check PASS or PASS WITH WARNINGS report exists at `production/qa/smoke-*.md`, (2) build is stable (no crashes on launch), (3) all Must Have stories have Status: in-progress or done in `production/sprint-status.yaml`. Add any sprint-specific criteria beyond these.
-- **Exit Criteria**: what constitutes a completed QA cycle (all stories PASS or FAIL with bugs filed)
+测试计划应涵盖：
+- **范围**：迭代/功能名称、故事数量、日期
+- **故事分类表**：来自阶段 2 的策略
+- **自动化测试要求**：哪些故事需要测试文件，以及 `tests/` 中的预期路径
+- **手动 QA 范围**：哪些故事需要手动走查，以及要验证的内容
+- **范围外事项**：本周期明确不测试的内容及原因
+- **准入标准**：开始 QA 前必须满足的条件。始终包括：(1) `production/qa/smoke-*.md` 中存在结论为 PASS 或 PASS WITH WARNINGS 的冒烟检查报告；(2) 构建稳定（启动时不崩溃）；(3) `production/sprint-status.yaml` 中所有 Must Have 故事的 Status 均为 in-progress 或 done。在此基础上添加迭代特有的标准。
+- **退出标准**：QA 周期视为完成的条件（所有故事均为 PASS，或为 FAIL 且已提交缺陷）
 
-Ask: "May I write the QA plan to `production/qa/qa-plan-[sprint]-[date].md`?"
+询问："可以将 QA 计划写入 `production/qa/qa-plan-[sprint]-[date].md` 吗？"
 
-Write only after receiving approval.
+仅在获得批准后写入。
 
-### Phase 4: Test Case Writing (qa-tester)
+### 阶段 4：编写测试用例（qa-tester）
 
-> **Smoke check** is performed as part of Phase 2 (QA Strategy). If the smoke check returned FAIL in Phase 2, the cycle was stopped there. This phase only runs when the Phase 2 smoke check was PASS, PASS WITH WARNINGS, or UNKNOWN.
+> **冒烟检查**在阶段 2（QA 策略）中执行。如果阶段 2 的冒烟检查返回 FAIL，周期已在该阶段停止。仅当阶段 2 的冒烟检查结果为 PASS、PASS WITH WARNINGS 或 UNKNOWN 时才运行此阶段。
 
-For each story requiring manual QA (Visual/Feel, UI, Integration without automated tests):
+对于每个需要手动 QA 的故事（Visual/Feel、UI、没有自动化测试的 Integration）：
 
-Spawn `qa-tester` via Task for each story (run in parallel where possible), providing:
-- The story file path
-- The relevant section of the QA plan for that story
-- The GDD acceptance criteria for the system being tested (if available)
-- Instructions to write detailed test cases covering all acceptance criteria
+通过 Task 为每个故事生成 `qa-tester`（尽可能并行运行），并提供：
+- 故事文件路径
+- QA 计划中与该故事相关的章节
+- 被测系统的 GDD 验收标准（如有）
+- 编写覆盖所有验收标准的详细测试用例的指令
 
-Each test case set should include:
-- **Preconditions**: game state required before testing begins
-- **Steps**: numbered, unambiguous actions
-- **Expected Result**: what should happen
-- **Actual Result**: field left blank for the tester to fill in
-- **Pass/Fail**: field left blank
+每组测试用例应包括：
+- **前置条件**：开始测试前所需的游戏状态
+- **步骤**：编号清晰、无歧义的操作
+- **预期结果**：应发生的结果
+- **实际结果**：留空，供测试人员填写
+- **通过/失败**：留空
 
-Present the test cases to the user for review before execution. Group by story.
+执行前将测试用例按故事分组，提交用户审查。
 
-Use `AskUserQuestion` per story group (batched 3-4 at a time):
+对每组故事使用 `AskUserQuestion`（每批 3 至 4 个）：
 
 ```
-question: "Test cases ready for [Story Group]. Review before manual QA begins?"
+question: "[Story Group] 的测试用例已准备好。开始手动 QA 前是否审查？"
 options:
-  - "Approved — begin manual QA for these stories"
-  - "Revise test cases for [story name]"
-  - "Skip manual QA for [story name] — not ready"
+  - "批准，开始对这些故事执行手动 QA"
+  - "修改 [story name] 的测试用例"
+  - "跳过 [story name] 的手动 QA，该故事尚未就绪"
 ```
 
-### Phase 5: Manual QA Execution
+### 阶段 5：执行手动 QA
 
-Walk through each story in the approved manual QA list.
+逐一测试已批准的手动 QA 列表中的故事。
 
-Batch stories into groups of 3-4 and use `AskUserQuestion` for each:
+将故事分为每组 3 至 4 个，并对每个故事使用 `AskUserQuestion`：
 
 ```
-question: "Manual QA — [Story Title]\n[brief description of what to test]"
+question: "手动 QA - [Story Title]\n[brief description of what to test]"
 options:
-  - "PASS — all acceptance criteria verified"
-  - "PASS WITH NOTES — minor issues found (describe after)"
-  - "FAIL — criteria not met (describe after)"
-  - "BLOCKED — cannot test yet (reason)"
+  - "PASS - 已验证所有验收标准"
+  - "PASS WITH NOTES - 发现轻微问题（随后说明）"
+  - "FAIL - 未满足标准（随后说明）"
+  - "BLOCKED - 暂时无法测试（说明原因）"
 ```
 
-After each FAIL result: use `AskUserQuestion` to collect the failure description, then spawn `qa-tester` via Task to write a formal bug report in `production/qa/bugs/`.
+每次得到 FAIL 结果后：使用 `AskUserQuestion` 收集失败说明，然后通过 Task 生成 `qa-tester`，在 `production/qa/bugs/` 中编写正式缺陷报告。
 
-Bug report naming: `BUG-[NNN]-[short-slug].md` (increment NNN from existing bugs in the directory).
+缺陷报告命名：`BUG-[NNN]-[short-slug].md`（在目录中现有缺陷编号的基础上递增 NNN）。
 
-After collecting all results, summarize:
-- Stories PASS: [count]
-- Stories PASS WITH NOTES: [count]
-- Stories FAIL: [count] — bugs filed: [IDs]
-- Stories BLOCKED: [count]
+收集所有结果后，汇总：
+- PASS 故事：[count]
+- PASS WITH NOTES 故事：[count]
+- FAIL 故事：[count] - 已提交缺陷：[IDs]
+- BLOCKED 故事：[count]
 
-### Phase 6: QA Sign-Off Report
+### 阶段 6：QA 签核报告
 
-Spawn `qa-lead` via Task to produce the sign-off report using all results from Phases 4–6.
+通过 Task 生成 `qa-lead`，使用阶段 4 至 6 的所有结果生成签核报告。
 
-The sign-off report format:
+签核报告格式：
 
 ```markdown
-## QA Sign-Off Report: [Sprint/Feature]
-**Date**: [date]
+## QA 签核报告：[Sprint/Feature]
+**日期**：[date]
 
-### Test Coverage Summary
-| Story | Type | Auto Test | Manual QA | Result |
-|-------|------|-----------|-----------|--------|
+### 测试覆盖汇总
+| 故事 | 类型 | 自动化测试 | 手动 QA | 结果 |
+|------|------|-----------|---------|------|
 | [title] | Logic | PASS | — | PASS |
 | [title] | Visual | — | PASS | PASS |
 
-### Bugs Found
-| ID | Story | Severity | Status |
-|----|-------|----------|--------|
+### 发现的缺陷
+| ID | 故事 | 严重程度 | Status |
+|----|------|----------|--------|
 | BUG-001 | [story] | S2 | Open |
 
-### Verdict: APPROVED / APPROVED WITH CONDITIONS / NOT APPROVED
+### 结论：APPROVED / APPROVED WITH CONDITIONS / NOT APPROVED
 
-**Conditions** (if any): [list what must be fixed before the build advances]
+**条件**（如有）：[list what must be fixed before the build advances]
 
-### Next Step
+### 下一步
 [guidance based on verdict]
 ```
 
-Verdict rules:
-- **APPROVED**: All stories PASS or PASS WITH NOTES; no S1/S2 bugs open
-- **APPROVED WITH CONDITIONS**: S3/S4 bugs open, or PASS WITH NOTES issues documented; no S1/S2 bugs
-- **NOT APPROVED**: Any S1/S2 bugs open; or stories FAIL without documented workaround
+结论规则：
+- **APPROVED**：所有故事均为 PASS 或 PASS WITH NOTES；没有处于 Open 状态的 S1/S2 缺陷
+- **APPROVED WITH CONDITIONS**：存在处于 Open 状态的 S3/S4 缺陷，或已记录 PASS WITH NOTES 问题；没有 S1/S2 缺陷
+- **NOT APPROVED**：存在任何处于 Open 状态的 S1/S2 缺陷；或故事为 FAIL 且没有记录解决办法
 
-Next step guidance by verdict:
-- APPROVED: "Build is ready for the next phase. Run `/gate-check` to validate advancement."
-- APPROVED WITH CONDITIONS: "Resolve conditions before advancing. S3/S4 bugs may be deferred to polish."
-- NOT APPROVED: "Resolve S1/S2 bugs and re-run `/team-qa` or targeted manual QA before advancing."
+按结论给出下一步指引：
+- APPROVED："构建已准备好进入下一阶段。运行 `/gate-check` 验证是否可以推进。"
+- APPROVED WITH CONDITIONS："推进前先满足相关条件。S3/S4 缺陷可以推迟到打磨阶段处理。"
+- NOT APPROVED："解决 S1/S2 缺陷，并重新运行 `/team-qa` 或有针对性的手动 QA，然后再推进。"
 
-Ask: "May I write this QA sign-off report to `production/qa/qa-signoff-[sprint]-[date].md`?"
+询问："可以将此 QA 签核报告写入 `production/qa/qa-signoff-[sprint]-[date].md` 吗？"
 
-Write only after receiving approval.
+仅在获得批准后写入。
 
-## Error Recovery Protocol
+## 错误恢复协议
 
-If any spawned agent (via Task) returns BLOCKED, errors, or cannot complete:
+如果通过 Task 生成的任何代理返回 BLOCKED、发生错误或无法完成任务：
 
-1. **Surface immediately**: Report "[AgentName]: BLOCKED — [reason]" to the user before continuing to dependent phases
-2. **Assess dependencies**: Check whether the blocked agent's output is required by subsequent phases. If yes, do not proceed past that dependency point without user input.
-3. **Offer options** via AskUserQuestion with choices:
-   - Skip this agent and note the gap in the final report
-   - Retry with narrower scope
-   - Stop here and resolve the blocker first
-4. **Always produce a partial report** — output whatever was completed. Never discard work because one agent blocked.
+1. **立即呈现**：进入依赖该结果的阶段前，向用户报告 "[AgentName]: BLOCKED - [reason]"
+2. **评估依赖关系**：检查后续阶段是否需要被阻塞代理的输出。如果需要，在获得用户输入前不得越过该依赖点继续执行。
+3. **提供选项**：通过 AskUserQuestion 提供以下选择：
+   - 跳过此代理，并在最终报告中注明缺口
+   - 缩小范围后重试
+   - 在此停止，先解决阻塞项
+4. **始终生成部分报告**：输出已经完成的内容。绝不要因为一个代理被阻塞而丢弃已有工作。
 
-Common blockers:
-- Input file missing (story not found, GDD absent) → redirect to the skill that creates it
-- ADR status is Proposed → do not implement; run `/architecture-decision` first
-- Scope too large → split into two stories via `/create-stories`
-- Conflicting instructions between ADR and story → surface the conflict, do not guess
+常见阻塞项：
+- 缺少输入文件（找不到故事、缺少 GDD）→ 转至创建该文件的技能
+- ADR 状态为 Proposed → 不要实施；先运行 `/architecture-decision`
+- 范围过大 → 通过 `/create-stories` 拆分为两个故事
+- ADR 与故事中的指令冲突 → 呈现冲突，不要猜测
 
-## Output
+## 输出
 
-A summary covering: stories in scope, smoke check result, manual QA results, bugs filed (with IDs and severities), and the final APPROVED / APPROVED WITH CONDITIONS / NOT APPROVED verdict.
+生成汇总，涵盖：范围内的故事、冒烟检查结果、手动 QA 结果、已提交的缺陷（含 ID 和严重程度），以及最终的 APPROVED / APPROVED WITH CONDITIONS / NOT APPROVED 结论。
 
-Verdict: **COMPLETE** — QA cycle finished.
-Verdict: **BLOCKED** — smoke check failed or critical blocker prevented cycle completion; partial report produced.
+结论：**COMPLETE** - QA 周期已完成。
+结论：**BLOCKED** - 冒烟检查失败或关键阻塞项导致周期无法完成；已生成部分报告。
 
-## Session State Update
+## 更新会话状态
 
-After the final phase completes (sign-off report written or BLOCKED verdict reached), silently append to `production/session-state/active.md`:
+最终阶段完成后（签核报告已写入或结论为 BLOCKED），静默追加以下内容到 `production/session-state/active.md`：
 
 ```
 <!-- QA RUN: [date] | Sprint: [sprint identifier or "ad-hoc"] | Verdict: [PASS/FAIL/CONCERNS] | Report: production/qa/qa-[date].md -->

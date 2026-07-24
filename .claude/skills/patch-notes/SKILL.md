@@ -1,6 +1,6 @@
 ---
 name: patch-notes
-description: "Generate player-facing patch notes from git history, sprint data, and internal changelogs. Translates developer language into clear, engaging player communication."
+description: "从 git 历史、迭代数据和内部变更日志生成面向玩家的更新说明。将开发者语言转化为清晰、有吸引力的玩家沟通内容。"
 argument-hint: "[version] [--style brief|detailed|full]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Bash
@@ -8,179 +8,171 @@ model: haiku
 agent: community-manager
 ---
 
-## Phase 1: Parse Arguments
+## 阶段 1：解析参数
 
-- `version`: the release version to generate notes for (e.g., `1.2.0`)
-- `--style`: output style — `brief` (bullet points), `detailed` (with context), `full` (with developer commentary). Default: `detailed`.
+- `version`：要为其生成说明的发布版本（例如 `1.2.0`）
+- `--style`：输出风格 —— `brief`（简短，要点式）、`detailed`（详细，带上下文）、`full`（完整，含开发者评论）。默认：`detailed`。
 
-If no version is provided, ask the user before proceeding.
+如果未提供版本，在继续前询问用户。
 
 ---
 
-## Phase 2: Gather Change Data
+## 阶段 2：收集变更数据
 
-- Read the internal changelog at `production/releases/[version]/changelog.md` if it exists
-- Also check `docs/CHANGELOG.md` for the relevant version entry
-- Run `git log` between the previous release tag and current tag/HEAD as a fallback
-- Read sprint retrospectives in `production/sprints/` for context
-- Read any balance change documents in `design/balance/`
-- Read bug fix records from QA if available
+- 如存在，阅读 `production/releases/[version]/changelog.md` 中的内部变更日志
+- 同时检查 `docs/CHANGELOG.md` 中该版本的条目
+- 作为后备，在上一个发布标签和当前标签/HEAD 之间运行 `git log`
+- 阅读 `production/sprints/` 中的迭代回顾以获取上下文
+- 阅读 `design/balance/` 中任何平衡性变更文档
+- 阅读 QA 的 bug 修复记录（如有）
 
-**If no changelog data is available** (neither `production/releases/[version]/changelog.md`
-nor a `docs/CHANGELOG.md` entry for this version exists, and git log is empty or unavailable):
+**如果没有可用的变更日志数据**（`production/releases/[version]/changelog.md` 和 `docs/CHANGELOG.md` 中该版本的条目都不存在，且 git log 为空或不可用）：
 
 > "No changelog data found for [version]. Run `/changelog [version]` first to generate the
 > internal changelog, then re-run `/patch-notes [version]`."
+>（未找到 [version] 的变更日志数据。请先运行 `/changelog [version]` 生成内部变更日志，然后再运行 `/patch-notes [version]`。）
 
-Verdict: **BLOCKED** — stop here without generating notes.
-
----
-
-## Phase 2b: Detect Tone Guide and Template
-
-**Tone guide detection** — before drafting notes, check for writing style guidance:
-
-1. Check `.claude/docs/technical-preferences.md` for any "tone", "voice", or "style"
-   fields or sections.
-2. Check `docs/PATCH-NOTES-STYLE.md` if it exists.
-3. Check `design/community/tone-guide.md` if it exists.
-4. If any source contains tone/voice/style instructions, extract them and apply
-   them to the language and framing of the generated notes.
-5. If no tone guidance is found anywhere, default to:
-   player-friendly, non-technical language; enthusiastic but not hyperbolic;
-   focus on what the player experiences, not what the developer changed.
-
-**Template detection** — check whether a patch notes template exists:
-
-1. Glob for `docs/patch-notes-template.md` and `.claude/docs/templates/patch-notes-template.md`.
-2. If found at either location, read it and use it as the output structure for Phase 4
-   instead of the built-in style templates (Brief / Detailed / Full). Fill in the
-   template's sections with the categorized data.
-3. If not found, use the built-in style templates as defined in Phase 4.
+裁定：**BLOCKED**（阻塞）—— 在此停止，不生成说明。
 
 ---
 
-## Phase 3: Categorize and Translate
+## 阶段 2b：检测语调指南和模板
 
-Categorize all changes into player-facing categories:
+**语调指南检测** —— 在起草说明前，检查写作风格指引：
 
-- **New Content**: new features, maps, characters, items, modes
-- **Gameplay Changes**: balance adjustments, mechanic changes, progression changes
-- **Quality of Life**: UI improvements, convenience features, accessibility
-- **Bug Fixes**: grouped by system (combat, UI, networking, etc.)
-- **Performance**: optimization improvements players might notice
-- **Known Issues**: transparency about unresolved problems
+1. 检查 `.claude/docs/technical-preferences.md` 中是否有 "tone"（语调）、"voice"（语气）、"style"（风格）相关字段或章节。
+2. 检查 `docs/PATCH-NOTES-STYLE.md`（如存在）。
+3. 检查 `design/community/tone-guide.md`（如存在）。
+4. 如果任一来源包含语调/语气/风格指令，提取并应用到生成说明的语言和框架中。
+5. 如果所有地方都未找到语调指引，默认为：面向玩家、非技术性语言；热情但不夸张；聚焦于玩家的体验，而非开发者的改动。
 
-Translate developer language to player language:
+**模板检测** —— 检查是否存在更新说明模板：
 
-- "Refactored damage calculation pipeline" → "Improved hit detection accuracy"
-- "Fixed null reference in inventory manager" → "Fixed a crash when opening inventory"
-- "Reduced GC allocations in combat loop" → "Improved combat performance"
-- Remove purely internal changes that don't affect players
-- Preserve specific numbers for balance changes (damage: 50 → 45)
+1. Glob 匹配 `docs/patch-notes-template.md` 和 `.claude/docs/templates/patch-notes-template.md`。
+2. 如果在任一路径找到，阅读并作为阶段 4 的输出结构，取代内置风格模板（简短 / 详细 / 完整）。用分类后的数据填充模板章节。
+3. 如果未找到，使用阶段 4 中定义的内置风格模板。
 
 ---
 
-## Phase 4: Generate Patch Notes
+## 阶段 3：分类与翻译
 
-### Brief Style
+将所有变更归入面向玩家的分类：
+
+- **新内容**：新功能、地图、角色、物品、模式
+- **玩法改动**：平衡性调整、机制改动、进度改动
+- **体验优化**：UI 改进、便利功能、无障碍
+- **Bug 修复**：按系统分组（战斗、UI、网络等）
+- **性能**：玩家可能注意到的优化改进
+- **已知问题**：对未解决问题保持透明
+
+将开发者语言翻译为玩家语言：
+
+- "重构伤害计算管线" → "提升了命中检测精度"
+- "修复背包管理器中的空引用" → "修复了打开背包时的崩溃"
+- "减少战斗循环中的 GC 分配" → "改善了战斗性能"
+- 移除不影响玩家的纯内部改动
+- 保留平衡性改动的具体数值（伤害：50 → 45）
+
+---
+
+## 阶段 4：生成更新说明
+
+### 简短风格（Brief Style）
 ```markdown
-# Patch [Version] — [Title]
+# 更新 [版本] —— [标题]
 
-**New**
-- [Feature 1]
-- [Feature 2]
+**新增**
+- [功能 1]
+- [功能 2]
 
-**Changes**
-- [Balance/mechanic change with before → after values]
+**改动**
+- [平衡性/机制改动，含改动前 → 改动后数值]
 
-**Fixes**
-- [Bug fix 1]
-- [Bug fix 2]
+**修复**
+- [Bug 修复 1]
+- [Bug 修复 2]
 
-**Known Issues**
-- [Issue 1]
+**已知问题**
+- [问题 1]
 ```
 
-### Detailed Style
+### 详细风格（Detailed Style）
 ```markdown
-# Patch [Version] — [Title]
-*[Date]*
+# 更新 [版本] —— [标题]
+*[日期]*
 
-## Highlights
-[1-2 sentence summary of the most exciting changes]
+## 亮点
+[1-2 句话概述最令人兴奋的改动]
 
-## New Content
-### [Feature Name]
-[2-3 sentences describing the feature and why players should be excited]
+## 新内容
+### [功能名称]
+[2-3 句话描述该功能以及玩家为何会兴奋]
 
-## Gameplay Changes
-### Balance
-| Change | Before | After | Reason |
+## 玩法改动
+### 平衡性
+| 改动 | 改动前 | 改动后 | 原因 |
 | ---- | ---- | ---- | ---- |
-| [Item/ability] | [old value] | [new value] | [brief rationale] |
+| [物品/能力] | [旧值] | [新值] | [简要理由] |
 
-### Mechanics
-- **[Change]**: [explanation of what changed and why]
+### 机制
+- **[改动]**：[说明改了什么以及为什么]
 
-## Quality of Life
-- [Improvement with context]
+## 体验优化
+- [带上下文的改进]
 
-## Bug Fixes
-### Combat
-- Fixed [description of what players experienced]
+## Bug 修复
+### 战斗
+- 修复了 [玩家遇到的现象描述]
 
 ### UI
-- Fixed [description]
+- 修复了 [描述]
 
-### Networking
-- Fixed [description]
+### 网络
+- 修复了 [描述]
 
-## Performance
-- [Improvement players will notice]
+## 性能
+- [玩家会注意到的改进]
 
-## Known Issues
-- [Issue and workaround if available]
+## 已知问题
+- [问题及（如有）临时解决方案]
 ```
 
-### Full Style
-Includes everything from Detailed, plus:
+### 完整风格（Full Style）
+包含详细风格的全部内容，另加：
 ```markdown
-## Developer Commentary
-### [Topic]
-> [Developer insight into a major change — why it was made, what was considered,
-> what the team learned. Written in first-person team voice.]
+## 开发者评论
+### [主题]
+> [对某项重大改动的开发者洞见 —— 为什么这么改、考虑过哪些方案、
+> 团队学到了什么。以第一人称团队口吻撰写。]
 ```
 
 ---
 
-## Phase 5: Review Output
+## 阶段 5：审查输出
 
-Check the generated notes for:
+检查生成的说明是否满足：
 
-- No internal jargon (replace technical terms with player-friendly language)
-- No references to internal systems, tickets, or sprint numbers
-- Balance changes include before/after values
-- Bug fixes describe the player experience, not the technical cause
-- Tone matches the game's voice (adjust formality based on game style)
-
----
-
-## Phase 6: Save Patch Notes
-
-Present the completed patch notes to the user along with: a count of changes by category, and any internal changes that were excluded (for review).
-
-Ask: "May I write these patch notes to `docs/patch-notes/[version].md`?"
-
-If yes, write the file to `docs/patch-notes/[version].md`, creating the directory
-if needed. Also write to `production/releases/[version]/patch-notes.md` as the
-internal archive copy.
+- 无内部行话（用面向玩家的语言替换技术术语）
+- 无对内部系统、工单或迭代编号的引用
+- 平衡性改动包含改动前/后数值
+- Bug 修复描述玩家体验，而非技术原因
+- 语调与游戏的整体风格匹配（根据游戏类型调整正式程度）
 
 ---
 
-## Phase 7: Next Steps
+## 阶段 6：保存更新说明
 
-Verdict: **COMPLETE** — patch notes generated and saved.
+向用户呈现完成的更新说明，同时附上：按分类的变更数量统计，以及被排除的内部改动（供审查）。
 
-- Run `/release-checklist` to verify all other release gates are met before publishing.
-- Share the patch notes draft with the community-manager for tone review before posting publicly.
+询问："May I write these patch notes to `docs/patch-notes/[version].md`?"（我可以将这些更新说明写入 `docs/patch-notes/[version].md` 吗？）
+
+如果同意，将文件写入 `docs/patch-notes/[version].md`（按需创建目录）。同时写入 `production/releases/[version]/patch-notes.md` 作为内部存档副本。
+
+---
+
+## 阶段 7：后续步骤
+
+裁定：**COMPLETE**（已完成）—— 更新说明已生成并保存。
+
+- 运行 `/release-checklist` 在公开发布前验证其他发布门禁是否满足。
+- 在公开发布前，将更新说明草稿交由 community-manager（社区经理）进行语调审查。

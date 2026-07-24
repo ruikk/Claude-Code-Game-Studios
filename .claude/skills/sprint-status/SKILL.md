@@ -1,208 +1,198 @@
 ---
 name: sprint-status
-description: "Fast sprint status check. Reads the current sprint plan, scans story files for status, and produces a concise progress snapshot with burndown assessment and emerging risks. Run at any time during a sprint for quick situational awareness. Use when user asks 'how is the sprint going', 'sprint update', 'show sprint progress'."
-argument-hint: "[sprint-number or blank for current]"
+description: "快速检查迭代状态。读取当前迭代计划，扫描故事文件中的状态，并生成包含燃尽评估和新风险的简明进度快照。可在迭代期间随时运行，以快速了解情况。当用户询问“迭代进展如何”“迭代更新”“显示迭代进度”时使用。"
+argument-hint: "[迭代编号，留空则使用当前迭代]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep
 model: haiku
 ---
 
-# Sprint Status
+# 迭代状态
 
-This is a fast situational awareness check, not a sprint review. It reads the
-current sprint plan and story files, scans for status markers, and produces a
-concise snapshot in under 30 lines. For detailed sprint management, use
-`/sprint-plan update` or `/milestone-review`.
+这是一次快速情况检查，而非迭代评审。它会读取当前迭代计划和故事文件，
+扫描状态标记，并生成不超过 30 行的简明快照。如需详细管理迭代，请使用
+`/sprint-plan update` 或 `/milestone-review`。
 
-**This skill is read-only.** It never proposes changes, never asks to write
-files, and makes at most one concrete recommendation.
+**此技能为只读。** 它绝不会提出变更、请求写入文件，且最多给出一项具体建议。
 
 ---
 
-## 1. Find the Sprint
+## 1. 查找迭代
 
-**Argument:** `$ARGUMENTS[0]` (blank = use current sprint)
+**参数：** `$ARGUMENTS[0]`（留空 = 使用当前迭代）
 
-- If an argument is given (e.g., `/sprint-status 3`), search
-  `production/sprints/` for a file matching `sprint-03.md`, `sprint-3.md`,
-  or similar. Report which file was found.
-- If no argument is given, find the most recently modified file in
-  `production/sprints/` and treat it as the current sprint.
-- If `production/sprints/` does not exist or is empty, report: "No sprint
-  files found. Start a sprint with `/sprint-plan new`." Then stop.
+- 如果提供了参数（例如 `/sprint-status 3`），请在 `production/sprints/` 中
+  搜索匹配 `sprint-03.md`、`sprint-3.md` 或类似名称的文件，并报告找到的文件。
+- 如果未提供参数，请查找 `production/sprints/` 中最近修改的文件，并将其视为当前迭代。
+- 如果 `production/sprints/` 不存在或为空，请报告：“未找到迭代文件。请使用
+  `/sprint-plan new` 开始一个迭代。”然后停止。
 
-Read the sprint file in full. Extract:
-- Sprint number and goal
-- Start date and end date
-- All story or task entries with their priority (Must Have / Should Have /
-  Nice to Have), owner, and estimate
+完整读取迭代文件。提取：
+- 迭代编号和目标
+- 开始日期和结束日期
+- 所有故事或任务条目及其优先级（Must Have / Should Have / Nice to Have）、
+  负责人和估算
 
 ---
 
-## 2. Calculate Days Remaining
+## 2. 计算剩余天数
 
-Using today's date and the sprint end date from the sprint file, calculate:
-- Total sprint days (end minus start)
-- Days elapsed
-- Days remaining
-- Percentage of time consumed
+使用今天的日期和迭代文件中的结束日期，计算：
+- 迭代总天数（结束日期减去开始日期）
+- 已过天数
+- 剩余天数
+- 已用时间百分比
 
-If the sprint file does not include explicit dates, note "Sprint dates not
-found — burndown assessment skipped."
-
----
-
-## 3. Scan Story Status
-
-**First: check for `production/sprint-status.yaml`.**
-
-If it exists, read it directly — it is the authoritative source of truth.
-Extract status for each story from the `status` field. No markdown scanning needed.
-Use its `sprint`, `goal`, `start`, `end` fields instead of re-parsing the sprint plan.
-
-**If `sprint-status.yaml` does not exist** (legacy sprint or first-time setup),
-fall back to markdown scanning:
-
-1. If the entry references a story file path, check if the file exists.
-   Read the file and scan for status markers: DONE, COMPLETE, IN PROGRESS,
-   BLOCKED, NOT STARTED (case-insensitive).
-2. If the entry has no file path (inline task in the sprint plan), scan the
-   sprint plan itself for status markers next to that entry.
-3. If no status marker is found, classify as NOT STARTED.
-4. If a file is referenced but does not exist, classify as MISSING and note it.
-
-When using the fallback, add a note at the bottom of the output:
-"⚠ No `sprint-status.yaml` found — status inferred from markdown. Run `/sprint-plan update` to generate one."
-
-Optionally (fast check only — do not do a deep scan): grep `src/` for a
-directory or file name that matches the story's system slug to check for
-implementation evidence. This is a hint only, not a definitive status.
-
-### Stale Story Detection
-
-After collecting status for all stories, check each IN PROGRESS story for staleness:
-
-- For each story that has a referenced file, read the file and look for a
-  `Last Updated:` field in the frontmatter or header (e.g., `Last Updated: 2026-04-01`
-  or `updated: 2026-04-01`). Accept any reasonable date field name: `Last Updated`,
-  `Updated`, `last-updated`, `updated_at`.
-- Calculate days since that date using today's date.
-- If the date is more than 4 days ago, flag the story as **STALE**. (4-day threshold accounts for weekends — a story last touched on Friday won't appear stale until Wednesday.)
-- If no date field is found in the story file, note "no timestamp — cannot check staleness."
-- If the story has no referenced file (inline task), note "inline task — cannot check staleness."
-
-STALE stories are included in the output table and collected into an "Attention Needed"
-section (see Phase 5 output format).
-
-**Stale story escalation**: If any IN PROGRESS story is flagged STALE (no progress in 4+ days), the burndown verdict
-is upgraded to at least **At Risk** — even if the completion percentage is within the normal
-On Track window. Record this escalation reason: "At Risk — [N] story(ies) with no progress in
-[N] days."
+如果迭代文件未包含明确日期，请注明“未找到迭代日期，已跳过燃尽评估。”
 
 ---
 
-## 4. Burndown Assessment
+## 3. 扫描故事状态
 
-Calculate:
-- Tasks complete (DONE or COMPLETE)
-- Tasks in progress (IN PROGRESS)
-- Tasks blocked (BLOCKED)
-- Tasks not started (NOT STARTED or MISSING)
-- Completion percentage: (complete / total) * 100
+**首先：检查 `production/sprint-status.yaml`。**
 
-Assess burndown by comparing completion percentage to time consumed percentage:
+如果该文件存在，请直接读取；它是权威事实来源。
+从 `status` 字段提取每个故事的状态，无需扫描 Markdown。
+使用其中的 `sprint`、`goal`、`start`、`end` 字段，不要重新解析迭代计划。
 
-- **On Track**: completion % is within 10 points of time consumed % or ahead
-- **At Risk**: completion % is 10-25 points behind time consumed %
-- **Behind**: completion % is more than 25 points behind time consumed %
+**如果 `sprint-status.yaml` 不存在**（旧版迭代或首次设置），
+则回退到 Markdown 扫描：
 
-If dates are unavailable, skip the burndown assessment and report "On Track /
-At Risk / Behind: unknown — sprint dates not found."
+1. 如果条目引用了故事文件路径，请检查该文件是否存在。
+   读取文件并扫描状态标记：DONE、COMPLETE、IN PROGRESS、
+   BLOCKED、NOT STARTED（不区分大小写）。
+2. 如果条目没有文件路径（迭代计划中的内联任务），请扫描迭代计划本身，
+   查找该条目旁的状态标记。
+3. 如果未找到状态标记，则归类为 NOT STARTED。
+4. 如果引用的文件不存在，则归类为 MISSING 并加以注明。
+
+使用回退方式时，请在输出底部添加注释：
+“⚠ 未找到 `sprint-status.yaml`，状态根据 Markdown 推断。运行 `/sprint-plan update` 生成该文件。”
+
+可选操作（仅限快速检查，不要深入扫描）：在 `src/` 中 grep 与故事系统 slug
+匹配的目录或文件名，以检查实现证据。这仅是提示，并非确定状态的依据。
+
+### 停滞故事检测
+
+收集所有故事的状态后，检查每个 IN PROGRESS 故事是否停滞：
+
+- 对于每个引用了文件的故事，读取该文件，并在 frontmatter 或标题中查找
+  `Last Updated:` 字段（例如 `Last Updated: 2026-04-01` 或 `updated: 2026-04-01`）。
+  接受任何合理的日期字段名：`Last Updated`、`Updated`、`last-updated`、`updated_at`。
+- 使用今天的日期计算距该日期的天数。
+- 如果该日期距今超过 4 天，将故事标记为 **STALE**。（4 天阈值考虑了周末，周五最后更新的故事到周三才会显示为停滞。）
+- 如果故事文件中没有日期字段，请注明“无时间戳，无法检查停滞情况。”
+- 如果故事没有引用文件（内联任务），请注明“内联任务，无法检查停滞情况。”
+
+STALE 故事应包含在输出表格中，并汇总至“需要关注”部分
+（参见第 5 阶段的输出格式）。
+
+**停滞故事升级规则**：如果任何 IN PROGRESS 故事被标记为 STALE（超过 4 天没有进展），
+燃尽结论至少升级为 **At Risk**，即使完成百分比处于正常的 On Track 区间内。
+记录升级原因：“At Risk — [N] 个故事已 [N] 天没有进展。”
 
 ---
 
-## 5. Output
+## 4. 燃尽评估
 
-Keep the output concise. The story status table is mandatory — do not truncate it. Aim for under 50 lines total; omit the Emerging Risks section if nothing notable was found. Use this format:
+计算：
+- 已完成任务（DONE 或 COMPLETE）
+- 进行中任务（IN PROGRESS）
+- 受阻任务（BLOCKED）
+- 未开始任务（NOT STARTED 或 MISSING）
+- 完成百分比：(complete / total) * 100
+
+通过比较完成百分比和已用时间百分比来评估燃尽情况：
+
+- **On Track**：完成百分比与已用时间百分比相差不超过 10 个百分点，或领先于后者
+- **At Risk**：完成百分比落后于已用时间百分比 10 至 25 个百分点
+- **Behind**：完成百分比落后于已用时间百分比超过 25 个百分点
+
+如果没有日期，则跳过燃尽评估并报告：“On Track / At Risk / Behind：未知，
+未找到迭代日期。”
+
+---
+
+## 5. 输出
+
+保持输出简洁。故事状态表为必需内容，不得截断。总行数尽量控制在 50 行以内；如果未发现值得注意的事项，则省略“新风险”部分。使用以下格式：
 
 ```markdown
-## Sprint [N] Status — [Today's Date]
-**Sprint Goal**: [from sprint plan]
-**Days Remaining**: [N] of [total] ([% time consumed])
+## 迭代 [N] 状态 — [今日日期]
+**迭代目标**：[来自迭代计划]
+**剩余天数**：[N] / [总天数]（[已用时间百分比]）
 
-### Progress: [complete/total] tasks ([%])
+### 进度：[complete/total] 个任务（[%]）
 
-| Story / Task         | Priority   | Status      | Owner   | Blocker        |
+| 故事 / 任务          | 优先级     | 状态        | 负责人  | 阻塞项         |
 |----------------------|------------|-------------|---------|----------------|
-| [title]              | Must Have  | DONE        | [owner] |                |
-| [title]              | Must Have  | IN PROGRESS | [owner] |                |
-| [title]              | Must Have  | BLOCKED     | [owner] | [brief reason] |
-| [title]              | Should Have| NOT STARTED | [owner] |                |
+| [标题]               | Must Have  | DONE        | [负责人] |              |
+| [标题]               | Must Have  | IN PROGRESS | [负责人] |              |
+| [标题]               | Must Have  | BLOCKED     | [负责人] | [简要原因]   |
+| [标题]               | Should Have| NOT STARTED | [负责人] |              |
 
-### Attention Needed
-| Story / Task         | Status      | Last Updated   | Days Stale | Note           |
+### 需要关注
+| 故事 / 任务          | 状态        | 最后更新       | 停滞天数   | 备注           |
 |----------------------|-------------|----------------|------------|----------------|
-| [title]              | IN PROGRESS | [date or N/A]  | [N days]   | [STALE / no timestamp — cannot check staleness / inline task — cannot check staleness] |
+| [标题]               | IN PROGRESS | [日期或 N/A]   | [N 天]     | [STALE / 无时间戳——无法检查停滞情况 / 内联任务——无法检查停滞情况] |
 
-*(Omit this section entirely if no IN PROGRESS stories are stale or have timestamp concerns.)*
+*（如果没有 IN PROGRESS 故事停滞或存在时间戳问题，请完全省略此部分。）*
 
-### Burndown: [On Track / At Risk / Behind]
-[1-2 sentences. If behind: which Must Haves are at risk. If on track: confirm
-and note any Should Haves the team could pull.]
+### 燃尽：[On Track / At Risk / Behind]
+[1 至 2 句话。如果落后：指出哪些 Must Have 存在风险。如果进度正常：确认状态，
+并注明团队可以拉取哪些 Should Have。]
 
-### Must-Haves at Risk
-[List any Must Have stories that are BLOCKED or NOT STARTED with less than
-40% of sprint time remaining. If none, write "None."]
+### 有风险的 Must Have
+[列出迭代剩余时间不足 40% 时，所有处于 BLOCKED 或 NOT STARTED 状态的
+Must Have 故事。如果没有，填写“无”。]
 
-### Emerging Risks
-[Any risks visible from the story scan: missing files, cascading blockers,
-stories with no owner. If none, write "None identified."]
+### 新风险
+[故事扫描中发现的任何风险：文件缺失、连锁阻塞、故事没有负责人。
+如果没有，填写“未发现”。]
 
-### Recommendation
-[One concrete action, or "Sprint is on track — no action needed."]
+### 建议
+[一项具体行动，或“迭代进度正常——无需采取行动。”]
 ```
 
 ---
 
-## 6. Fast Escalation Rules
+## 6. 快速升级规则
 
-Apply these rules before outputting, and place the flag at the TOP of the
-output if triggered (above the status table):
+输出前应用以下规则；如果触发，请将标志放在输出顶部（状态表上方）：
 
-**Critical flag** — if Must Have stories are BLOCKED or NOT STARTED and
-less than 40% of the sprint time remains:
+**严重标志**：如果 Must Have 故事处于 BLOCKED 或 NOT STARTED 状态，且迭代剩余时间少于 40%：
 
 ```
-SPRINT AT RISK: [N] Must Have stories are not complete with [X]% of sprint
-time remaining. Recommend replanning with `/sprint-plan update`.
+迭代存在风险：[N] 个 Must Have 故事尚未完成，迭代剩余时间为 [X]%。
+建议使用 `/sprint-plan update` 重新规划。
 ```
 
-**Completion flag** — if all Must Have stories are DONE:
+**完成标志**：如果所有 Must Have 故事均为 DONE：
 
 ```
-All Must Haves complete. Team can pull from Should Have backlog.
+所有 Must Have 均已完成。团队可以从 Should Have 待办列表中拉取任务。
 ```
 
-**Missing stories flag** — if any referenced story files do not exist:
+**故事缺失标志**：如果任何引用的故事文件不存在：
 
 ```
-NOTE: [N] story files referenced in the sprint plan are missing.
-Run `/story-readiness sprint` to validate story file coverage.
+注意：迭代计划引用的 [N] 个故事文件缺失。
+运行 `/story-readiness sprint` 验证故事文件覆盖情况。
 ```
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-This skill is read-only. It reports observed facts from files on disk.
+此技能为只读。它报告从磁盘文件中观察到的事实。
 
-- It does not update the sprint plan
-- It does not change story status
-- It does not propose scope cuts (that is `/sprint-plan update`)
-- It makes at most one recommendation per run
+- 不更新迭代计划
+- 不更改故事状态
+- 不提出范围削减建议（该操作由 `/sprint-plan update` 完成）
+- 每次运行最多给出一项建议
 
-For more detail on a specific story, the user can read the story file directly
-or run `/story-readiness [path]`.
+如需了解特定故事的更多详情，用户可以直接读取故事文件，
+或运行 `/story-readiness [path]`。
 
-For sprint replanning, use `/sprint-plan update`.
-For end-of-sprint retrospective, use `/retrospective`.
+如需重新规划迭代，请使用 `/sprint-plan update`。
+如需进行迭代结束回顾，请使用 `/retrospective`。

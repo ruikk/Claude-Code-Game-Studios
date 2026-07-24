@@ -1,240 +1,240 @@
 ---
 name: launch-checklist
-description: "Complete launch readiness validation covering every department: code, content, store, marketing, community, infrastructure, legal, and go/no-go sign-offs."
-argument-hint: "[launch-date or 'dry-run']"
+description: "完整的发布就绪验证,覆盖每个部门:代码、内容、商店、营销、社区、基础设施、法务,以及 go/no-go 签核。"
+argument-hint: "[发布日期 或 'dry-run']"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write
 model: sonnet
 ---
 
-> **Explicit invocation only**: This skill should only run when the user explicitly requests it with `/launch-checklist`. Do not auto-invoke based on context matching.
+> **仅显式调用**:此技能仅应在用户通过 `/launch-checklist` 显式请求时运行。不要基于上下文匹配自动调用。
 
-## Phase 1: Parse Arguments
+## Phase 1: 解析参数
 
-Read the argument for the launch date or `dry-run` mode. Dry-run mode generates the checklist without creating sign-off entries or writing files.
-
----
-
-## Phase 2: Gather Project Context
-
-- Read `CLAUDE.md` for tech stack, target platforms, and team structure
-- Read the latest milestone in `production/milestones/`
-- Read any existing release checklist in `production/releases/`
-- Read the content calendar in `design/live-ops/content-calendar.md` if it exists
+读取发布日期参数或 `dry-run` 模式。Dry-run 模式生成检查清单但不创建签核条目或写入文件。
 
 ---
 
-## Phase 3: Scan Codebase Health
+## Phase 2: 收集项目上下文
 
-- Count `TODO`, `FIXME`, `HACK` comments and their locations
-- Check for any `console.log`, `print()`, or debug output left in production code
-- Check for placeholder assets (search for `placeholder`, `temp_`, `WIP_`)
-- Check for hardcoded test/dev values (localhost, test credentials, debug flags)
+- 读取 `CLAUDE.md` 了解技术栈、目标平台和团队结构
+- 读取 `production/milestones/` 中的最新里程碑
+- 读取 `production/releases/` 中任何现有的发布检查清单
+- 如果存在,读取 `design/live-ops/content-calendar.md` 中的内容日历
 
 ---
 
-## Phase 4: Generate the Launch Checklist
+## Phase 3: 扫描代码库健康度
+
+- 统计 `TODO`、`FIXME`、`HACK` 注释及其位置
+- 检查是否有 `console.log`、`print()` 或调试输出留在生产代码中
+- 检查占位资产(搜索 `placeholder`、`temp_`、`WIP_`)
+- 检查硬编码的测试/开发值(localhost、测试凭据、调试标志)
+
+---
+
+## Phase 4: 生成发布检查清单
 
 ```markdown
-# Launch Checklist: [Game Title]
-Target Launch: [Date or DRY RUN]
-Generated: [Date]
+# Launch Checklist: [游戏标题]
+Target Launch: [日期 或 DRY RUN]
+Generated: [日期]
 
 ---
 
-## 1. Code Readiness
+## 1. 代码就绪度
 
-### Build Health
-- [ ] Clean build on all target platforms
-- [ ] Zero compiler warnings
-- [ ] All unit tests passing
-- [ ] All integration tests passing
-- [ ] Performance benchmarks within targets
-- [ ] No memory leaks (verified via extended soak test)
-- [ ] Build size within platform limits
-- [ ] Build version correctly set and tagged in source control
+### 构建健康度
+- [ ] 在所有目标平台上干净构建
+- [ ] 零编译器警告
+- [ ] 所有单元测试通过
+- [ ] 所有集成测试通过
+- [ ] 性能基准在目标范围内
+- [ ] 无内存泄漏(通过扩展 soak 测试验证)
+- [ ] 构建大小在平台限制内
+- [ ] 构建版本号正确设置并在源代码控制中标记
 
-### Code Quality
-- [ ] TODO count: [N] (zero required for launch, or documented exceptions)
-- [ ] FIXME count: [N] (zero required)
-- [ ] HACK count: [N] (each must have documented justification)
-- [ ] No debug output in production code
-- [ ] No hardcoded dev/test values
-- [ ] All feature flags set to production values
-- [ ] Error handling covers all critical paths
-- [ ] Crash reporting integrated and verified
+### 代码质量
+- [ ] TODO 数量:[N](发布要求为零,或有已记录的例外)
+- [ ] FIXME 数量:[N](要求为零)
+- [ ] HACK 数量:[N](每个必须有已记录的理由)
+- [ ] 生产代码中无调试输出
+- [ ] 无硬编码的开发/测试值
+- [ ] 所有功能标志设置为生产值
+- [ ] 错误处理覆盖所有关键路径
+- [ ] 崩溃报告已集成并验证
 
-### Security
-- [ ] No exposed API keys or credentials in source
-- [ ] Save data encrypted
-- [ ] Network communication secured (TLS/DTLS)
-- [ ] Anti-cheat measures active (if multiplayer)
-- [ ] Input validation on all server endpoints (if multiplayer)
-- [ ] Privacy policy compliance verified
-
----
-
-## 2. Content Readiness
-
-### Assets
-- [ ] All placeholder art replaced with final assets
-- [ ] All placeholder audio replaced with final audio
-- [ ] Audio mix finalized and approved by audio director
-- [ ] All VFX polished and performance-verified
-- [ ] No missing or broken asset references
-- [ ] Asset naming conventions enforced
-
-### Text and Localization
-- [ ] All player-facing text proofread
-- [ ] No hardcoded strings (all externalized for localization)
-- [ ] All supported languages translated and verified
-- [ ] Text fits UI in all languages (text fitting pass complete)
-- [ ] Font coverage verified for all supported languages
-- [ ] Credits complete, accurate, and up to date
-
-### Game Content
-- [ ] All levels/maps playable from start to finish
-- [ ] Tutorial flow complete and tested with new players
-- [ ] All achievements/trophies implemented and tested
-- [ ] Save/load works correctly for all game states
-- [ ] Difficulty settings balanced and tested
-- [ ] End-game/credits sequence complete
+### 安全
+- [ ] 源代码中无暴露的 API 密钥或凭据
+- [ ] 存档数据已加密
+- [ ] 网络通信已加密(TLS/DTLS)
+- [ ] 反作弊措施已启用(如果是多人游戏)
+- [ ] 所有服务器端点输入验证(如果是多人游戏)
+- [ ] 隐私政策合规性已验证
 
 ---
 
-## 3. Quality Assurance
+## 2. 内容就绪度
 
-### Testing
-- [ ] Full regression test suite passed
-- [ ] Zero S1 (Critical) bugs open
-- [ ] Zero S2 (Major) bugs open (or documented exceptions)
-- [ ] Soak test passed (8+ hours continuous play)
-- [ ] Multiplayer stress test passed (if applicable)
-- [ ] All critical user paths tested on every platform
-- [ ] Edge cases tested (full storage, no network, suspend/resume)
+### 资产
+- [ ] 所有占位美术已替换为最终资产
+- [ ] 所有占位音频已替换为最终音频
+- [ ] 音频混音已定稿并获音频总监批准
+- [ ] 所有 VFX 已打磨并经过性能验证
+- [ ] 无缺失或损坏的资产引用
+- [ ] 资产命名约定已执行
 
-### Platform Certification
-- [ ] PC: Steam/Epic/GOG SDK requirements met
-- [ ] Console: TRC/TCR/Lotcheck submission prepared
-- [ ] Mobile: App Store/Play Store guidelines compliant
-- [ ] Accessibility: minimum standards met (remapping, text scaling, colorblind)
-- [ ] Age ratings obtained (ESRB, PEGI, regional)
+### 文本和本地化
+- [ ] 所有面向玩家的文本已校对
+- [ ] 无硬编码字符串(全部外部化以供本地化)
+- [ ] 所有支持语言已翻译并验证
+- [ ] 文本在所有语言下适配 UI(文本适配检查完成)
+- [ ] 所有支持语言的字体覆盖已验证
+- [ ] 制作人员名单完整、准确且最新
 
-### Performance
-- [ ] Target FPS met on minimum spec hardware
-- [ ] Load times within budget on all platforms
-- [ ] Memory usage within budget on all platforms
-- [ ] Network bandwidth within targets (if multiplayer)
-- [ ] No frame hitches in critical gameplay moments
-
----
-
-## 4. Store and Distribution
-
-### Store Pages
-- [ ] Store page copy finalized and proofread
-- [ ] Screenshots current and per-platform resolution
-- [ ] Trailers current and approved
-- [ ] Key art and capsule images finalized
-- [ ] System requirements accurate (PC)
-- [ ] Pricing configured for all regions
-- [ ] Pre-purchase/wishlist campaigns active (if applicable)
-
-### Legal
-- [ ] EULA finalized and approved by legal
-- [ ] Privacy policy published and linked
-- [ ] Third-party license attributions complete
-- [ ] Music/audio licensing verified
-- [ ] Trademark/IP clearance confirmed
-- [ ] GDPR/CCPA compliance verified (data collection, consent, deletion)
+### 游戏内容
+- [ ] 所有关卡/地图可从头到尾游玩
+- [ ] 教程流程完整并与新玩家测试
+- [ ] 所有成就/奖杯已实现并测试
+- [ ] 存档/读取在所有游戏状态下正常工作
+- [ ] 难度设置已平衡并测试
+- [ ] 终局/制作人员名单序列完整
 
 ---
 
-## 5. Infrastructure
+## 3. 质量保证
 
-### Servers (if multiplayer/online)
-- [ ] Production servers provisioned and load-tested
-- [ ] Auto-scaling configured and tested
-- [ ] Database backups configured
-- [ ] CDN configured for content delivery
-- [ ] DDoS protection active
-- [ ] Monitoring and alerting configured
+### 测试
+- [ ] 完整回归测试套件通过
+- [ ] 零 S1(关键)bug 待处理
+- [ ] 零 S2(重大)bug 待处理(或已记录的例外)
+- [ ] Soak 测试通过(8+ 小时连续游玩)
+- [ ] 多人压力测试通过(如适用)
+- [ ] 所有关键用户路径在每个平台测试
+- [ ] 边缘情况测试(存储已满、无网络、挂起/恢复)
 
-### Analytics and Monitoring
-- [ ] Analytics pipeline verified and receiving data
-- [ ] Crash reporting active and dashboard accessible
-- [ ] Server monitoring dashboards live
-- [ ] Key metrics tracked: DAU, session length, retention, crashes
-- [ ] Alerts configured for critical thresholds
+### 平台认证
+- [ ] PC:Steam/Epic/GOG SDK 要求已满足
+- [ ] 主机:TRC/TCR/Lotcheck 提交已准备
+- [ ] 移动:App Store/Play Store 指南合规
+- [ ] 无障碍:最低标准已满足(重映射、文本缩放、色盲)
+- [ ] 年龄评级已获得(ESRB、PEGI、各地区)
 
----
-
-## 6. Community and Marketing
-
-### Community Readiness
-- [ ] Community guidelines published
-- [ ] Moderation team briefed and tools ready
-- [ ] Discord/forum/social channels set up
-- [ ] FAQ and known issues page prepared
-- [ ] Support email/ticketing system active
-
-### Marketing
-- [ ] Launch trailer published
-- [ ] Press/influencer review keys distributed
-- [ ] Social media launch posts scheduled
-- [ ] Launch day blog post/dev update drafted
-- [ ] Patch notes for launch version published
+### 性能
+- [ ] 在最低规格硬件上达到目标 FPS
+- [ ] 所有平台加载时间在预算内
+- [ ] 所有平台内存使用在预算内
+- [ ] 网络带宽在目标范围内(如果是多人游戏)
+- [ ] 关键游戏玩法时刻无帧卡顿
 
 ---
 
-## 7. Operations
+## 4. 商店和分发
 
-### Team Readiness
-- [ ] On-call schedule set for first 72 hours post-launch
-- [ ] Incident response playbook reviewed by team
-- [ ] Rollback plan documented and tested
-- [ ] Hotfix pipeline tested (can ship emergency fix within 4 hours)
-- [ ] Communication plan for launch issues (who posts, where, how fast)
+### 商店页面
+- [ ] 商店页面文案已定稿并校对
+- [ ] 截图最新且符合各平台分辨率
+- [ ] 预告片最新并已批准
+- [ ] 关键美术和胶囊图已定稿
+- [ ] 系统要求准确(PC)
+- [ ] 所有地区定价已配置
+- [ ] 预购/愿望单活动已启用(如适用)
 
-### Day-One Plan
-- [ ] Day-one patch prepared (if needed)
-- [ ] Server unlock/go-live procedure documented
-- [ ] Launch monitoring dashboard bookmarked by all leads
-- [ ] War room/channel established for launch day
+### 法务
+- [ ] EULA 已定稿并获法务批准
+- [ ] 隐私政策已发布并链接
+- [ ] 第三方许可署名完整
+- [ ] 音乐/音频许可已验证
+- [ ] 商标/IP 清查已确认
+- [ ] GDPR/CCPA 合规已验证(数据收集、同意、删除)
 
 ---
 
-## Go / No-Go Decision
+## 5. 基础设施
+
+### 服务器(如果是多人/在线)
+- [ ] 生产服务器已配置并经过压力测试
+- [ ] 自动扩展已配置并测试
+- [ ] 数据库备份已配置
+- [ ] CDN 已配置用于内容分发
+- [ ] DDoS 防护已启用
+- [ ] 监控和告警已配置
+
+### 分析和监控
+- [ ] 分析管道已验证并接收数据
+- [ ] 崩溃报告已启用且仪表板可访问
+- [ ] 服务器监控仪表板已上线
+- [ ] 关键指标已跟踪:DAU、会话时长、留存、崩溃
+- [ ] 关键阈值告警已配置
+
+---
+
+## 6. 社区和营销
+
+### 社区就绪度
+- [ ] 社区指南已发布
+- [ ] 审核团队已简报且工具就绪
+- [ ] Discord/论坛/社交渠道已建立
+- [ ] FAQ 和已知问题页面已准备
+- [ ] 支持邮件/工单系统已启用
+
+### 营销
+- [ ] 发布预告片已发布
+- [ ] 媒体/影响者评测码已分发
+- [ ] 社交媒体发布帖子已排期
+- [ ] 发布日博客文章/开发更新已起草
+- [ ] 发布版本的补丁说明已发布
+
+---
+
+## 7. 运营
+
+### 团队就绪度
+- [ ] 发布后前 72 小时的值班排班已设定
+- [ ] 事件响应手册已由团队审阅
+- [ ] 回退计划已记录并测试
+- [ ] 热修复管道已测试(可在 4 小时内发布紧急修复)
+- [ ] 发布问题的沟通计划(谁发布、在哪里、多快)
+
+### Day-One 计划
+- [ ] Day-one 补丁已准备(如需要)
+- [ ] 服务器解锁/上线流程已记录
+- [ ] 发布监控仪表板已被所有主管收藏
+- [ ] 发布日作战室/频道已建立
+
+---
+
+## Go / No-Go 决策
 
 **Overall Status**: [READY / NOT READY / CONDITIONAL]
 
 ### Blocking Items
-[List any items that must be resolved before launch]
+[列出必须在发布前解决的任何项]
 
 ### Conditional Items
-[List items that have documented workarounds or accepted risk]
+[列出有已记录变通方案或已接受风险的项]
 
 ### Sign-Offs Required
-- [ ] Creative Director — Content and experience quality
-- [ ] Technical Director — Technical health and stability
-- [ ] QA Lead — Quality and test coverage
-- [ ] Producer — Schedule and overall readiness
-- [ ] Release Manager — Build and deployment readiness
+- [ ] Creative Director —— 内容和体验质量
+- [ ] Technical Director —— 技术健康度和稳定性
+- [ ] QA Lead —— 质量和测试覆盖
+- [ ] Producer —— 进度和整体就绪度
+- [ ] Release Manager —— 构建和部署就绪度
 ```
 
 ---
 
-## Phase 5: Save Checklist
+## Phase 5: 保存检查清单
 
-Present the completed checklist and summary to the user (total items, blocking items count, conditional items count, departments with incomplete sections).
+向用户呈现完成的检查清单和摘要(总项数、阻塞项数、条件项数、有未完成章节的部门)。
 
-If not in dry-run mode, ask: "May I write this to `production/releases/launch-checklist-[date].md`?"
+如果不在 dry-run 模式,询问:"我可以将此内容写入 `production/releases/launch-checklist-[date].md` 吗?"
 
-If yes, write the file, creating directories as needed.
+如果是,创建所需目录并写入文件。
 
 ---
 
-## Phase 6: Next Steps
+## Phase 6: 下一步
 
-- Run `/gate-check` to get a formal PASS/CONCERNS/FAIL verdict before launch.
-- Coordinate sign-offs via `/team-release`.
+- 运行 `/gate-check` 以在发布前获得正式的 PASS/CONCERNS/FAIL 结论。
+- 通过 `/team-release` 协调签核。

@@ -1,12 +1,12 @@
 #!/bin/bash
-# Claude Code PostToolUse hook: Validates asset files after Write/Edit
-# Checks naming conventions for files in assets/ directory
+# Claude Code PostToolUse 钩子: Write/Edit 后验证资产文件
+# 检查 assets/ 目录中文件的命名规范
 #
-# Exit behavior:
-#   exit 0 = success or advisory warnings only (non-blocking)
-#   exit 1 = blocking error (build-breaking issues: invalid JSON, missing required fields)
+# 退出行为：
+#   exit 0 = 成功或仅有建议性警告（非阻塞）
+#   exit 1 = 阻塞性错误（会中断构建的问题：无效的 JSON、缺少必填字段）
 #
-# Input schema (PostToolUse for Write/Edit):
+# 输入格式（用于 Write/Edit 的 PostToolUse）:
 # { "tool_name": "Write", "tool_input": { "file_path": "assets/data/foo.json", "content": "..." } }
 
 INPUT=$(cat)
@@ -34,7 +34,7 @@ ERRORS=""     # Build-breaking issues -- exit 1 to block the operation
 # Naming issues are style violations -- warn but do not block
 # Uses grep -E (POSIX) not grep -P (Perl) for Windows Git Bash compatibility
 if echo "$FILENAME" | grep -qE '[A-Z[:space:]-]'; then
-    WARNINGS="$WARNINGS\n  NAMING: $FILE_PATH must be lowercase with underscores (got: $FILENAME)"
+    WARNINGS="$WARNINGS\n  命名: $FILE_PATH 必须为小写加下划线 (当前: $FILENAME)"
 fi
 
 # BLOCKING: Check JSON validity for data files
@@ -52,7 +52,7 @@ if echo "$FILE_PATH" | grep -qE '(^|/)assets/data/.*\.json$'; then
 
         if [ -n "$PYTHON_CMD" ]; then
             if ! "$PYTHON_CMD" -m json.tool "$FILE_PATH" > /dev/null 2>&1; then
-                ERRORS="$ERRORS\n  FORMAT: $FILE_PATH is not valid JSON — fix syntax errors before continuing"
+                ERRORS="$ERRORS\n  格式: $FILE_PATH 不是有效的 JSON — 继续执行前先修复语法错误。"
             fi
         fi
     fi
@@ -60,12 +60,12 @@ fi
 
 # Report warnings (advisory -- non-blocking)
 if [ -n "$WARNINGS" ]; then
-    echo -e "=== Asset Validation: Warnings ===$WARNINGS\n==================================\n(Warnings are advisory. Fix before final commit.)" >&2
+    echo -e "=== 资产验证: 警告 ===$WARNINGS\n==================================\n(警告仅作提示，请在最终提交前完成修复。)" >&2
 fi
 
 # Report errors and block if any build-breaking issues found
 if [ -n "$ERRORS" ]; then
-    echo -e "=== Asset Validation: ERRORS (Blocking) ===$ERRORS\n===========================================\nFix these errors before proceeding." >&2
+    echo -e "=== 资产验证: 错误 (阻塞) ===$ERRORS\n===========================================\n出现错误必须修复后方可继续执行。" >&2
     exit 1
 fi
 

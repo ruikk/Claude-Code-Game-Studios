@@ -1,95 +1,95 @@
 ---
 name: asset-audit
-description: "Audits game assets for compliance with naming conventions, file size budgets, format standards, and pipeline requirements. Identifies orphaned assets, missing references, and standard violations."
+description: "审核游戏资产是否符合命名约定、文件大小预算、格式标准和管线要求。识别孤立资产、缺失引用和标准违规项。"
 argument-hint: "[category|all]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep
 model: sonnet
-# Read-only diagnostic skill — no specialist agent delegation needed
+# 只读诊断技能，无需委派给专家代理
 ---
 
-## Phase 1: Read Standards
+## 阶段 1：读取标准
 
-Read the art bible or asset standards from the relevant design docs and the CLAUDE.md naming conventions.
-
----
-
-## Phase 2: Scan Asset Directories
-
-Scan the target asset directory using Glob:
-
-- `assets/art/**/*` for art assets
-- `assets/audio/**/*` for audio assets
-- `assets/vfx/**/*` for VFX assets
-- `assets/shaders/**/*` for shaders
-- `assets/data/**/*` for data files
+从相关设计文档中读取美术圣经或资产标准，并读取 CLAUDE.md 中的命名约定。
 
 ---
 
-## Phase 3: Run Compliance Checks
+## 阶段 2：扫描资产目录
 
-**Naming conventions:**
-- Art: `[category]_[name]_[variant]_[size].[ext]`
-- Audio: `[category]_[context]_[name]_[variant].[ext]`
-- All files must be lowercase with underscores
+使用 Glob 扫描目标资产目录：
 
-**File standards:**
-- Textures: Power-of-two dimensions, correct format (PNG for UI, compressed for 3D), within size budget
-- Audio: Correct sample rate, format (OGG for SFX, OGG/MP3 for music), within duration limits
-- Data: Valid JSON/YAML, schema-compliant
-
-**Orphaned assets:** Search code for references to each asset file. Flag any with no references.
-
-**Missing assets:** Search code for asset references and verify the files exist.
+- `assets/art/**/*` — 美术资产
+- `assets/audio/**/*` — 音频资产
+- `assets/vfx/**/*` — 视觉特效（VFX）资产
+- `assets/shaders/**/*` — 着色器（Shader）
+- `assets/data/**/*` — 数据文件
 
 ---
 
-## Phase 4: Output Audit Report
+## 阶段 3：执行合规性检查
+
+**检查命名约定：**
+- 美术: `[category]_[name]_[variant]_[size].[ext]`
+- 音频: `[category]_[context]_[name]_[variant].[ext]`
+- 所有文件必须为小写，使用下划线分隔
+
+**文件标准：**
+- 纹理（Texture）: 尺寸为 2 的幂，格式正确（UI 使用 PNG，3D 使用压缩格式），且不超出大小预算
+- 音频: 采样率和格式正确（SFX 使用 OGG，音乐使用 OGG/MP3），且不超出时长限制
+- 数据: 有效的 JSON/YAML，符合 Schema（模式定义）
+
+**孤立资产：** 在代码中搜索对每个资产文件的引用。标记所有未被引用的资产。
+
+**缺失资产：** 在代码中搜索资产引用，并验证相应文件是否存在。
+
+---
+
+## 阶段 4：输出审核报告
 
 ```markdown
-# Asset Audit Report -- [Category] -- [Date]
+# 资产审核报告 -- [Category] -- [Date]
 
-## Summary
-- **Total assets scanned**: [N]
-- **Naming violations**: [N]
-- **Size violations**: [N]
-- **Format violations**: [N]
-- **Orphaned assets**: [N]
-- **Missing assets**: [N]
-- **Overall health**: [CLEAN / MINOR ISSUES / NEEDS ATTENTION]
+## 摘要
+- **已扫描资产总数**: [N]
+- **命名违规项**: [N]
+- **大小违规项**: [N]
+- **格式违规项**: [N]
+- **孤立资产**: [N]
+- **缺失资产**: [N]
+- **总体健康状态**: [整洁 / 轻微问题 / 需要关注]
 
-## Naming Violations
-| File | Expected Pattern | Issue |
+## 命名违规项
+| 文件 | 预期模式 | 问题 |
 |------|-----------------|-------|
 
-## Size Violations
-| File | Budget | Actual | Overage |
+## 大小违规项
+| 文件 | 预算 | 实际大小 | 超出量 |
 |------|--------|--------|---------|
 
-## Format Violations
-| File | Expected Format | Actual Format |
+## 格式违规项
+| 文件 | 预期格式 | 实际格式 |
 |------|----------------|---------------|
 
-## Orphaned Assets (no code references found)
-| File | Last Modified | Size | Recommendation |
+## 孤立资产（未找到代码引用）
+| 文件 | 最后修改时间 | 大小 | 建议 |
 |------|-------------|------|---------------|
 
-## Missing Assets (referenced but not found)
-| Reference Location | Expected Path |
+## 缺失资产（存在引用但未找到文件）
+| 引用位置 | 预期路径 |
 |-------------------|---------------|
 
-## Recommendations
-[Prioritized list of fixes]
+## 建议
+[按优先级排序的修复列表]
 
-## Verdict: [COMPLIANT / WARNINGS / NON-COMPLIANT]
+## 结论：[合规 / 存在警告 / 不合规]
 ```
 
-This skill is read-only — it produces a report but does not write files.
+此技能为只读技能，仅生成报告，不写入文件。
 
 ---
 
-## Phase 5: Next Steps
+## 阶段 5：后续步骤
 
-- Fix naming violations using the patterns defined in CLAUDE.md.
-- Delete confirmed orphaned assets after manual review.
-- Run `/content-audit` to cross-check asset counts against GDD-specified requirements.
+- 使用 CLAUDE.md 中定义的模式修复命名违规项。
+- 经人工审核后，删除已确认的孤立资产。
+- 运行 `/content-audit`，根据 GDD 中规定的要求交叉检查资产数量。

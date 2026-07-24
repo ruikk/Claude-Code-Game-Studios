@@ -7,238 +7,232 @@ allowed-tools: Read, Glob, Grep, Write, Edit
 model: sonnet
 ---
 
-# Bug Triage
+# 缺陷分诊
 
-This skill processes the open bug backlog into a prioritised, sprint-assigned
-action list. It distinguishes between **severity** (how bad is the impact?) and
-**priority** (how urgently must we fix it?), detects systemic trends, and
-ensures no critical bug is lost between sprints.
+此技能将未关闭的缺陷待办整理成按优先级排序并分配到迭代的行动清单。
+它区分 **severity**（影响有多严重？）和 **priority**（修复有多紧急？），
+检测系统性趋势，并确保迭代之间不会遗漏任何严重缺陷。
 
-**Output:** `production/qa/bug-triage-[date].md`
+**输出：** `production/qa/bug-triage-[date].md`
 
-**When to run:**
-- Sprint start — assign open bugs to the new sprint or backlog
-- After `/team-qa` completes and new bugs have been filed
-- When the bug count crosses 10+ open items
-
----
-
-## 1. Parse Arguments
-
-**Modes:**
-- `/bug-triage sprint` — triage against the current sprint; assign fixable bugs
-  to the sprint backlog; defer the rest
-- `/bug-triage full` — full triage of all bugs regardless of sprint scope
-- `/bug-triage trend` — trend analysis only (no assignment); read-only report
-- No argument — run sprint mode if a current sprint exists, else full mode
+**运行时机：**
+- 迭代开始时——将未关闭的缺陷分配到新迭代或待办列表
+- `/team-qa` 完成并提交新缺陷后
+- 未关闭的缺陷数量达到 10 个以上时
 
 ---
 
-## 2. Load Bug Backlog
+## 1. 解析参数
 
-### Step 2a — Discover bug files
-
-Glob for bug reports in priority order:
-1. `production/qa/bugs/*.md` — individual bug report files (preferred format)
-2. `production/qa/bugs.md` — single consolidated bug log (fallback)
-3. Any `production/qa/qa-plan-*.md` "Bugs Found" table (last resort)
-
-If no bug files found:
-> "No bug files found in `production/qa/bugs/`. If bugs are tracked in a
-> different location, adjust the glob pattern. If no bugs exist yet, there is
-> nothing to triage."
-
-Stop and report. Do not proceed if no bugs exist.
-
-### Step 2b — Load sprint context
-
-Read the most recently modified file in `production/sprints/` to understand:
-- Current sprint number / name
-- Stories in scope (for assignment target)
-- Sprint capacity constraints (if noted)
-
-If no sprint file exists: note "No sprint plan found — assigning to backlog only."
-
-### Step 2c — Load severity reference
-
-Read `.claude/docs/coding-standards.md` for severity/priority definitions if they
-exist. If they do not exist, use the standard definitions in Step 3.
+**模式：**
+- `/bug-triage sprint`——针对当前迭代进行分诊；将可修复的缺陷分配到
+  迭代待办列表，其余缺陷延期处理
+- `/bug-triage full`——完整分诊所有缺陷，不受迭代范围限制
+- `/bug-triage trend`——仅分析趋势（不分配）；生成只读报告
+- 无参数——如果存在当前迭代，则运行 `sprint` 模式，否则运行 `full` 模式
 
 ---
 
-## 3. Classify Each Bug
+## 2. 加载缺陷待办
 
-For each bug, extract or infer:
+### 步骤 2a——查找缺陷文件
 
-### Severity (impact of the bug)
+按以下优先顺序使用 Glob 查找缺陷报告：
+1. `production/qa/bugs/*.md`——单独的缺陷报告文件（首选格式）
+2. `production/qa/bugs.md`——单个汇总缺陷日志（后备方案）
+3. 任意 `production/qa/qa-plan-*.md` 中的 "Bugs Found" 表格（最后手段）
+
+如果未找到缺陷文件：
+> "在 `production/qa/bugs/` 中未找到缺陷文件。如果缺陷记录在其他位置，
+> 请调整 glob 模式。如果尚不存在缺陷，则没有需要分诊的内容。"
+
+停止并报告。如果不存在缺陷，请勿继续。
+
+### 步骤 2b——加载迭代上下文
+
+读取 `production/sprints/` 中最近修改的文件，以了解：
+- 当前迭代编号/名称
+- 范围内的故事（作为分配目标）
+- 迭代容量限制（如果有记录）
+
+如果不存在迭代文件，请注明："未找到迭代计划——仅分配到待办列表。"
+
+### 步骤 2c——加载严重程度参考
+
+读取 `.claude/docs/coding-standards.md` 中的 severity/priority 定义（如果存在）。
+如果不存在，请使用步骤 3 中的标准定义。
+
+---
+
+## 3. 对每个缺陷进行分类
+
+对每个缺陷提取或推断以下信息：
+
+### Severity（缺陷的影响）
 
 | Severity | Definition |
 |----------|-----------|
-| **S1 — Critical** | Game crashes, data loss, or complete feature failure. Cannot proceed past this point. |
-| **S2 — High** | Major feature broken but game is still playable. Significant wrong behaviour. |
-| **S3 — Medium** | Feature degraded but a workaround exists. Minor wrong behaviour. |
-| **S4 — Low** | Visual glitch, cosmetic issue, typo. No gameplay impact. |
+| **S1 — Critical** | 游戏崩溃、数据丢失或功能完全失效。无法继续进行。 |
+| **S2 — High** | 主要功能损坏，但游戏仍可游玩。存在严重的错误行为。 |
+| **S3 — Medium** | 功能降级，但存在变通方案。存在轻微的错误行为。 |
+| **S4 — Low** | 视觉故障、外观问题或拼写错误。不影响玩法。 |
 
-### Priority (urgency of the fix)
+### Priority（修复的紧急程度）
 
 | Priority | Definition |
 |----------|-----------|
-| **P1 — Fix this sprint** | Blocks QA, blocks release, or is regression from last sprint |
-| **P2 — Fix soon** | Should be resolved before the next major milestone |
-| **P3 — Backlog** | Would be good to fix, but no active blocking impact |
-| **P4 — Won't fix / Deferred** | Accepted risk or out of scope for current product scope |
+| **P1 — Fix this sprint** | 阻塞 QA、阻塞发布，或属于上个迭代引入的回归 |
+| **P2 — Fix soon** | 应在下一个主要里程碑之前解决 |
+| **P3 — Backlog** | 最好修复，但当前没有阻塞影响 |
+| **P4 — Won't fix / Deferred** | 已接受的风险，或超出当前产品范围 |
 
-### Assignment
+### 分配
 
-For each P1/P2 bug in `sprint` mode:
-- Identify which story or epic the fix belongs to
-- Check whether the current sprint has remaining capacity
-- If capacity exists: assign to sprint (`Sprint: [current]`)
-- If capacity is full: flag as `Priority overflow — consider pulling from sprint`
+对于 `sprint` 模式下的每个 P1/P2 缺陷：
+- 确定修复所属的故事或史诗
+- 检查当前迭代是否还有剩余容量
+- 如果有容量：分配到迭代（`Sprint: [current]`）
+- 如果容量已满：标记为 `Priority overflow — consider pulling from sprint`
 
-For `full` mode: assign all P1 to current sprint, P2 to next sprint estimate,
-P3+ to backlog.
+对于 `full` 模式：将所有 P1 分配到当前迭代，将 P2 分配到预计的下一迭代，
+将 P3+ 分配到待办列表。
 
-### Deviation check
+### 偏差检查
 
-Flag bugs that suggest **systematic problems**:
-- 3+ bugs from the same system in the same sprint → "Potential design or
-  implementation quality issue in [system]"
-- 2+ S1/S2 bugs in the same story → "Story may need to be reopened and
-  re-reviewed before shipping"
-- Bug filed against a story marked Complete → "Regression in completed story —
-  story should be re-opened in sprint tracking"
+标记暗示存在**系统性问题**的缺陷：
+- 同一迭代的同一系统出现 3 个以上缺陷 → "[system] 中可能存在设计或实现质量问题"
+- 同一故事出现 2 个以上 S1/S2 缺陷 → "故事可能需要重新打开，并在发布前重新评审"
+- 针对标记为 Complete 的故事提交了缺陷 → "已完成故事出现回归——
+  应在迭代跟踪中重新打开该故事"
 
 ---
 
-## 4. Trend Analysis
+## 4. 趋势分析
 
-After classifying all bugs, generate trend metrics:
+对所有缺陷分类后，生成趋势指标：
 
-### Volume trends
-- Total open bugs: [N]
-- Opened this sprint: [N]
-- Closed this sprint: [N]
-- Net change: [+N / -N]
+### 数量趋势
+- 未关闭缺陷总数：[N]
+- 本迭代新增：[N]
+- 本迭代关闭：[N]
+- 净变化：[+N / -N]
 
-### System hot spots
-- Which system has the most open bugs?
-- Which system has the highest S1/S2 ratio?
+### 系统热点
+- 哪个系统的未关闭缺陷最多？
+- 哪个系统的 S1/S2 比例最高？
 
-### Age analysis
-- How many bugs are older than 2 sprints?
-- Are any S1/S2 bugs un-assigned (sprint = none)?
+### 时长分析
+- 有多少缺陷已存在超过 2 个迭代？
+- 是否有任何 S1/S2 缺陷尚未分配（sprint = none）？
 
-### Regression indicator
-- Any bugs filed against previously-completed stories?
-- Count: [N] regression bugs (story reopened implied)
+### 回归指标
+- 是否有针对先前已完成故事提交的缺陷？
+- 数量：[N] 个回归缺陷（意味着故事已重新打开）
 
 ---
 
-## 5. Generate Triage Report
+## 5. 生成分诊报告
 
 ```markdown
-# Bug Triage Report
+# 分诊报告（Bug Triage Report）
 
-> **Date**: [date]
-> **Mode**: [sprint | full | trend]
-> **Generated by**: /bug-triage
-> **Open bugs processed**: [N]
-> **Sprint in scope**: [sprint name, or "N/A"]
-
----
-
-## Triage Summary
-
-| Priority | Count | Notes |
-|----------|-------|-------|
-| P1 — Fix this sprint | [N] | [N] assigned to sprint, [N] overflow |
-| P2 — Fix soon | [N] | Scheduled for next sprint |
-| P3 — Backlog | [N] | Deferred |
-| P4 — Won't fix | [N] | Accepted risk |
-
-**Critical (S1/S2) unfixed count**: [N]
+> **日期**: [date]
+> **模式**: [sprint | full | trend]
+> **生成者**: /bug-triage
+> **已处理的未解决错误**: [N]
+> **迭代范围**: [迭代名称，或 "N/A"]
 
 ---
 
-## P1 Bugs — Fix This Sprint
+## 分诊摘要（Triage Summary）
 
-| ID | System | Severity | Summary | Assigned to | Story |
-|----|--------|----------|---------|-------------|-------|
-| BUG-NNN | [system] | S[1-4] | [one-line description] | [sprint] | [story path] |
+| 优先级               | 数量 | 备注                           |
+|----------------------|------|--------------------------------|
+| P1 — Fix this sprint | [N]  | [N] 个已分配到迭代，[N] 个溢出 |
+| P2 — Fix soon        | [N]  | 已安排到下一迭代               |
+| P3 — Backlog         | [N]  | 已延期                         |
+| P4 — Won't fix       | [N]  | 已接受的风险                   |
+
+**关键 (S1/S2) 未解决数量**: [N]
+
+---
+
+## P1 问题 — Fix This Sprint
+
+| ID | 所属系统 | 严重等级 | 摘要       | 负责人     | 用户故事     |
+|----|----------|----------|------------|----------|--------------|
+| BUG-NNN | [system] | S[1-4]   | [单行描述] | [sprint] | [story path] |
 
 ---
 
 ## P2 Bugs — Fix Soon
 
-| ID | System | Severity | Summary | Target Sprint |
-|----|--------|----------|---------|---------------|
-| BUG-NNN | [system] | S[1-4] | [one-line description] | Sprint [N+1] |
+| ID | 所属系统 | 严重等级 | 摘要       | 目标迭代 |
+|----|----------|----------|------------|---------------|
+| BUG-NNN | [system] | S[1-4]   | [单行描述] | Sprint [N+1] |
 
 ---
 
 ## P3/P4 Bugs — Backlog / Won't Fix
 
-| ID | System | Severity | Summary | Disposition |
-|----|--------|----------|---------|-------------|
-| BUG-NNN | [system] | S4 | [one-line description] | Backlog |
+| ID | 所属系统 | 严重等级 | 摘要       | 处理状态 |
+|----|----------|----------|------------|-------------|
+| BUG-NNN | [system] | S4       | [单行描述] | Backlog |
 
 ---
 
-## Systemic Issues Flagged
+## 系统性问题预警
 
-[List any patterns from Step 3 deviation check, or "None identified."]
+[列出步骤 3 偏差检查发现的任何模式，或填写 "None identified."]
 
 ---
 
-## Trend Analysis
+## 趋势分析
 
-**Volume**: [N] open / [+N] net change this sprint
-**Hot spot**: [system with most bugs]
-**Regressions**: [N] bugs against completed stories
-**Aged bugs (>2 sprints old)**: [N]
+**问题总量**: [N] 个未关闭/本迭代净变化 [+N]
+**热点模块**: [缺陷最多的系统]
+**回归缺陷**: [N] 个针对已完成故事的缺陷
+**逾期缺陷 (存在超过 2 个迭代)**: [N]
 
-[If N aged S1/S2 bugs > 0:]
-> ⚠️ [N] high-severity bugs have been open for more than 2 sprints without
-> assignment. These represent accepted risk that should be explicitly reviewed.
+[如果存在时间超过 2 个迭代的 S1/S2 缺陷，且 N > 0：]
+> ⚠️ [N] 个高严重程度缺陷已存在超过 2 个迭代但尚未分配。
+> 这些缺陷代表已接受的风险，应进行明确评审。
 
 ---
 
 ## Recommended Actions
 
-1. [Most urgent action — usually "fix P1 bugs before QA hand-off"]
-2. [Second action — usually "investigate [hot spot system] quality"]
-3. [Third action — optional improvement]
+1. [最紧急的行动——通常为“在移交 QA 前修复 P1 缺陷”]
+2. [第二项行动——通常为“调查 [hot spot system] 的质量”]
+3. [第三项行动——可选改进]
 ```
 
 ---
 
-## 6. Write and Gate
+## 6. 写入与门禁
 
-Present the report in conversation, then ask:
+在对话中展示报告，然后询问：
 
-"May I write this triage report to `production/qa/bug-triage-[date].md`?"
+"可以将此分诊报告写入 `production/qa/bug-triage-[date].md` 吗？"
 
-Write only after approval.
+仅在获得批准后写入。
 
-After writing:
-- If any S1 bugs are unassigned: "S1 bugs must be assigned before the sprint
-  can be considered healthy. Run `/sprint-status` to see current capacity."
-- If regression bugs exist: "Regressions found — consider re-opening the
-  affected stories in sprint tracking and running `/smoke-check` to re-gate."
-- If no P1 bugs exist: "No P1 bugs — build is in good shape for QA hand-off." Verdict: **COMPLETE** — triage report written.
+写入后：
+- 如果有任何 S1 缺陷尚未分配："必须先分配 S1 缺陷，才能认为迭代状态健康。
+  运行 `/sprint-status` 查看当前容量。"
+- 如果存在回归缺陷："发现回归——考虑在迭代跟踪中重新打开受影响的故事，
+  并运行 `/smoke-check` 重新执行门禁。"
+- 如果不存在 P1 缺陷："没有 P1 缺陷——构建状态良好，可以移交 QA。" Verdict: **COMPLETE**——分诊报告已写入。
 
-If user declined write: Verdict: **BLOCKED** — user declined write.
+如果用户拒绝写入：Verdict: **BLOCKED**——用户拒绝写入。
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-- **Never close or mark bugs Won't Fix without user approval** — surface them
-  as P4 candidates and ask: "Are these acceptable as Won't Fix?"
-- **Never auto-assign to a sprint at capacity** — flag overflow and let the
-  sprint owner decide what to pull
-- **Severity is objective; priority is a team decision** — present severity
-  classifications as recommendations, not mandates
-- **Trend data is informational** — do not block work on trend findings alone;
-  surface them as observations
+- **未经用户批准，绝不关闭缺陷或将缺陷标记为 Won't Fix**——将其作为 P4 候选项
+  提出，并询问："是否可以将这些缺陷标记为 Won't Fix？"
+- **绝不自动分配到容量已满的迭代**——标记溢出，并由迭代负责人决定移出哪些工作
+- **Severity 是客观判断；priority 是团队决策**——将严重程度分类作为建议提出，
+  而不是强制规定
+- **趋势数据仅供参考**——不要仅凭趋势发现阻塞工作；将其作为观察结果提出

@@ -1,14 +1,12 @@
 #!/bin/bash
-# Claude Code SubagentStop hook: Log agent completion for audit trail
-# Tracks when agents finish and their outcome
+# Claude Code 子智能体停止钩子：记录智能体结束信息用于审计追踪各个智能体的完成时刻与执行结果
 #
-# Input schema (SubagentStop) — per Claude Code hooks reference:
+# 输入格式 (SubagentStop) — 参照 Claude Code 钩子规范：
 # { "session_id": "...", "agent_id": "agent-abc123", "agent_type": "Explore",
 #   "agent_transcript_path": "...", "last_assistant_message": "...", ... }
 #
-# The agent name is in `agent_type`, NOT `agent_name`. Reading `.agent_name`
-# returns null on every invocation, so the fallback "unknown" is always used
-# and the audit trail captures nothing useful.
+# 智能体类型存放于 agent_type，并非 agent_name。每次调用时读取 .agent_name 都会返回空值，
+# 因此程序会一直使用兜底值 “unknown”，审计追踪日志无法记录任何有效信息。
 
 INPUT=$(cat)
 

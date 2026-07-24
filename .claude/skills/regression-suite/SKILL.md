@@ -1,256 +1,230 @@
 ---
 name: regression-suite
-description: "Map test coverage to GDD critical paths, identify fixed bugs without regression tests, flag coverage drift from new features, and maintain tests/regression-suite.md. Run after implementing a bug fix or before a release gate."
+description: "将测试覆盖率映射到 GDD 关键路径，识别缺少回归测试的已修复缺陷，标记新功能导致的覆盖率偏移，并维护 tests/regression-suite.md。在实现缺陷修复后或发布门禁前运行。"
 argument-hint: "[update | audit | report]"
 user-invocable: true
 allowed-tools: Read, Glob, Grep, Write, Edit, AskUserQuestion
 model: sonnet
 ---
 
-# Regression Suite
+# 回归测试套件
 
-This skill ensures that every bug fix is backed by a test that would have
-caught the original bug — and that the regression suite stays current as the
-game evolves. It also detects when new features have been added without
-corresponding regression coverage.
+此技能确保每个缺陷修复都有一个能够捕获原始缺陷的测试作为保障，并在游戏演进时保持回归测试套件的更新。它还会检测新增功能是否缺少相应的回归覆盖。
 
-A regression suite is not a new test category — it is a **curated list of
-tests already in `tests/`** that collectively cover the game's critical paths
-and known failure points. This skill maintains that list.
+回归测试套件不是一种新的测试类别，而是一个**经过筛选的 `tests/` 现有测试列表**，共同覆盖游戏的关键路径和已知故障点。此技能负责维护该列表。
 
-**Output:** `tests/regression-suite.md`
+**输出：** `tests/regression-suite.md`
 
-**When to run:**
-- After fixing a bug (confirm a regression test was written or identify gap)
-- Before a release gate (`/gate-check polish` requires regression suite exists)
-- As part of sprint close to detect coverage drift
+**运行时机：**
+- 修复缺陷后（确认已编写回归测试或识别缺口）
+- 发布门禁前（`/gate-check polish` 要求回归测试套件存在）
+- 迭代结束时，检测覆盖率偏移
 
 ---
 
-## 1. Parse Arguments
+## 1. 解析参数
 
-**Modes:**
-- `/regression-suite update` — scan new bug fixes this sprint and check
-  for regression test presence; add new tests to the suite manifest
-- `/regression-suite audit` — full audit of all GDD critical paths vs.
-  existing test coverage; flag paths with no regression test
-- `/regression-suite report` — read-only status report (no writes); suitable
-  for sprint reviews
-- No argument — if a sprint is clearly active (sprint plan exists with in-progress stories), run `update`. If ambiguous or no active sprint is detected, use `AskUserQuestion`:
-  - Prompt: "No subcommand specified. Which mode do you want to run?"
-  - Options:
-    - `[A] update — scan new bug fixes this sprint and add missing regression tests`
-    - `[B] audit — full audit of all GDD critical paths vs. existing test coverage`
-    - `[C] report — read-only status report (no writes)`
+**模式：**
+- `/regression-suite update` —— 扫描本迭代的新缺陷修复并检查是否存在回归测试；将新测试加入套件清单
+- `/regression-suite audit` —— 全面审计所有 GDD 关键路径与现有测试覆盖率；标记没有回归测试的路径
+- `/regression-suite report` —— 只读状态报告（不写入）；适合迭代评审
+- 无参数 —— 如果能明确判断迭代正在进行（存在包含进行中故事的迭代计划），运行 `update`。如果情况不明确或未检测到活动迭代，则使用 `AskUserQuestion`：
+  - 提示："未指定子命令。要运行哪种模式？"
+  - 选项：
+    - `[A] update — 扫描本迭代的新缺陷修复并添加缺失的回归测试`
+    - `[B] audit — 全面审计所有 GDD 关键路径与现有测试覆盖率`
+    - `[C] report — 只读状态报告（不写入）`
 
 ---
 
-## 2. Load Context
+## 2. 加载上下文
 
-### Step 2a — Load existing regression suite
+### 步骤 2a —— 加载现有回归测试套件
 
-Read `tests/regression-suite.md` if it exists. Extract:
-- Total registered regression tests
-- Last updated date
-- Any tests flagged as `STALE` or `QUARANTINED`
+如果存在，读取 `tests/regression-suite.md`。提取：
+- 已注册回归测试总数
+- 最后更新日期
+- 标记为 `STALE` 或 `QUARANTINED` 的测试
 
-If it does not exist: note "No regression suite found — will create one."
+如果不存在，记录“未找到回归测试套件 —— 将创建一个”。
 
-### Step 2b — Load test inventory
+### 步骤 2b —— 加载测试清单
 
-Glob all test files:
+Glob 所有测试文件：
 ```
 tests/unit/**/*_test.*
 tests/integration/**/*_test.*
 tests/regression/**/*
 ```
 
-For each file, note the system (from directory path) and file name.
-Do not read test file contents unless needed for name-to-test mapping.
+对每个文件记录所属系统（根据目录路径）和文件名。
+除非需要进行名称到测试的映射，否则不要读取测试文件内容。
 
-### Step 2c — Load GDD critical paths
+### 步骤 2c —— 加载 GDD 关键路径
 
-For `audit` mode: read `design/gdd/systems-index.md` to get all systems.
-For each MVP-tier system, read its GDD and extract:
-- Acceptance Criteria (these define the critical paths)
-- Formulas section (formulas must have regression tests)
-- Edge Cases section (known edge cases should have regression tests)
+对于 `audit` 模式：读取 `design/gdd/systems-index.md` 获取所有系统。
+对于每个 MVP 层级系统，读取其 GDD 并提取：
+- 验收标准（这些定义关键路径）
+- 公式章节（公式必须有回归测试）
+- 边界情况章节（已知边界情况应有回归测试）
 
-For `update` mode: skip full GDD scan. Instead read the current sprint plan
-and story files to find stories with Status: Complete this sprint.
+对于 `update` 模式：跳过完整 GDD 扫描，改为读取当前迭代计划和故事文件，查找本迭代状态为 Complete 的故事。
 
-### Step 2d — Load closed bugs
+### 步骤 2d —— 加载已关闭缺陷
 
-Glob `production/qa/bugs/*.md` and filter for bugs with a `Status: Closed`
-or `Status: Fixed` field. Note:
-- Which story or system the bug was in
-- Whether a regression test was mentioned in the fix description
+Glob `production/qa/bugs/*.md`，筛选包含 `Status: Closed` 或 `Status: Fixed` 字段的缺陷。记录：
+- 缺陷所属的故事或系统
+- 修复描述中是否提到了回归测试
 
 ---
 
-## 3. Map Coverage — Critical Paths
+## 3. 映射覆盖率 —— 关键路径
 
-For `audit` mode only:
+仅适用于 `audit` 模式：
 
-For each GDD acceptance criterion, determine whether a test exists:
+对于每个 GDD 验收标准，确定是否存在测试：
 
-1. Grep `tests/unit/[system]/` and `tests/integration/[system]/` for file names
-   and function names related to the criterion's key noun/verb
-2. Assign coverage:
+1. 在 `tests/unit/[system]/` 和 `tests/integration/[system]/` 中 Grep 与该标准关键名词/动词相关的文件名和函数名
+2. 分配覆盖率：
 
-| Status | Meaning |
+| 状态 | 含义 |
 |--------|---------|
-| **COVERED** | A test file exists that targets this criterion's logic |
-| **PARTIAL** | A test exists but doesn't cover all cases (e.g. happy path only) |
-| **MISSING** | No test found for this critical path |
-| **EXEMPT** | Visual/Feel or UI criterion — not automatable by design |
+| **COVERED** | 存在针对该标准逻辑的测试文件 |
+| **PARTIAL** | 存在测试，但未覆盖所有情况（例如仅覆盖正常路径） |
+| **MISSING** | 未找到该关键路径的测试 |
+| **EXEMPT** | 视觉/手感或 UI 标准 —— 按设计无法自动化 |
 
-3. Elevate MISSING items that correspond to formulas or state machines to
-   **HIGH PRIORITY** gap — these are the most likely regression sources.
-
----
-
-## 4. Map Coverage — Fixed Bugs
-
-For each closed bug:
-
-1. Extract the system slug from the bug's metadata
-2. Grep `tests/unit/[system]/` and `tests/integration/[system]/` for a test
-   that references the bug ID or the specific failure scenario
-3. Assign:
-   - **HAS REGRESSION TEST** — a test was found that would catch this bug
-   - **MISSING REGRESSION TEST** — bug was fixed but no test guards against recurrence
-
-For MISSING REGRESSION TEST items:
-- Flag them as regression gaps
-- Suggest the test file path: `tests/unit/[system]/[bug-slug]_regression_test.[ext]`
-- Note: "Without this test, this bug can silently return in a future sprint."
+3. 将对应公式或状态机的 MISSING 项提升为 **HIGH PRIORITY** 缺口 —— 这些最可能成为回归来源。
 
 ---
 
-## 5. Detect Coverage Drift
+## 4. 映射覆盖率 —— 已修复缺陷
 
-Coverage drift occurs when the game grows but the regression suite doesn't.
+对于每个已关闭缺陷：
 
-Check for drift indicators:
-- Stories completed this sprint with no corresponding test files in `tests/`
-- New systems added to `systems-index.md` since the last regression-suite update
-- GDD sections added or revised since the regression suite was last updated
-  (use Grep on GDD file modification hints if available, or ask the user)
-- `tests/regression-suite.md` last-updated date vs. current date — if gap >
-  2 sprints, flag as likely stale
+1. 从缺陷元数据中提取系统 slug
+2. 在 `tests/unit/[system]/` 和 `tests/integration/[system]/` 中 Grep 引用缺陷 ID 或具体故障场景的测试
+3. 分配状态：
+   - **HAS REGRESSION TEST** —— 找到了能够捕获该缺陷的测试
+   - **MISSING REGRESSION TEST** —— 缺陷已修复，但没有测试防止其复发
+
+对于 MISSING REGRESSION TEST 项：
+- 将其标记为回归缺口
+- 建议测试文件路径：`tests/unit/[system]/[bug-slug]_regression_test.[ext]`
+- 记录：“没有这个测试，该缺陷可能在未来迭代中悄然复发。”
 
 ---
 
-## 6. Generate Report and Suite Manifest
+## 5. 检测覆盖率偏移
 
-### Report format (in conversation)
+覆盖率偏移发生在游戏不断扩展，但回归测试套件没有同步扩展时。
+
+检查偏移指标：
+- 本迭代完成但在 `tests/` 中没有对应测试文件的故事
+- 自上次回归测试套件更新以来添加到 `systems-index.md` 的新系统
+- 自上次回归测试套件更新以来新增或修订的 GDD 章节（如有可用的 GDD 文件修改提示，使用 Grep；否则询问用户）
+- `tests/regression-suite.md` 的最后更新日期与当前日期之差 —— 如果超过 2 个迭代，标记为可能已过时
+
+---
+
+## 6. 生成报告和套件清单
+
+### 报告格式（在对话中）
 
 ```
-## Regression Suite Status
+## 回归测试套件状态
 
-**Mode**: [update | audit | report]
-**Existing registered tests**: [N]
-**Test files scanned**: [N]
+**模式**：[update | audit | report]
+**现有已注册测试**：[N]
+**已扫描测试文件**：[N]
 
-### Critical Path Coverage (audit mode only)
-| System | Total ACs | Covered | Partial | Missing | Exempt |
+### 关键路径覆盖率（仅限 audit 模式）
+| 系统 | AC 总数 | Covered | Partial | Missing | Exempt |
 |--------|-----------|---------|---------|---------|--------|
 | [name] | [N] | [N] | [N] | [N] | [N] |
 
-**Coverage rate (non-exempt)**: [N]%
+**覆盖率（非豁免项）**：[N]%
 
-### Bug Regression Coverage
-| Bug ID | System | Severity | Has Regression Test? |
+### 缺陷回归覆盖率
+| 缺陷 ID | 系统 | 严重性 | 有回归测试？ |
 |--------|--------|----------|----------------------|
 | BUG-NNN | [system] | S[N] | YES / NO ⚠ |
 
-**Bugs without regression tests**: [N]
+**缺少回归测试的缺陷**：[N]
 
-### Coverage Drift Indicators
-[List new systems or stories with no test coverage, or "None detected."]
+### 覆盖率偏移指标
+[列出没有测试覆盖的新系统或故事，或填写“未检测到”。]
 
-### Recommended New Regression Tests
-| Priority | System | Suggested Test File | Covers |
+### 建议新增的回归测试
+| 优先级 | 系统 | 建议测试文件 | 覆盖内容 |
 |----------|--------|---------------------|--------|
 | HIGH | [system] | `tests/unit/[system]/[slug]_regression_test.[ext]` | BUG-NNN / AC-[N] |
 | MEDIUM | [system] | `tests/unit/[system]/[slug]_test.[ext]` | [criterion] |
 ```
 
-### Suite manifest format (`tests/regression-suite.md`)
+### 套件清单格式（`tests/regression-suite.md`）
 
-The manifest is a curated index — not the tests themselves, but a registry
-of which tests should always pass before a release:
+清单是经过筛选的索引，不是测试本身，而是记录发布前必须始终通过哪些测试：
 
 ```markdown
-# Regression Suite Manifest
+# 回归测试套件清单
 
-> Last Updated: [date]
-> Total registered tests: [N]
-> Coverage: [N]% of GDD critical paths
+> 最后更新：[date]
+> 已注册测试总数：[N]
+> 覆盖率：GDD 关键路径的 [N]%
 
-## How to run
+## 运行方式
 
-[Engine-specific command to run all regression tests]
+[运行所有回归测试的引擎专用命令]
 
-## Registered Regression Tests
+## 已注册回归测试
 
 ### [System Name]
 
-| Test File | Test Function (if known) | Covers | Added |
+| 测试文件 | 测试函数（如已知） | 覆盖内容 | 添加日期 |
 |-----------|--------------------------|--------|-------|
 | `tests/unit/[system]/[file]_test.[ext]` | `test_[scenario]` | AC-N / BUG-NNN | [date] |
 
-## Known Gaps
+## 已知缺口
 
-Tests that should exist but don't yet:
+应当存在但尚未创建的测试：
 
-| Priority | System | Suggested Path | Covers | Reason Not Yet Written |
+| 优先级 | 系统 | 建议路径 | 覆盖内容 | 尚未编写的原因 |
 |----------|--------|----------------|--------|------------------------|
-| HIGH | [system] | `tests/unit/[system]/[path]` | BUG-NNN | Bug fixed without test |
+| HIGH | [system] | `tests/unit/[system]/[path]` | BUG-NNN | 缺陷已修复但没有测试 |
 
-## Quarantined Tests
+## 已隔离测试
 
-Tests that are flaky or disabled (do not run in CI):
+不稳定或已禁用的测试（不在 CI 中运行）：
 
-| Test File | Function | Reason | Quarantined Since |
+| 测试文件 | 函数 | 原因 | 隔离日期 |
 |-----------|----------|--------|-------------------|
 | (none) | | | |
 ```
 
 ---
 
-## 7. Write Output
+## 7. 写入输出
 
-Ask: "May I write/update `tests/regression-suite.md` with the current
-regression suite manifest?"
+询问：“可以使用当前回归测试套件清单写入/更新 `tests/regression-suite.md` 吗？”
 
-For `update` mode: append new entries; never remove existing entries
-(use `Edit` with targeted insertions).
-For `audit` mode: rewrite the full manifest with updated coverage data.
-For `report` mode: do not write anything.
+对于 `update` 模式：追加新条目；绝不删除现有条目（使用 `Edit` 定向插入）。
+对于 `audit` 模式：使用更新后的覆盖率数据重写完整清单。
+对于 `report` 模式：不写入任何内容。
 
-After writing (if approved):
+写入后（如果获得批准）：
 
-- For each HIGH priority gap: "Consider creating the missing regression test
-  before the next sprint. Run `/test-helpers` to scaffold the test file."
-- If bug regression gaps > 0: "These bugs can silently return without regression
-  tests. The next sprint should include a story to write the missing tests."
-- If coverage drift detected: "Regression suite may be drifting. Consider
-  running `/regression-suite audit` at the next sprint boundary."
+- 对每个 HIGH 优先级缺口：“考虑在下个迭代前创建缺失的回归测试。运行 `/test-helpers` 生成测试文件骨架。”
+- 如果缺陷回归缺口 > 0：“没有回归测试，这些缺陷可能悄然复发。下个迭代应包含编写缺失测试的故事。”
+- 如果检测到覆盖率偏移：“回归测试套件可能正在偏移。考虑在下个迭代边界运行 `/regression-suite audit`。”
 
-Verdict: **COMPLETE** — regression suite updated. (If user declined write: Verdict: **BLOCKED**.)
+结论：**COMPLETE** —— 回归测试套件已更新。（如果用户拒绝写入：结论为 **BLOCKED**。）
 
 ---
 
-## Collaborative Protocol
+## 协作协议
 
-- **Never remove existing regression tests from the manifest** without
-  explicit user approval — removing a test that was deliberately written is a
-  regression risk itself
-- **Gaps are advisory, not blocking** — surface them clearly but do not prevent
-  other work from proceeding (except at release gate where regression suite is required)
-- **Quarantine is not deletion** — tests with intermittent failures should be
-  quarantined (noted in manifest) but not removed; they should be fixed by
-  `/test-flakiness`
-- **Ask before writing** — always confirm before creating or updating the manifest
+- **未经用户明确批准，绝不从清单中删除现有回归测试** —— 删除专门编写的测试本身就是回归风险
+- **缺口是建议项，不是阻塞项** —— 清晰地展示缺口，但不要阻止其他工作继续（发布门禁要求回归测试套件时除外）
+- **隔离不是删除** —— 有间歇性失败的测试应被隔离（在清单中注明），而不是删除；应通过 `/test-flakiness` 修复
+- **写入前先询问** —— 创建或更新清单前始终确认

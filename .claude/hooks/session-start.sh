@@ -1,19 +1,17 @@
 #!/bin/bash
-# Claude Code SessionStart hook: Load project context at session start
-# Outputs context information that Claude sees when a session begins
+# Claude Code SessionStart 钩子: 在会话开始时加载项目上下文
+# 输出 Claude 在会话开始时看到的上下文信息
 #
-# Input schema (SessionStart): No stdin input
+# 输入格式 (SessionStart): No stdin input
 
-echo "=== Claude Code Game Studios — Session Context ==="
+echo "=== Claude Code Game Studios — 会话上下文 ==="
 
-# Current branch
+# 当前分支
 BRANCH=$(git rev-parse --abbrev-ref HEAD 2>/dev/null)
 if [ -n "$BRANCH" ]; then
-    echo "Branch: $BRANCH"
-
-    # Recent commits
+    echo "分支: $BRANCH"
     echo ""
-    echo "Recent commits:"
+    echo "最近的提交:"
     git log --oneline -5 2>/dev/null | while read -r line; do
         echo "  $line"
     done
@@ -23,13 +21,13 @@ fi
 LATEST_SPRINT=$(ls -t production/sprints/sprint-*.md 2>/dev/null | head -1)
 if [ -n "$LATEST_SPRINT" ]; then
     echo ""
-    echo "Active sprint: $(basename "$LATEST_SPRINT" .md)"
+    echo "活跃迭代: $(basename "$LATEST_SPRINT" .md)"
 fi
 
 # Current milestone
 LATEST_MILESTONE=$(ls -t production/milestones/*.md 2>/dev/null | head -1)
 if [ -n "$LATEST_MILESTONE" ]; then
-    echo "Active milestone: $(basename "$LATEST_MILESTONE" .md)"
+    echo "活跃里程碑: $(basename "$LATEST_MILESTONE" .md)"
 fi
 
 # Open bug count
@@ -41,7 +39,7 @@ for dir in tests/playtest production; do
     fi
 done
 if [ "$BUG_COUNT" -gt 0 ]; then
-    echo "Open bugs: $BUG_COUNT"
+    echo "未解决的 Bug: $BUG_COUNT"
 fi
 
 # Code health quick check
@@ -50,7 +48,7 @@ if [ -d "src" ]; then
     FIXME_COUNT=$(grep -r "FIXME" src/ 2>/dev/null | wc -l)
     if [ "$TODO_COUNT" -gt 0 ] || [ "$FIXME_COUNT" -gt 0 ]; then
         echo ""
-        echo "Code health: ${TODO_COUNT} TODOs, ${FIXME_COUNT} FIXMEs in src/"
+        echo "代码健康: ${TODO_COUNT} 个 TODO, ${FIXME_COUNT} 个 FIXME 在 src/ 中"
     fi
 fi
 
@@ -58,17 +56,17 @@ fi
 STATE_FILE="production/session-state/active.md"
 if [ -f "$STATE_FILE" ]; then
     echo ""
-    echo "=== ACTIVE SESSION STATE DETECTED ==="
-    echo "A previous session left state at: $STATE_FILE"
-    echo "Read this file to recover context and continue where you left off."
+    echo "=== 检测到活跃会话状态 ==="
+    echo "上一次会话留下了状态文件: $STATE_FILE"
+    echo "请读取此文件以恢复上下文并从中断处继续。"
     echo ""
-    echo "Quick summary (last 20 lines):"
+    echo "快速摘要: (last 20 lines):"
     tail -20 "$STATE_FILE" 2>/dev/null
     TOTAL_LINES=$(wc -l < "$STATE_FILE" 2>/dev/null)
     if [ "$TOTAL_LINES" -gt 20 ]; then
-        echo "  ... ($TOTAL_LINES total lines — read the full file to continue)"
+        echo "  ... (共 $TOTAL_LINES 行 — 请读取完整文件以继续)"
     fi
-    echo "=== END SESSION STATE PREVIEW ==="
+    echo "=== 会话状态预览结束 ==="
 fi
 
 echo "==================================="
