@@ -1,37 +1,37 @@
-# CLAUDE.local.md Template
+# CLAUDE.local.md 模板（Template）
 
-Copy this file to the project root as `CLAUDE.local.md` for personal overrides.
-This file is gitignored and will not be committed.
+将此文件复制到项目根目录并命名为 `CLAUDE.local.md`，用于个人覆盖配置。
+此文件已被 gitignore 忽略，不会被提交。
 
 ```markdown
-# Personal Preferences
+# 个人偏好设置
 
-## Model Preferences
-- Prefer Opus for complex design tasks
-- Use Haiku for quick lookups and simple edits
+## 模型偏好
+- 复杂设计任务优先使用 Opus
+- 快速查找和简单编辑使用 Haiku
 
-## Workflow Preferences
-- Always run tests after code changes
-- Compact context proactively at 60% usage
-- Use /clear between unrelated tasks
+## 工作流偏好
+- 代码变更后始终运行测试
+- 在上下文使用达到 60% 时主动压缩上下文
+- 在不相关任务之间使用 /clear
 
-## Local Environment
+## 本地环境
 - Python command: python (or py / python3)
 - Shell: Git Bash on Windows
 - IDE: VS Code with Claude Code extension
 
-## Communication Style
-- Keep responses concise
-- Show file paths in all code references
-- Explain architectural decisions briefly
+## 沟通风格
+- 保持回复简洁
+- 在所有代码引用中显示文件路径
+- 简要解释架构决策记录（architecture decision record）
 
-## Personal Shortcuts
-- When I say "review", run /code-review on the last changed files
-- When I say "status", show git status + sprint progress
+## 个人快捷指令
+- 当我说 "review" 时，对最近变更的文件运行 /code-review
+- 当我说 "status" 时，显示 git status + 冲刺（sprint）进度
 ```
 
-## Setup
+## 设置（Setup）
 
-1. Copy this template to your project root: `cp .claude/docs/CLAUDE-local-template.md CLAUDE.local.md`
-2. Edit to match your preferences
-3. Verify `CLAUDE.local.md` is in `.gitignore` (Claude Code reads it from the project root)
+1. 将此模板复制到你的项目根目录：`cp .claude/docs/CLAUDE-local-template.md CLAUDE.local.md`
+2. 按你的偏好进行编辑
+3. 确认 `CLAUDE.local.md` 在 `.gitignore` 中（Claude Code 会从项目根目录读取它）
