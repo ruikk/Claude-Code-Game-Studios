@@ -1,85 +1,85 @@
-# Agent Test Spec: qa-lead
+# 代理测试规范：qa-lead
 
-## Agent Summary
-**Domain owned:** Test strategy, QL-STORY-READY gate, QL-TEST-COVERAGE gate, bug severity triage, release quality gates.
-**Does NOT own:** Feature implementation (programmers), game design decisions, creative direction, production scheduling.
-**Model tier:** Sonnet (individual system analysis — story readiness and coverage assessment).
-**Gate IDs handled:** QL-STORY-READY, QL-TEST-COVERAGE.
-
----
-
-## Static Assertions (Structural)
-
-Verified by reading the agent's `.claude/agents/qa-lead.md` frontmatter:
-
-- [ ] `description:` field is present and domain-specific (references test strategy, story readiness, coverage, bug triage — not generic)
-- [ ] `allowed-tools:` list is read-focused; may include Read for story files, test files, and coding-standards; Bash only if running test commands is required
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
-- [ ] Agent definition does not claim authority over implementation decisions or game design
+## 代理摘要
+**负责领域：** 测试策略、QL-STORY-READY 门禁、QL-TEST-COVERAGE 门禁、缺陷严重程度分诊、发布质量门禁。
+**不负责：** 功能实现（程序员）、游戏设计决策、创意方向、制作排期。
+**模型层级：** Sonnet（单系统分析，负责故事就绪度与覆盖率评估）。
+**处理的门禁 ID：** QL-STORY-READY、QL-TEST-COVERAGE。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output format
-**Scenario:** A story for "Player takes damage from hazard tiles" is submitted for readiness check. The story has three acceptance criteria: (1) Player health decreases by the hazard's damage value, (2) A damage visual feedback plays, (3) Player cannot take damage again for 0.5 seconds (invincibility window). All three ACs are measurable and specific. Request is tagged QL-STORY-READY.
-**Expected:** Returns `QL-STORY-READY: ADEQUATE` with rationale confirming that all three ACs are present, specific, and testable.
-**Assertions:**
-- [ ] Verdict is exactly one of ADEQUATE / INADEQUATE
-- [ ] Verdict token is formatted as `QL-STORY-READY: ADEQUATE`
-- [ ] Rationale references the specific number of ACs (3) and confirms each is measurable
-- [ ] Output stays within QA scope — does not comment on whether the mechanic is designed well
+通过读取代理的 `.claude/agents/qa-lead.md` frontmatter 进行验证：
 
-### Case 2: Out-of-domain request — redirects or escalates
-**Scenario:** A developer asks qa-lead to implement the automated test harness for the new physics system.
-**Expected:** Agent declines to implement the test code and redirects to the appropriate programmer (gameplay-programmer or lead-programmer).
-**Assertions:**
-- [ ] Does not write or propose code implementation
-- [ ] Explicitly names `lead-programmer` or `gameplay-programmer` as the correct handler for implementation
-- [ ] May define what the test should verify (test strategy), but defers the code writing to programmers
-
-### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A story for "Combat feels responsive and punchy" is submitted for readiness check. The single acceptance criterion reads: "Combat should feel good to the player." This is subjective and unmeasurable. Request is tagged QL-STORY-READY.
-**Expected:** Returns `QL-STORY-READY: INADEQUATE` with specific identification of the unmeasurable AC and guidance on what would make it testable (e.g., "input-to-hit-feedback latency ≤ 100ms").
-**Assertions:**
-- [ ] Verdict is exactly one of ADEQUATE / INADEQUATE — not freeform text
-- [ ] Verdict token is formatted as `QL-STORY-READY: INADEQUATE`
-- [ ] Rationale identifies the specific AC that fails the measurability requirement
-- [ ] Provides actionable guidance on how to rewrite the AC to be testable
-
-### Case 4: Conflict escalation — correct parent
-**Scenario:** gameplay-programmer and qa-lead disagree on whether a test that asserts "enemy patrol path visits all waypoints within 5 seconds" is deterministic enough to be a valid automated test. gameplay-programmer argues timing variability makes it flaky; qa-lead believes it is acceptable.
-**Expected:** qa-lead acknowledges the technical flakiness concern and escalates to lead-programmer for a technical ruling on what constitutes an acceptable determinism standard for automated tests.
-**Assertions:**
-- [ ] Escalates to `lead-programmer` for the technical ruling on determinism standards
-- [ ] Does not unilaterally override the gameplay-programmer's flakiness concern
-- [ ] Frames the escalation clearly: "this is a technical standards question, not a QA coverage question"
-- [ ] Does not abandon the coverage requirement — asks for a deterministic alternative if the current approach is ruled flaky
-
-### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes the coding-standards.md testing standards section, which specifies: Logic stories require blocking automated unit tests, Visual/Feel stories require screenshots + lead sign-off (advisory), Config/Data stories require smoke check pass (advisory). A story classified as "Logic" type is submitted with only a manual walkthrough document as evidence.
-**Expected:** Assessment references the specific test evidence requirements from coding-standards.md, identifies that a "Logic" story requires an automated unit test (not just a manual walkthrough), and returns INADEQUATE with the specific requirement cited.
-**Assertions:**
-- [ ] References the specific story type classification ("Logic") from the provided context
-- [ ] Cites the specific evidence requirement for Logic stories (automated unit test) from coding-standards.md
-- [ ] Identifies the submitted evidence type (manual walkthrough) as insufficient for this story type
-- [ ] Does not apply advisory-level requirements as blocking requirements
+- [ ] 存在 `description:` 字段，且内容针对具体领域（提及测试策略、故事就绪度、覆盖率、缺陷分诊，而非泛泛描述）
+- [ ] `allowed-tools:` 列表以读取工具为主；可包含 Read，用于读取故事文件、测试文件和 coding-standards；仅在需要运行测试命令时使用 Bash
+- [ ] 根据 coordination-rules.md，模型层级为 `claude-sonnet-4-6`
+- [ ] 代理定义未声称拥有实现决策权或游戏设计决定权
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Returns QL-STORY-READY verdicts using ADEQUATE / INADEQUATE vocabulary only
-- [ ] Returns QL-TEST-COVERAGE verdicts using ADEQUATE / INADEQUATE vocabulary only (or PASS / FAIL for release gates)
-- [ ] Stays within declared QA and test strategy domain
-- [ ] Escalates technical standards disputes to lead-programmer
-- [ ] Uses gate IDs in output (e.g., `QL-STORY-READY: INADEQUATE`) not inline prose verdicts
-- [ ] Does not make binding implementation or game design decisions
+### 用例 1：领域内请求，输出格式恰当
+**场景：** 提交“玩家受到危险地块伤害”的故事进行就绪检查。故事有三条验收标准：(1) 玩家生命值按危险地块的伤害值减少；(2) 播放伤害视觉反馈；(3) 玩家在 0.5 秒内不能再次受到伤害（无敌时间窗）。三条 AC 均可度量且明确。请求标记为 QL-STORY-READY。
+**预期：** 返回 `QL-STORY-READY: ADEQUATE`，并说明三条 AC 均已提供、明确且可测试。
+**断言：**
+- [ ] 结论必须为 ADEQUATE / INADEQUATE 之一
+- [ ] 结论标记格式为 `QL-STORY-READY: ADEQUATE`
+- [ ] 理由提及 AC 的具体数量（3），并确认每条均可度量
+- [ ] 输出保持在 QA 范围内，不评价机制设计是否优秀
+
+### 用例 2：领域外请求，转交或升级
+**场景：** 开发者要求 qa-lead 为新的物理系统实现自动化测试框架。
+**预期：** 代理拒绝实现测试代码，并转交给适当的程序员（gameplay-programmer 或 lead-programmer）。
+**断言：**
+- [ ] 不编写或提出代码实现
+- [ ] 明确指出应由 `lead-programmer` 或 `gameplay-programmer` 负责实现
+- [ ] 可以定义测试应验证什么（测试策略），但将代码编写交给程序员
+
+### 用例 3：门禁结论，术语正确
+**场景：** 提交“战斗响应迅速且富有冲击力”的故事进行就绪检查。唯一的验收标准是：“战斗应让玩家感觉良好。”该标准主观且不可度量。请求标记为 QL-STORY-READY。
+**预期：** 返回 `QL-STORY-READY: INADEQUATE`，明确指出不可度量的 AC，并指导如何使其可测试（例如“从输入到命中反馈的延迟 ≤ 100ms”）。
+**断言：**
+- [ ] 结论必须为 ADEQUATE / INADEQUATE 之一，不得使用自由文本
+- [ ] 结论标记格式为 `QL-STORY-READY: INADEQUATE`
+- [ ] 理由指出未满足可度量要求的具体 AC
+- [ ] 就如何将 AC 改写为可测试标准提供可执行指导
+
+### 用例 4：冲突升级，提交给正确上级
+**场景：** gameplay-programmer 与 qa-lead 对“敌人巡逻路径在 5 秒内经过所有路径点”这一断言是否足够确定、能否作为有效自动化测试存在分歧。gameplay-programmer 认为时间波动会使测试不稳定，qa-lead 则认为可以接受。
+**预期：** qa-lead 承认测试不稳定这一技术顾虑，并升级给 lead-programmer，由其对自动化测试可接受的确定性标准作出技术裁决。
+**断言：**
+- [ ] 升级给 `lead-programmer`，由其裁决确定性技术标准
+- [ ] 不单方面否决 gameplay-programmer 对测试不稳定的顾虑
+- [ ] 清楚说明升级原因：“这是技术标准问题，不是 QA 覆盖率问题”
+- [ ] 不放弃覆盖率要求；如果当前方案被判定为不稳定，则要求提供确定性替代方案
+
+### 用例 5：传入上下文，使用所提供的信息
+**场景：** 代理收到包含 coding-standards.md 测试标准章节的门禁上下文块，其中规定：Logic 故事需要阻断性的自动化单元测试；Visual/Feel 故事需要截图和负责人签核（建议性）；Config/Data 故事需要通过冒烟检查（建议性）。一个分类为 `Logic` 的故事只提交了手动演练文档作为证据。
+**预期：** 评估引用 coding-standards.md 中的具体测试证据要求，指出 `Logic` 故事需要自动化单元测试，而非仅有手动演练，并引用该具体要求返回 INADEQUATE。
+**断言：**
+- [ ] 引用所提供上下文中的具体故事类型分类（`Logic`）
+- [ ] 引用 coding-standards.md 对 Logic 故事规定的具体证据要求（自动化单元测试）
+- [ ] 指出提交的证据类型（手动演练）不足以满足该故事类型
+- [ ] 不将建议性要求作为阻断性要求
 
 ---
 
-## Coverage Notes
-- QL-TEST-COVERAGE (overall coverage assessment for a sprint or milestone) is not covered — a dedicated case should be added when coverage reports are available.
-- Bug severity triage (P0/P1/P2 classification) is not covered here — deferred to /bug-triage skill integration.
-- Release quality gate behavior (PASS / FAIL vocabulary variant) is not covered.
-- Interaction between QL-STORY-READY and story Done criteria (/story-done skill) is not covered.
+## 协议合规性
+
+- [ ] QL-STORY-READY 结论仅使用 ADEQUATE / INADEQUATE 术语
+- [ ] QL-TEST-COVERAGE 结论仅使用 ADEQUATE / INADEQUATE 术语（发布门禁则使用 PASS / FAIL）
+- [ ] 保持在声明的 QA 和测试策略领域内
+- [ ] 将技术标准争议升级给 lead-programmer
+- [ ] 在输出中使用门禁 ID（例如 `QL-STORY-READY: INADEQUATE`），而非行内文字结论
+- [ ] 不对实现或游戏设计作出约束性决定
+
+---
+
+## 覆盖说明
+- 尚未覆盖 QL-TEST-COVERAGE（迭代或里程碑的整体覆盖率评估）；有覆盖率报告后应增加专门用例。
+- 此处尚未覆盖缺陷严重程度分诊（P0/P1/P2 分类），留待与 /bug-triage 技能集成。
+- 尚未覆盖发布质量门禁行为（PASS / FAIL 术语变体）。
+- 尚未覆盖 QL-STORY-READY 与故事完成标准（/story-done 技能）之间的交互。

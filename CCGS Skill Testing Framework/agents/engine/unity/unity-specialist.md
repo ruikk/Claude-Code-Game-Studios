@@ -1,83 +1,83 @@
-# Agent Test Spec: unity-specialist
+# 代理测试规范：unity-specialist
 
-## Agent Summary
-Domain: Unity-specific architecture patterns, MonoBehaviour vs DOTS decisions, and subsystem selection (Addressables, New Input System, UI Toolkit, Cinemachine, etc.).
-Does NOT own: language-specific deep dives (delegates to unity-dots-specialist, unity-ui-specialist, etc.).
-Model tier: Sonnet (default).
-No gate IDs assigned.
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references Unity patterns / MonoBehaviour / subsystem decisions)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition acknowledges the sub-specialist routing table (DOTS, UI, Shader, Addressables)
+## 代理摘要
+领域：Unity 特定架构模式、MonoBehaviour 与 DOTS 的选型，以及子系统选择（Addressables、New Input System、UI Toolkit、Cinemachine 等）。
+不负责：特定语言或领域的深入实现（委派给 unity-dots-specialist、unity-ui-specialist 等）。
+模型层级：Sonnet（默认）。
+未分配门禁 ID。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output
-**Input:** "Should I use MonoBehaviour or ScriptableObject for storing enemy configuration data?"
-**Expected behavior:**
-- Produces a pattern decision tree covering:
-  - MonoBehaviour: for runtime behavior, needs to be attached to a GameObject, has Update() lifecycle
-  - ScriptableObject: for pure data/configuration, exists as an asset, shared across instances, no scene dependency
-- Recommends ScriptableObject for enemy configuration data (stateless, reusable, designer-friendly)
-- Notes that MonoBehaviour can reference the ScriptableObject for runtime use
-- Provides a concrete example of what the ScriptableObject class definition looks like (does not produce full code — refers to engine-programmer or gameplay-programmer for implementation)
-
-### Case 2: Wrong-engine redirect
-**Input:** "Set up a Node scene tree with signals for this enemy system."
-**Expected behavior:**
-- Does NOT produce Godot Node/signal code
-- Identifies this as a Godot pattern
-- States that in Unity the equivalent is GameObject hierarchy + UnityEvent or C# events
-- Maps the concepts: Godot Node → Unity MonoBehaviour, Godot Signal → C# event / UnityEvent
-- Confirms the project is Unity-based before proceeding
-
-### Case 3: Unity version API flag
-**Input:** "Use the new Unity 6 GPU resident drawer for batch rendering."
-**Expected behavior:**
-- Identifies the Unity 6 feature (GPU Resident Drawer)
-- Flags that this API may not be available in earlier Unity versions
-- Asks for or checks the project's Unity version before providing implementation guidance
-- Directs to verify against official Unity 6 documentation
-- Does NOT assume the project is on Unity 6 without confirmation
-
-### Case 4: DOTS vs. MonoBehaviour conflict
-**Input:** "The combat system uses MonoBehaviour for state management, but we want to add a DOTS-based projectile system. Can they coexist?"
-**Expected behavior:**
-- Recognizes this as a hybrid architecture scenario
-- Explains the hybrid approach: MonoBehaviour can interface with DOTS via SystemAPI, IComponentData, and managed components
-- Notes the performance and complexity trade-offs of mixing the two patterns
-- Recommends escalating the architecture decision to `lead-programmer` or `technical-director`
-- Defers to `unity-dots-specialist` for the DOTS-side implementation details
-
-### Case 5: Context pass — Unity version
-**Input:** Project context provided: Unity 2023.3 LTS. Request: "Configure the new Input System for this project."
-**Expected behavior:**
-- Applies Unity 2023.3 LTS context: uses the New Input System (com.unity.inputsystem) package
-- Does NOT produce legacy Input Manager code (`Input.GetKeyDown()`, `Input.GetAxis()`)
-- Notes any 2023.3-specific Input System behaviors or package version constraints
-- References the project version to confirm Burst/Jobs compatibility if the Input System interacts with DOTS
+- [ ] 存在 `description:` 字段，且内容针对该领域（提及 Unity 模式 / MonoBehaviour / 子系统决策）
+- [ ] `allowed-tools:` 列表包含 Read、Write、Edit、Bash、Glob、Grep
+- [ ] 模型层级为 Sonnet（专家代理的默认值）
+- [ ] 代理定义认可子专家路由表（DOTS、UI、Shader、Addressables）
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (Unity architecture decisions, pattern selection, subsystem routing)
-- [ ] Redirects Godot patterns to appropriate Godot specialists or flags them as wrong-engine
-- [ ] Redirects DOTS implementation to unity-dots-specialist
-- [ ] Redirects UI implementation to unity-ui-specialist
-- [ ] Flags Unity version-gated APIs and requires version confirmation before suggesting them
-- [ ] Returns structured pattern decision guides, not freeform opinions
+### 用例 1：领域内请求——输出适当
+**输入：**“存储敌人配置数据应该使用 MonoBehaviour 还是 ScriptableObject？”
+**预期行为：**
+- 生成涵盖以下内容的模式决策树：
+  - MonoBehaviour：用于运行时行为，需要附加到 GameObject，并具有 Update() 生命周期
+  - ScriptableObject：用于纯数据/配置，以资产形式存在，可在实例间共享，不依赖场景
+- 建议对敌人配置数据使用 ScriptableObject（无状态、可复用、便于设计师使用）
+- 说明 MonoBehaviour 可以引用 ScriptableObject 供运行时使用
+- 提供 ScriptableObject 类定义的具体示例（不生成完整代码，而是让 engine-programmer 或 gameplay-programmer 负责实现）
+
+### 用例 2：错误引擎重定向
+**输入：**“为这个敌人系统设置带信号的 Node 场景树。”
+**预期行为：**
+- 不生成 Godot Node/信号代码
+- 识别出这是 Godot 模式
+- 说明 Unity 中的对应方案是 GameObject 层级结构 + UnityEvent 或 C# 事件
+- 映射概念：Godot Node → Unity MonoBehaviour，Godot Signal → C# event / UnityEvent
+- 继续之前确认项目基于 Unity
+
+### 用例 3：Unity 版本 API 标记
+**输入：**“使用新的 Unity 6 GPU Resident Drawer 进行批量渲染。”
+**预期行为：**
+- 识别 Unity 6 功能 GPU Resident Drawer
+- 标记此 API 在较早 Unity 版本中可能不可用
+- 提供实现指导前，询问或检查项目的 Unity 版本
+- 指示查阅 Unity 6 官方文档进行验证
+- 未经确认，不假定项目使用 Unity 6
+
+### 用例 4：DOTS 与 MonoBehaviour 冲突
+**输入：**“战斗系统使用 MonoBehaviour 管理状态，但我们想添加基于 DOTS 的投射物系统。两者能否共存？”
+**预期行为：**
+- 识别出这是混合架构场景
+- 解释混合方案：MonoBehaviour 可以通过 SystemAPI、IComponentData 和托管组件与 DOTS 交互
+- 说明混用两种模式在性能和复杂度上的取舍
+- 建议将架构决策升级给 `lead-programmer` 或 `technical-director`
+- 将 DOTS 侧的实现细节委派给 `unity-dots-specialist`
+
+### 用例 5：上下文传递——Unity 版本
+**输入：**已提供项目上下文：Unity 2023.3 LTS。请求：“为此项目配置 New Input System。”
+**预期行为：**
+- 应用 Unity 2023.3 LTS 上下文：使用 New Input System（com.unity.inputsystem）包
+- 不生成旧版 Input Manager 代码（`Input.GetKeyDown()`、`Input.GetAxis()`）
+- 说明任何 2023.3 特定的 Input System 行为或包版本约束
+- 如果 Input System 与 DOTS 交互，则引用项目版本确认 Burst/Jobs 兼容性
 
 ---
 
-## Coverage Notes
-- MonoBehaviour vs. ScriptableObject (Case 1) should be documented as an ADR if it results in a project-level decision
-- Version flag (Case 3) confirms the agent does not assume the latest Unity version without context
-- DOTS hybrid (Case 4) verifies the agent escalates architecture conflicts rather than resolving them unilaterally
+## 协议合规性
+
+- [ ] 保持在声明的领域内（Unity 架构决策、模式选择、子系统路由）
+- [ ] 将 Godot 模式重定向到适当的 Godot 专家，或将其标记为错误引擎
+- [ ] 将 DOTS 实现重定向到 unity-dots-specialist
+- [ ] 将 UI 实现重定向到 unity-ui-specialist
+- [ ] 标记受 Unity 版本限制的 API，并要求在建议使用前确认版本
+- [ ] 返回结构化的模式决策指南，而非无结构的主观意见
+
+---
+
+## 覆盖说明
+- 如果 MonoBehaviour 与 ScriptableObject 的选择（用例 1）形成项目级决策，则应记录为 ADR
+- 版本标记（用例 3）用于确认代理不会在缺少上下文时假定使用最新 Unity 版本
+- DOTS 混合方案（用例 4）用于验证代理会升级架构冲突，而不是单方面解决

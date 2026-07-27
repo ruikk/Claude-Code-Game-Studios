@@ -1,81 +1,81 @@
-# Agent Test Spec: writer
+# 代理测试规范：writer
 
-## Agent Summary
-- **Domain**: In-game written content — NPC dialogue (including branching trees), lore codex entries, item and ability descriptions, environmental text (signs, books, notes), quest text, tutorial text, in-world written documents
-- **Does NOT own**: Story architecture and narrative structure (narrative-director), world lore and world rules (world-builder), UX copy and UI labels (ux-designer), patch notes (community-manager)
-- **Model tier**: Sonnet
-- **Gate IDs**: None; flags lore inconsistencies to narrative-director rather than resolving them autonomously
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references dialogue, lore entries, item descriptions, in-game text)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/narrative/ and assets/data/dialogue/; no code or world-building architecture files)
-- [ ] Model tier is Sonnet (default for creative specialists)
-- [ ] Agent definition does not claim authority over narrative structure, world rules, or UX copy direction
+## 代理摘要
+- **领域**：游戏内文字内容——NPC 对话（包括分支树）、设定法典条目、物品和能力描述、环境文字（标牌、书籍、便笺）、任务文本、教程文本、世界内书面文件
+- **不负责**：故事架构和叙事结构（narrative-director）、世界设定和世界规则（world-builder）、UX 文案和 UI 标签（ux-designer）、补丁说明（community-manager）
+- **模型层级**：Sonnet
+- **门禁 ID**：无；将设定不一致反馈给 narrative-director，而不是自行解决
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — NPC merchant dialogue
-**Input**: "Write dialogue for Mira, a traveling merchant NPC. She sells general supplies. Players can ask her about her wares, the road ahead, and rumors."
-**Expected behavior**:
-- Produces a dialogue tree with at least three top-level conversation options: [Wares], [The Road Ahead], [Rumors]
-- Each branch has a distinct conversational response in Mira's voice — not generic merchant filler
-- Includes at least one response that has a follow-up branch (showing tree structure, not just flat responses)
-- Mira's voice is consistent across branches: if she's warm and chatty in one branch, she's not brusque in another without reason
-- Output is formatted as a structured dialogue tree: node label, NPC line, player options, next node
-
-### Case 2: Out-of-domain request — world history design
-**Input**: "Design the history of the world — when the first kingdom was founded, what the great wars were, and why magic was banned."
-**Expected behavior**:
-- Does not produce world history, lore architecture, or world rules
-- States clearly: "World history, lore, and world rules are owned by world-builder; once the history is established, I can write in-game texts, books, and dialogue that reference those events"
-- Does not produce even partial world history as a "placeholder"
-
-### Case 3: Dialogue contradicts established lore — flag to narrative-director
-**Input**: "Write Mira's dialogue line where she mentions that dragons have been extinct for 200 years." [Context includes existing lore: dragons are alive and revered in the northern provinces, not extinct.]
-**Expected behavior**:
-- Identifies the contradiction: established lore states dragons are alive and revered; dialogue stating they're extinct directly conflicts
-- Does NOT write the requested line as given
-- Flags the inconsistency to narrative-director: "Mira's dialogue as requested contradicts established lore (dragons are alive per world-builder's document); requires narrative-director resolution before I can write this line"
-- Offers an alternative: a line that references dragons in a way consistent with the established lore (e.g., Mira expresses awe about a dragon sighting in the north)
-
-### Case 4: Item description references an undesigned mechanic
-**Input**: "Write a description for the 'Berserker's Chalice' — a consumable that triggers the Berserker state when drunk."
-**Expected behavior**:
-- Identifies the dependency gap: "Berserker state" is not defined in any provided game design document
-- Flags the missing dependency: "This description references a 'Berserker state' mechanic that has no GDD entry — I cannot write accurate flavor text for a mechanic whose rules are undefined, as the description may create incorrect player expectations"
-- Does NOT write a description that invents mechanic details (duration, effects) that may conflict with the eventual design
-- Offers two paths: (a) write a vague, non-mechanical description that creates no false expectations, flagged as temporary; (b) wait for game-designer to define the Berserker state first
-
-### Case 5: Context pass — character voice guide
-**Input context**: Character voice guide for Mira: She speaks in short, energetic sentences. Uses merchant slang ("a fine bargain," "coin well spent"). Drops pronouns occasionally ("Good wares, these."). Never uses contractions — always "I will" not "I'll". Warm but slightly mercenary.
-**Input**: "Write Mira's response when a player asks if she has healing potions."
-**Expected behavior**:
-- Short, energetic sentences — no long monologues
-- Uses merchant slang: "a fine bargain," "coin well spent," or similar
-- Drops pronouns where natural: "Fine stock, these potions."
-- No contractions: "I will" not "I'll," "do not" not "don't"
-- Warm tone with a mercenary undertone: she's happy to help because you're a paying customer
-- Does NOT produce dialogue that violates any voice guide rule — check each rule explicitly
+- [ ] 存在 `description:` 字段且内容针对本领域（提及对话、设定条目、物品描述、游戏内文字）
+- [ ] `allowed-tools:` 列表符合代理角色（对 design/narrative/ 和 assets/data/dialogue/ 使用 Read/Write；不涉及代码或世界构建架构文件）
+- [ ] 模型层级为 Sonnet（创作专家默认值）
+- [ ] 代理定义未声称拥有叙事结构、世界规则或 UX 文案方向的决定权
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (dialogue, lore entries, item descriptions, in-game text)
-- [ ] Redirects world history and world rule requests to world-builder without producing unauthorized lore
-- [ ] Flags lore contradictions to narrative-director rather than silently writing inconsistent content
-- [ ] Identifies mechanic dependency gaps before writing item descriptions that could create false player expectations
-- [ ] Applies all rules from a provided character voice guide — no partial compliance
+### 用例 1：领域内请求——NPC 商人对话
+**输入**：“为旅行商人 NPC Mira 撰写对话。她出售常用补给。玩家可以询问商品、前方道路和传闻。”
+**预期行为**：
+- 生成至少包含三个顶层选项的对话树：[商品]、[前方道路]、[传闻]
+- 每个分支都使用 Mira 独特的语气作出不同回应，而非泛泛的商人套话
+- 至少一个回应包含后续分支，体现树状结构而非扁平回应
+- Mira 在各分支中的语气保持一致：若一个分支热情健谈，没有理由时不会在另一个分支突然粗鲁
+- 按结构化对话树格式输出：节点标签、NPC 台词、玩家选项、下一节点
+
+### 用例 2：领域外请求——世界历史设计
+**输入**：“设计世界历史：第一个王国何时建立、发生过哪些大战，以及魔法为何被禁止。”
+**预期行为**：
+- 不生成世界历史、设定架构或世界规则
+- 明确说明：“世界历史、设定和世界规则由 world-builder 负责；历史确立后，我可以撰写引用这些事件的游戏内文字、书籍和对话。”
+- 不以“占位内容”的形式生成哪怕部分世界历史
+
+### 用例 3：对话与既定设定冲突——反馈给 narrative-director
+**输入**：“撰写 Mira 提到龙已灭绝 200 年的台词。”[上下文既定设定：龙仍然活着，并在北方省份受到尊崇，并未灭绝。]
+**预期行为**：
+- 识别冲突：既定设定说龙仍活着且受尊崇，称其灭绝的对话与之直接矛盾
+- 不按原要求写出该台词
+- 向 narrative-director 标记不一致：“按要求撰写的 Mira 对话与既定设定冲突（根据 world-builder 文档，龙仍然活着）；在我撰写这句台词前需要 narrative-director 解决。”
+- 提供符合既定设定的替代台词（例如 Mira 敬畏地谈及在北方见到龙）
+
+### 用例 4：物品描述引用未设计机制
+**输入**：“为‘狂战士圣杯’撰写描述——饮用后触发狂战士状态的消耗品。”
+**预期行为**：
+- 识别依赖缺口：“狂战士状态”未在任何提供的游戏设计文档中定义
+- 标记缺失依赖：“此描述引用了没有 GDD 条目的‘狂战士状态’机制；其规则尚未定义，我无法准确撰写风味文本，因为描述可能造成错误的玩家预期。”
+- 不编造可能与最终设计冲突的机制细节（持续时间、效果）
+- 提供两种路径：(a) 撰写不会造成错误预期的模糊、非机制性描述，并标记为临时内容；(b) 等待 game-designer 先定义狂战士状态
+
+### 用例 5：上下文符合性——角色语气指南
+**输入上下文**：Mira 的角色语气指南：她使用简短、有活力的句子。使用商人俚语（“a fine bargain”“coin well spent”）。偶尔省略代词（“Good wares, these.”）。绝不使用缩写，始终使用“I will”而不是“I'll”。语气温暖但略带逐利色彩。
+**输入**：“玩家询问是否有治疗药水时，撰写 Mira 的回应。”
+**预期行为**：
+- 使用简短、有活力的句子，不写长篇独白
+- 使用商人俚语：“a fine bargain”“coin well spent”或类似表达
+- 在自然处省略代词：“Fine stock, these potions.”
+- 不使用缩写：“I will”而不是“I'll”，“do not”而不是“don't”
+- 语气温暖但带有逐利意味：她愿意帮忙，因为玩家是付费顾客
+- 不生成违反任何语气指南规则的对话，逐条检查规则
 
 ---
 
-## Coverage Notes
-- Case 3 (lore contradiction detection) requires that existing lore is in the conversation context — test is only valid when context is provided
-- Case 4 (dependency gap) tests whether the agent writes descriptions that could set wrong player expectations — a subtle but important quality issue
-- Case 5 is the most important context-awareness test; voice guide compliance must be checked rule-by-rule, not holistically
-- No automated runner; review manually or via `/skill-test`
+## 协议合规性
+
+- [ ] 保持在声明的领域内（对话、设定条目、物品描述、游戏内文字）
+- [ ] 将世界历史和世界规则请求转交给 world-builder，不生成未经授权的设定
+- [ ] 将设定冲突反馈给 narrative-director，而不是静默撰写不一致内容
+- [ ] 撰写可能造成错误玩家预期的物品描述前，识别机制依赖缺口
+- [ ] 应用所提供角色语气指南的全部规则，不得部分遵循
+
+---
+
+## 覆盖说明
+- 用例 3（设定冲突检测）要求现有设定位于对话上下文中；仅在提供上下文时测试有效
+- 用例 4（依赖缺口）测试代理是否会撰写可能导致错误玩家预期的描述，这是细微但重要的质量问题
+- 用例 5 是最重要的上下文意识测试；必须逐条检查语气指南合规性，而非整体判断
+- 无自动运行器；手动审查或通过 `/skill-test` 审查

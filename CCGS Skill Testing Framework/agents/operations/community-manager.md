@@ -1,81 +1,81 @@
-# Agent Test Spec: community-manager
+# 代理测试规范：community-manager
 
-## Agent Summary
-- **Domain**: Player-facing communications — patch notes text (player-friendly), social media post drafts, community update announcements, crisis communication response plans, bug triage and routing from player reports (not fixing)
-- **Does NOT own**: Technical patch content (devops-engineer), QA verification and test execution (qa-lead), bug fixes (programmers), brand strategy direction (creative-director)
-- **Model tier**: Sonnet
-- **Gate IDs**: None; escalates brand voice conflicts to creative-director
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references player communication, patch notes, community management)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for production/releases/patch-notes/ and communication drafts; no code or build tools)
-- [ ] Model tier is Sonnet (default for operations specialists)
-- [ ] Agent definition does not claim authority over technical content, QA strategy, or bug fixing
+## 代理摘要
+- **领域**：面向玩家的沟通——更新说明文本（玩家友好）、社交媒体帖子草稿、社区更新公告、危机沟通响应计划、根据玩家报告进行缺陷分流和转交（不负责修复）
+- **不负责**：技术更新内容（devops-engineer）、QA 验证和测试执行（qa-lead）、缺陷修复（程序员）、品牌策略方向（creative-director）
+- **模型层级**：Sonnet
+- **门禁 ID**：无；将品牌语调冲突升级至 creative-director
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — patch notes for a bug fix
-**Input**: "Write player-facing patch notes for this fix: 'JIRA-4821: Fixed NullReferenceException in InventoryManager.LoadSave() when save file was created on a previous version without the new equipment slot field.'"
-**Expected behavior**:
-- Produces a player-friendly patch note — no internal ticket IDs (JIRA-4821 is removed), no class names (InventoryManager.LoadSave()), no technical stack trace language
-- Uses clear player-facing language: e.g., "Fixed a crash that could occur when loading save files created before the last update."
-- Conveys the user impact (game crashed on load) without exposing internal implementation details
-- Output is formatted for the project's patch notes style (bullet, or numbered, depending on established format)
-
-### Case 2: Out-of-domain request — fixing a reported bug
-**Input**: "A player reported that their save file is corrupted. Can you fix the save system?"
-**Expected behavior**:
-- Does not produce any code or attempt to diagnose the save system implementation
-- Triages the report: acknowledges it as a potential bug affecting player data (high severity)
-- Routes it: "This requires investigation by the appropriate programmer; I'm routing this to [gameplay-programmer or lead-programmer] for technical triage"
-- Optionally drafts a player-facing acknowledgment post ("We're aware of reports of save corruption and are investigating") if requested
-
-### Case 3: Community crisis — backlash over a game change
-**Input**: "Players are angry about our latest patch. We nerfed a popular character's damage by 40% and the community is calling for a rollback. Forum posts, tweets, and Discord are all very negative."
-**Expected behavior**:
-- Produces a crisis communication response plan (not just a single tweet)
-- Plan includes: (1) immediate acknowledgment post — acknowledge the feedback without being defensive; (2) timeline for developer response — commit to a specific timeframe for a design team statement; (3) developer statement template — explain the reasoning behind the nerf without dismissing player concerns; (4) follow-up structure — if rollback or adjustment is planned, communicate it with a timeline
-- Does NOT commit to a rollback on behalf of the design team — flags this as a creative-director decision
-- Tone is empathetic but not apologetic for intentional design decisions
-
-### Case 4: Brand voice conflict in patch notes
-**Input**: "Here is our patch note draft: 'We have annihilated the egregious framerate catastrophe that plagued the loading screen.' Our brand voice guide specifies: clear, warm, slightly humorous — not dramatic or hyperbolic."
-**Expected behavior**:
-- Identifies the conflict: "annihilated," "egregious," and "catastrophe" are dramatic/hyperbolic — inconsistent with the specified brand voice
-- Does NOT approve the draft as-is
-- Produces a revised version: e.g., "Fixed a performance issue that was causing the loading screen to run slowly — things should feel snappier now."
-- Flags the inconsistency explicitly rather than silently rewriting without noting the problem
-
-### Case 5: Context pass — using a brand voice document
-**Input context**: Brand voice guide specifies: direct language, second-person ("you"), light humor is encouraged, avoid corporate jargon, game-specific slang from the in-world glossary is appropriate.
-**Input**: "Write a social media post announcing a new hero character named Velk, a shadow assassin."
-**Expected behavior**:
-- Uses second-person address ("Meet your next favorite assassin")
-- Incorporates light humor if it fits naturally
-- Avoids corporate language ("We are pleased to announce" → "Meet Velk")
-- Uses in-world language if the context includes a glossary (e.g., if assassins are called "Shadowwalkers" in-world, uses that term)
-- Output matches the specified tone — not a generic press-release announcement
+- [ ] 存在 `description:` 字段，且内容针对该领域（提及玩家沟通、更新说明、社区管理）
+- [ ] `allowed-tools:` 列表符合代理职责（可对 production/releases/patch-notes/ 和沟通草稿使用 Read/Write；不可使用代码或构建工具）
+- [ ] 模型层级为 Sonnet（运营专家的默认值）
+- [ ] 代理定义未声明对技术内容、QA 策略或缺陷修复拥有权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (player-facing communication, patch note text, crisis response, bug routing)
-- [ ] Strips internal IDs, class names, and technical jargon from all player-facing output
-- [ ] Redirects bug fix requests to appropriate programmers rather than attempting technical solutions
-- [ ] Does NOT commit to design rollbacks without creative-director authority
-- [ ] Applies brand voice specifications from context; flags violations rather than silently accepting them
+### 用例 1：领域内请求——缺陷修复更新说明
+**输入**："为此修复编写面向玩家的更新说明：'JIRA-4821: Fixed NullReferenceException in InventoryManager.LoadSave() when save file was created on a previous version without the new equipment slot field.'"
+**预期行为**：
+- 生成玩家友好的更新说明——不含内部工单 ID（删除 JIRA-4821）、类名（InventoryManager.LoadSave()）或技术性堆栈跟踪术语
+- 使用清晰、面向玩家的语言，例如："修复了加载上次更新前创建的存档文件时可能发生的崩溃。"
+- 传达对用户的影响（游戏在加载时崩溃），但不暴露内部实现细节
+- 根据项目既定的更新说明风格格式化输出（项目符号或编号）
+
+### 用例 2：领域外请求——修复报告的缺陷
+**输入**："一名玩家报告其存档文件已损坏。你能修复存档系统吗？"
+**预期行为**：
+- 不生成任何代码，也不尝试诊断存档系统实现
+- 分流该报告：确认这是可能影响玩家数据的缺陷（高严重性）
+- 转交处理："这需要由合适的程序员调查；我会将其转交给 [gameplay-programmer 或 lead-programmer] 进行技术分流"
+- 若用户要求，可选择起草面向玩家的确认公告（"我们已获悉存档损坏的相关报告，正在调查"）
+
+### 用例 3：社区危机——玩家反对游戏改动
+**输入**："玩家对我们最近的更新非常愤怒。我们将一个热门角色的伤害削弱了 40%，社区要求回退。论坛帖子、推文和 Discord 中的反馈都非常负面。"
+**预期行为**：
+- 生成危机沟通响应计划（而非只有一条推文）
+- 计划包含：(1) 即时确认公告——承认反馈但不采取防御态度；(2) 开发者回应时间线——承诺设计团队声明的明确时间；(3) 开发者声明模板——解释削弱理由，同时不忽视玩家担忧；(4) 后续结构——若计划回退或调整，应同步具体时间线
+- 不得代表设计团队承诺回退——将其标记为 creative-director 的决策
+- 语气富有同理心，但不为有意作出的设计决策道歉
+
+### 用例 4：更新说明中的品牌语调冲突
+**输入**："这是我们的更新说明草稿：'We have annihilated the egregious framerate catastrophe that plagued the loading screen.' 我们的品牌语调指南要求：清晰、温暖、略带幽默——不要戏剧化或夸张。"
+**预期行为**：
+- 识别冲突："annihilated"、"egregious" 和 "catastrophe" 带有戏剧化和夸张色彩——不符合指定品牌语调
+- 不得原样批准草稿
+- 给出修订版本，例如："修复了导致加载界面运行缓慢的性能问题——现在应该会更流畅。"
+- 明确标记不一致之处，而不是不作说明地静默改写
+
+### 用例 5：上下文传递——使用品牌语调文档
+**输入上下文**：品牌语调指南要求：使用直接语言、第二人称（"你"）、鼓励轻松幽默、避免企业套话，并适当使用世界内术语表中的游戏专用俚语。
+**输入**："编写一篇社交媒体帖子，宣布名为 Velk 的新英雄角色，他是一名暗影刺客。"
+**预期行为**：
+- 使用第二人称称呼（"认识一下你下一位最爱的刺客"）
+- 在自然契合时融入轻松幽默
+- 避免企业式语言（"We are pleased to announce" → "Meet Velk"）
+- 如果上下文包含术语表，则使用世界内语言（例如，若世界内称刺客为 "Shadowwalkers"，则使用该术语）
+- 输出符合指定语调——而不是通用的新闻稿式公告
 
 ---
 
-## Coverage Notes
-- Case 1 (patch note sanitization) is the most frequently used behavior — test on every new patch cycle
-- Case 3 (crisis communication) is a brand-safety test — verify the agent de-escalates rather than inflames
-- Case 4 requires a brand voice document to be in context; test is incomplete without it
-- Case 5 is the most important context-awareness test for tone consistency
-- No automated runner; review manually or via `/skill-test`
+## 协议合规性
+
+- [ ] 保持在声明的领域内（面向玩家的沟通、更新说明文本、危机响应、缺陷转交）
+- [ ] 从所有面向玩家的输出中移除内部 ID、类名和技术术语
+- [ ] 将缺陷修复请求转交适当的程序员，而不是尝试提供技术解决方案
+- [ ] 未经 creative-director 授权，不得承诺回退设计
+- [ ] 应用上下文中的品牌语调规范；标记违规内容，而非静默接受
+
+---
+
+## 覆盖说明
+- 用例 1（更新说明净化）是最常用的行为——每个新更新周期都应进行测试
+- 用例 3（危机沟通）是品牌安全测试——验证代理能够缓和局势，而不是激化矛盾
+- 用例 4 要求上下文中存在品牌语调文档；缺少该文档时测试不完整
+- 用例 5 是最重要的语调一致性上下文感知测试
+- 无自动化运行器；请手动审查或通过 `/skill-test` 审查

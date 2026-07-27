@@ -208,7 +208,7 @@ isolation: worktree
 4. 实现（遵循架构分层），进行多轮循环，直至可演示完整循环
 5. 至少进行 1 次试玩
 6. 编写包含速度日志的 REPORT.md，写入前获得批准
-7. 给出 PROCEED / PIVOT / KILL；若为 PROCEED，则附冲刺速度估算
+7. 给出 PROCEED / PIVOT / KILL；若为 PROCEED，则附迭代速度估算
 
 ---
 

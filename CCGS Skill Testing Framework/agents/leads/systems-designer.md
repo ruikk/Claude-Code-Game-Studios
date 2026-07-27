@@ -1,84 +1,84 @@
-# Agent Test Spec: systems-designer
+# 代理测试规范：systems-designer
 
-## Agent Summary
-**Domain owned:** Combat formulas, progression curves, crafting recipes, status effect interactions, economy math, numerical balance.
-**Does NOT own:** Narrative and lore (narrative-director), visual design (art-director), code implementation (lead-programmer), conceptual mechanic rules (game-designer — collaborates with).
-**Model tier:** Sonnet (individual system analysis — formula review and balance math).
-**Gate IDs handled:** Systems review verdicts on formulas and balance specs (uses APPROVED / NEEDS REVISION vocabulary).
-
----
-
-## Static Assertions (Structural)
-
-Verified by reading the agent's `.claude/agents/systems-designer.md` frontmatter:
-
-- [ ] `description:` field is present and domain-specific (references formulas, progression curves, balance math, economy — not generic)
-- [ ] `allowed-tools:` list is read-focused; may include Bash for formula evaluation scripts if the project uses them; no write access outside `design/balance/` without delegation
-- [ ] Model tier is `claude-sonnet-4-6` per coordination-rules.md
-- [ ] Agent definition does not claim authority over narrative, visual design, or conceptual mechanic rule ownership
+## 代理摘要
+**负责领域：** 战斗公式、成长曲线、制作配方、状态效果交互、经济数值、数值平衡。
+**不负责：** 叙事与背景设定（narrative-director）、视觉设计（art-director）、代码实现（lead-programmer）、机制概念规则（game-designer，与其协作）。
+**模型层级：** Sonnet（单系统分析，负责公式审查与平衡数值分析）。
+**处理的门禁 ID：** 对公式和平衡规范给出系统审查结论（使用 APPROVED / NEEDS REVISION 术语）。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output format
-**Scenario:** A damage formula is submitted for review: `damage = base_attack * (1 + strength_modifier * 0.1) - defense * 0.5`, with defined ranges: base_attack [10–100], strength_modifier [0–20], defense [0–50]. The formula produces positive damage across all valid input ranges, scales smoothly, and has no division-by-zero or overflow risk within the defined value bounds.
-**Expected:** Returns `APPROVED` with rationale confirming the formula is balanced within the design parameters, produces valid output across the full input range, and has no degenerate cases.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVED / NEEDS REVISION
-- [ ] Rationale demonstrates verification across the input range (min/max cases checked)
-- [ ] Output stays within systems domain — does not comment on whether the mechanic is fun or how to implement it
-- [ ] Verdict is clearly labeled with context (e.g., "Formula Review: APPROVED")
+通过读取代理的 `.claude/agents/systems-designer.md` frontmatter 进行验证：
 
-### Case 2: Out-of-domain request — redirects or escalates
-**Scenario:** A writer asks systems-designer to draft the quest script for a side quest that rewards the player with a rare crafting ingredient.
-**Expected:** Agent declines to write quest script content and redirects to writer or narrative-director.
-**Assertions:**
-- [ ] Does not write quest narrative content or dialogue
-- [ ] Explicitly names `writer` or `narrative-director` as the correct handler
-- [ ] May note the systems implications of the reward (e.g., "this ingredient should be rare enough to matter per the crafting economy model"), but defers all script writing to the narrative team
-
-### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A damage scaling formula is submitted: `damage = base_attack * level_multiplier`, where `level_multiplier = (player_level / enemy_level) ^ 2`. At max player level (50) against a min-level enemy (1), the multiplier is 2500x — producing 25,000+ damage from a 10-base-attack weapon, far exceeding any meaningful balance. This is a degenerate case at max level.
-**Expected:** Returns `NEEDS REVISION` with specific identification of the degenerate case: at max level vs. min enemy, the formula produces a 2500x multiplier that destroys any balance ceiling.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVED / NEEDS REVISION — not freeform text
-- [ ] Rationale includes the specific degenerate input values (player level 50, enemy level 1) and the resulting output (2500x multiplier)
-- [ ] Identifies the specific formula component causing the issue (the squared ratio)
-- [ ] Suggests at least one revision approach (e.g., clamping the ratio, using a log scale) without mandating a choice
-
-### Case 4: Conflict escalation — correct parent
-**Scenario:** game-designer wants a simple, 2-variable damage formula for player intuitiveness. systems-designer argues that a 6-variable formula with elemental interactions is necessary for the depth of the combat system. Neither can agree on the right level of complexity.
-**Expected:** systems-designer presents the trade-offs clearly — the tuning granularity of the 6-variable system versus the player legibility of the 2-variable system — and escalates to creative-director for a player experience ruling. The question of "how complex should the formula be for players" is a player experience question, not a pure math question.
-**Assertions:**
-- [ ] Presents the trade-offs between both approaches with specific examples
-- [ ] Escalates to `creative-director` for the player experience ruling
-- [ ] Does not unilaterally impose the 6-variable formula over game-designer's objection
-- [ ] Remains available to implement whichever complexity level is approved
-
-### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes current balance data: enemy HP values range from 100 to 10,000; player attack values range from 15 to 150; target time-to-kill is 8–12 seconds at balanced matchups; the current formula is under review. A proposed revised formula is submitted.
-**Expected:** Assessment runs the proposed formula against the provided balance data (minimum and maximum input pairs, balanced matchup scenario) and verifies the time-to-kill falls within the 8–12 second target window. References specific numbers from the provided data.
-**Assertions:**
-- [ ] Uses the specific HP and attack value ranges from the provided balance data
-- [ ] Calculates or estimates time-to-kill for at minimum a balanced matchup scenario
-- [ ] Verifies the result against the provided 8–12 second target window
-- [ ] Does not give generic balance advice — all assertions use the provided numbers
+- [ ] 存在 `description:` 字段，且内容针对具体领域（提及公式、成长曲线、平衡数值、经济，而非泛泛描述）
+- [ ] `allowed-tools:` 列表以读取工具为主；如果项目使用公式求值脚本，可以包含 Bash；未经委派，不得写入 `design/balance/` 以外的位置
+- [ ] 根据 coordination-rules.md，模型层级为 `claude-sonnet-4-6`
+- [ ] 代理定义未声称拥有叙事、视觉设计或机制概念规则的决定权
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Returns verdicts using APPROVED / NEEDS REVISION vocabulary only
-- [ ] Stays within declared systems and formula domain
-- [ ] Escalates player-experience complexity trade-offs to creative-director
-- [ ] Does not make binding narrative, visual, code implementation, or conceptual mechanic decisions
-- [ ] Provides concrete formula analysis, not subjective design opinions
+### 用例 1：领域内请求，输出格式恰当
+**场景：** 提交伤害公式 `damage = base_attack * (1 + strength_modifier * 0.1) - defense * 0.5` 供审查，定义的范围为：base_attack [10–100]、strength_modifier [0–20]、defense [0–50]。该公式在所有有效输入范围内均产生正伤害，平滑增长，且在定义的数值边界内没有除零或溢出风险。
+**预期：** 返回 `APPROVED`，并说明该公式在设计参数内保持平衡、在完整输入范围内产生有效输出，且不存在退化情况。
+**断言：**
+- [ ] 结论必须为 APPROVED / NEEDS REVISION 之一
+- [ ] 理由表明已验证整个输入范围（检查最小值和最大值情况）
+- [ ] 输出保持在系统领域内，不评价机制是否有趣或应如何实现
+- [ ] 结论带有明确的上下文标签（例如“公式审查：APPROVED”）
+
+### 用例 2：领域外请求，转交或升级
+**场景：** writer 要求 systems-designer 为一个以稀有制作材料作为奖励的支线任务编写任务脚本。
+**预期：** 代理拒绝编写任务脚本内容，并转交给 writer 或 narrative-director。
+**断言：**
+- [ ] 不编写任务叙事内容或对话
+- [ ] 明确指出应由 `writer` 或 `narrative-director` 处理
+- [ ] 可以说明奖励对系统的影响（例如“按照制作经济模型，这种材料应足够稀有，才能体现价值”），但将所有脚本编写工作交给叙事团队
+
+### 用例 3：门禁结论，术语正确
+**场景：** 提交伤害缩放公式：`damage = base_attack * level_multiplier`，其中 `level_multiplier = (player_level / enemy_level) ^ 2`。满级玩家（50）对战最低等级敌人（1）时，倍率为 2500x，使基础攻击为 10 的武器造成 25,000 以上伤害，远超任何有意义的平衡范围。这是满级时的退化情况。
+**预期：** 返回 `NEEDS REVISION`，并明确指出退化情况：满级玩家对战最低等级敌人时，公式产生 2500x 倍率，破坏了所有平衡上限。
+**断言：**
+- [ ] 结论必须为 APPROVED / NEEDS REVISION 之一，不得使用自由文本
+- [ ] 理由包含具体退化输入值（玩家等级 50、敌人等级 1）及结果（2500x 倍率）
+- [ ] 指出导致问题的具体公式部分（比值的平方）
+- [ ] 至少建议一种修改方式（例如限制比值或使用对数缩放），但不强制选择
+
+### 用例 4：冲突升级，提交给正确上级
+**场景：** game-designer 希望采用简单、直观的双变量伤害公式。systems-designer 认为，要体现战斗系统深度，必须采用包含元素交互的六变量公式。双方无法就适当的复杂度达成一致。
+**预期：** systems-designer 清楚说明取舍，即六变量系统的调参粒度与双变量系统的玩家可理解性，并升级给 creative-director，由其从玩家体验角度裁决。“公式对玩家而言应有多复杂”属于玩家体验问题，而非纯数学问题。
+**断言：**
+- [ ] 通过具体示例说明两种方案的取舍
+- [ ] 升级给 `creative-director`，由其从玩家体验角度裁决
+- [ ] 不会不顾 game-designer 的反对而单方面强制采用六变量公式
+- [ ] 无论批准何种复杂度，都继续负责落实
+
+### 用例 5：传入上下文，使用所提供的信息
+**场景：** 代理收到包含当前平衡数据的门禁上下文块：敌人 HP 范围为 100 至 10,000；玩家攻击值范围为 15 至 150；实力相当时的目标击杀时间为 8–12 秒；当前公式正在审查中。随后提交一个修改后的公式提案。
+**预期：** 使用所提供的平衡数据测试公式提案（最小和最大输入组合、实力相当场景），并验证击杀时间是否落在 8–12 秒的目标区间内。引用所提供数据中的具体数值。
+**断言：**
+- [ ] 使用所提供平衡数据中的具体 HP 和攻击值范围
+- [ ] 至少计算或估算实力相当场景下的击杀时间
+- [ ] 根据所提供的 8–12 秒目标区间验证结果
+- [ ] 不提供泛泛的平衡建议，所有断言均使用所提供的数值
 
 ---
 
-## Coverage Notes
-- Progression curve review (XP curves, level-up scaling) is not covered — a dedicated case should be added.
-- Economy model review (resource generation and sink rates, inflation prevention) is not covered.
-- Status effect interaction matrix (stacking rules, priority, immunity interactions) is not covered.
-- Cross-system formula dependency review (e.g., crafting formula that feeds into combat formula) is not covered — deferred to integration tests.
+## 协议合规性
+
+- [ ] 仅使用 APPROVED / NEEDS REVISION 术语返回结论
+- [ ] 保持在声明的系统和公式领域内
+- [ ] 将玩家体验方面的复杂度取舍升级给 creative-director
+- [ ] 不对叙事、视觉、代码实现或机制概念作出约束性决定
+- [ ] 提供具体公式分析，而非主观设计意见
+
+---
+
+## 覆盖说明
+- 尚未覆盖成长曲线审查（XP 曲线、升级缩放），应增加专门用例。
+- 尚未覆盖经济模型审查（资源产出与消耗速率、通胀防范）。
+- 尚未覆盖状态效果交互矩阵（叠加规则、优先级、免疫交互）。
+- 尚未覆盖跨系统公式依赖审查（例如为战斗公式提供输入的制作公式），留待集成测试。

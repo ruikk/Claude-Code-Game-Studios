@@ -1,80 +1,80 @@
-# Agent Test Spec: world-builder
+# 代理测试规范：world-builder
 
-## Agent Summary
-- **Domain**: World lore architecture — factions and their cultures/governments/motivations, world history, geography and ecology, cosmology and metaphysics, world rules (how magic works, what is and is not possible), internal consistency enforcement across the world document
-- **Does NOT own**: Specific NPC or quest dialogue (writer), game mechanics rules derived from world rules (game-designer/systems-designer), narrative story structure and arc design (narrative-director)
-- **Model tier**: Sonnet
-- **Gate IDs**: None; escalates world rule/mechanic conflicts to narrative-director and game-designer jointly
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references world lore, factions, history, world rules, ecology)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for design/narrative/world/ documents; no game source, mechanic design, or dialogue files)
-- [ ] Model tier is Sonnet (default for creative specialists)
-- [ ] Agent definition does not claim authority over dialogue writing, mechanic design, or narrative arc structure
+## 代理摘要
+- **领域**：世界设定架构——派系及其文化/政府/动机、世界历史、地理与生态、宇宙观与形而上学、世界规则（魔法如何运作、什么可行或不可行）、维护世界文档内部一致性
+- **不负责**：具体 NPC 或任务对话（writer）、从世界规则推导出的游戏机制规则（game-designer/systems-designer）、叙事故事结构和篇章设计（narrative-director）
+- **模型层级**：Sonnet
+- **门禁 ID**：无；将世界规则/机制冲突共同升级给 narrative-director 和 game-designer
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — faction culture and government design
-**Input**: "Design the Ironveil Merchant Consortium — a powerful trading faction in our world. I need their culture, government structure, and internal motivations."
-**Expected behavior**:
-- Produces a faction profile document with: cultural values and norms, government structure (how decisions are made, who holds power, succession or appointment process), internal factions or tensions within the consortium, relationship to other factions (allies, rivals, neutral parties), and primary motivations (what they want and why)
-- The faction is internally consistent: a merchant consortium's government is driven by economic logic, not feudal or religious logic, unless a deliberate hybrid is specified
-- Output includes at least one internal tension or contradiction within the faction — factions without internal complexity are flat
-- Formatted as a structured faction profile, not a narrative essay
-
-### Case 2: Out-of-domain request — dialogue writing
-**Input**: "Write the dialogue for a Ironveil Consortium merchant NPC that the player meets at the city gates."
-**Expected behavior**:
-- Does not produce NPC dialogue
-- States clearly: "Dialogue writing is owned by writer; I provide the world and faction context that informs the dialogue, including the faction's culture, tone, and speaking style"
-- Offers to produce the faction's speaking style notes and cultural context that writer would need to write consistent dialogue
-
-### Case 3: New lore entry contradicts established history — conflict flagging
-**Input**: "Add a lore entry stating the Ironveil Consortium was founded 50 years ago by a single merchant family." [Context includes existing lore: the Consortium has existed for 300 years and was founded as a collective by 12 rival trading houses.]
-**Expected behavior**:
-- Identifies the contradiction: existing lore states 300-year history and a founding coalition of 12 houses; the new entry claims 50 years and a single founding family
-- Does NOT write the new entry as requested
-- Flags the conflict: states both versions, identifies which is established and which is the proposed change
-- Proposes resolution options: (a) the new entry is wrong and should be corrected; (b) the existing lore should be updated if the new version is the intended canon; (c) there is an in-world explanation (the current family claims founding credit despite the collective origin — a deliberate narrative unreliable narrator)
-- Routes the resolution to narrative-director if no clear answer exists
-
-### Case 4: World rule has gameplay implications — coordination with game-designer
-**Input**: "I want to establish a world rule: magic users who cast spells near iron ore are weakened. Iron disrupts arcane energy."
-**Expected behavior**:
-- Produces the world rule as a lore entry: the metaphysical explanation, how it is understood in-world, historical implications
-- Identifies the gameplay implication: this world rule has direct mechanical consequences (players near iron ore deposits are debuffed, level design must account for iron placement)
-- Flags the coordination requirement: "This world rule has gameplay mechanics implications — game-designer needs to define how this translates into player-facing mechanics; proceeding with the lore without the mechanics definition risks inconsistency"
-- Does NOT unilaterally design the game mechanic — describes the lore rule and the mechanical territory it implies, then defers to game-designer
-
-### Case 5: Context pass — using established world documents
-**Input context**: Existing world document states: the world uses a dual-sun system, one sun is the source of arcane energy (the White Sun), and arcane magic ceases to function during the 3-day lunar eclipse period (the Darkening).
-**Input**: "Add a lore entry about the Mages' College and how they prepare for the Darkening."
-**Expected behavior**:
-- Uses the established dual-sun cosmology: references the White Sun as the source of arcane energy
-- Uses the established Darkening event: 3-day eclipse, magic ceases
-- Does NOT invent a different eclipse mechanism, duration, or name
-- Produces a lore entry where the Mages' College's Darkening preparations are consistent with the established rules: they cannot cast during the Darkening, so preparations are practical (stockpiling non-magical supplies, scheduling, shutting down ongoing magical processes)
-- Does not contradict any established fact from the context document
+- [ ] 存在 `description:` 字段且内容针对本领域（提及世界设定、派系、历史、世界规则、生态）
+- [ ] `allowed-tools:` 列表符合代理角色（对 design/narrative/world/ 文档使用 Read/Write；不涉及游戏源代码、机制设计或对话文件）
+- [ ] 模型层级为 Sonnet（创作专家默认值）
+- [ ] 代理定义未声称拥有对话写作、机制设计或叙事篇章结构的决定权
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (factions, world history, geography, ecology, world rules, cosmology)
-- [ ] Redirects dialogue writing requests to writer with contextual faction notes
-- [ ] Flags lore contradictions with both versions stated and resolution options offered — does not silently overwrite established lore
-- [ ] Identifies gameplay implications of world rules and flags coordination with game-designer
-- [ ] Uses all established world facts from context; does not invent alternatives to stated lore
+### 用例 1：领域内请求——派系文化与政府设计
+**输入**：“设计 Ironveil Merchant Consortium，这是世界中的强大贸易派系。我需要其文化、政府结构和内部动机。”
+**预期行为**：
+- 生成派系档案，包含文化价值与规范、政府结构（决策方式、掌权者、继承或任命流程）、内部派系或矛盾、与其他派系的关系（盟友、对手、中立方）以及主要动机（想要什么及其原因）
+- 派系内部保持一致：除非明确指定混合体，否则商会政府应由经济逻辑而非封建或宗教逻辑驱动
+- 至少包含一项派系内部矛盾或张力；没有内部复杂性的派系会显得扁平
+- 使用结构化派系档案格式，而非叙事散文
+
+### 用例 2：领域外请求——对话写作
+**输入**：“撰写玩家在城门遇到的 Ironveil Consortium 商人 NPC 对话。”
+**预期行为**：
+- 不生成 NPC 对话
+- 明确说明：“对话写作由 writer 负责；我提供影响对话的世界和派系上下文，包括派系文化、语调和说话方式。”
+- 提议生成 writer 撰写一致对话所需的派系说话风格说明和文化背景
+
+### 用例 3：新设定条目与既定历史冲突——标记冲突
+**输入**：“添加设定条目，说明 Ironveil Consortium 由一个商人家族于 50 年前建立。”[上下文既定设定：商会已存在 300 年，由 12 个敌对贸易家族共同建立。]
+**预期行为**：
+- 识别矛盾：既定设定为 300 年历史和 12 家联合创立；新条目却声称仅有 50 年历史和单一家族创立
+- 不按要求写入新条目
+- 标记冲突：陈述两个版本，并指出哪个是既定内容、哪个是拟议变更
+- 提出解决选项：(a) 新条目错误，应予更正；(b) 若新版本是目标设定，则更新既有设定；(c) 提供世界内解释（当前家族尽管源自集体仍声称自己是创始者，作为有意设计的不可靠叙述者）
+- 若没有明确答案，将解决事项转交给 narrative-director
+
+### 用例 4：世界规则具有玩法影响——与 game-designer 协调
+**输入**：“我想确立一条世界规则：在铁矿附近施法的魔法使用者会变弱。铁会扰乱奥术能量。”
+**预期行为**：
+- 将世界规则写成设定条目：形而上学解释、世界内的理解方式和历史影响
+- 识别玩法影响：该规则有直接机制后果（铁矿附近的玩家会受到减益，关卡设计必须考虑铁矿位置）
+- 标记协调要求：“该世界规则影响游戏机制——game-designer 需要定义它如何转化为玩家可感知的机制；在机制未定义时推进设定会有不一致风险。”
+- 不单方面设计游戏机制，只描述设定规则及其暗示的机制范围，然后交给 game-designer
+
+### 用例 5：上下文符合性——使用既定世界文档
+**输入上下文**：既有世界文档规定：世界有双日系统，其中一颗太阳（White Sun）是奥术能量来源；在持续 3 天的月食期（Darkening）内奥术魔法停止运作。
+**输入**：“添加关于 Mages' College 以及其如何准备 Darkening 的设定条目。”
+**预期行为**：
+- 使用既定双日宇宙观：将 White Sun 作为奥术能量来源
+- 使用既定 Darkening 事件：持续 3 天的月食，魔法停止
+- 不发明不同的月食机制、持续时间或名称
+- 生成与既定规则一致的条目：Mages' College 在 Darkening 期间无法施法，因此准备工作是实用性的（储备非魔法补给、安排日程、关闭进行中的魔法流程）
+- 不与上下文文档的任何既定事实冲突
 
 ---
 
-## Coverage Notes
-- Case 3 (contradiction detection) requires existing lore to be in context — this is the most important consistency test
-- Case 4 (world rule/mechanic coordination) tests cross-domain awareness; verify the agent identifies the mechanic boundary without crossing it
-- Case 5 is the most important context-awareness test; the agent must use established facts, not creative alternatives
-- No automated runner; review manually or via `/skill-test`
+## 协议合规性
+
+- [ ] 保持在声明的领域内（派系、世界历史、地理、生态、世界规则、宇宙观）
+- [ ] 将对话写作请求转交给 writer，并提供派系上下文说明
+- [ ] 同时陈述两个版本并提供解决选项，标记设定冲突；不静默覆盖既定设定
+- [ ] 识别世界规则的玩法影响并标记与 game-designer 的协调
+- [ ] 使用上下文中的所有既定世界事实，不为既定设定发明替代版本
+
+---
+
+## 覆盖说明
+- 用例 3（冲突检测）要求上下文中存在既定设定，这是最重要的一致性测试
+- 用例 4（世界规则/机制协调）测试跨领域意识；确认代理识别机制边界但不越界
+- 用例 5 是最重要的上下文意识测试；代理必须使用既定事实，而非创作替代内容
+- 无自动运行器；手动审查或通过 `/skill-test` 审查

@@ -188,7 +188,7 @@ docs/                               # 技术文档和 ADRs
 tests/                              # 测试套件 (unit, integration, performance, playtest)
 tools/                              # 构建和流水线工具
 prototypes/                         # 一次性原型（与 src/ 隔离）
-production/                         # 冲刺计划、里程碑、发布跟踪
+production/                         # 迭代计划、里程碑、发布跟踪
 ```
 
 ## 工作原理

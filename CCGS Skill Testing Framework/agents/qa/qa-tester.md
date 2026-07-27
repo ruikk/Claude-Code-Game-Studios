@@ -1,87 +1,87 @@
-# Agent Test Spec: qa-tester
+# 代理测试规范：qa-tester
 
-## Agent Summary
-- **Domain**: Detailed test case authoring, bug reports (structured format), test execution documentation, regression checklists, smoke check execution docs, test evidence recording per the project's coding standards
-- **Does NOT own**: Test strategy and test plan design (qa-lead), implementation fixes for found bugs (appropriate programmer), QA process architecture (qa-lead)
-- **Category**: qa
-- **Model tier**: Sonnet
-- **Gate IDs**: None; flags ambiguous acceptance criteria to qa-lead rather than resolving independently
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references test cases, bug reports, test execution, regression testing)
-- [ ] `allowed-tools:` list matches the agent's role (Read/Write for tests/ and production/qa/evidence/; no source code editing tools)
-- [ ] Model tier is Sonnet (default for QA specialists)
-- [ ] Agent definition does not claim authority over test strategy, fix implementation, or acceptance criterion definition
+## 代理摘要
+- **负责领域**：详细测试用例编写、缺陷报告（结构化格式）、测试执行文档、回归检查清单、冒烟检查执行文档、根据项目编码标准记录测试证据
+- **不负责**：测试策略和测试计划设计（qa-lead）、实现已发现缺陷的修复（相应程序员）、QA 流程架构（qa-lead）
+- **类别**：qa
+- **模型层级**：Sonnet
+- **门禁 ID**：无；将含糊的验收标准提交 qa-lead，而不是自行解决
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — test cases for a save system
-**Input**: "Write test cases for our save system. It must save and load player position, inventory, and quest state."
-**Expected behavior**:
-- Produces a test case list with at minimum the following test cases, each containing all four required fields:
-  - **TC-SAVE-001**: Save and load player position
-  - **TC-SAVE-002**: Save and load full inventory (multiple item types, quantities, equipped state)
-  - **TC-SAVE-003**: Save and load quest state (in-progress, completed, and locked quest states)
-  - **TC-SAVE-004**: Overwrite an existing save file
-  - **TC-SAVE-005**: Load a save file from a previous version (backward compatibility)
-  - **TC-SAVE-006**: Corrupt save file handling (file exists but is invalid)
-- Each test case includes: **Precondition** (required game state before test), **Steps** (numbered, unambiguous), **Expected Result** (specific, observable outcome), **Pass Criteria** (binary pass/fail condition)
-- Does NOT write "verify the save works" as a pass criterion — criteria must be observable and unambiguous
-
-### Case 2: Out-of-domain request — implement a bug fix
-**Input**: "You found a bug where the save system loses inventory data on version mismatch. Please fix it."
-**Expected behavior**:
-- Does not produce any implementation code or attempt to fix the save system
-- States clearly: "Bug fixes are implemented by the appropriate programmer (gameplay-programmer for save system logic); I document the bug and write regression test cases to verify the fix"
-- Offers to produce: (a) a structured bug report for the programmer, (b) regression test cases for TC-SAVE-005 (version mismatch) that can be run after the fix
-
-### Case 3: Ambiguous acceptance criterion — flag to qa-lead
-**Input**: "Write test cases for the tutorial. The acceptance criterion in the story says 'tutorial should feel intuitive.'"
-**Expected behavior**:
-- Identifies "should feel intuitive" as an unmeasurable acceptance criterion — it is a subjective quality statement, not a testable condition
-- Does NOT write test cases against an ambiguous criterion by inventing a definition of "intuitive"
-- Flags to qa-lead: "The acceptance criterion 'tutorial should feel intuitive' is not testable as written; needs clarification — e.g., 'X% of first-time players complete the tutorial without using the hint button' or 'no tester requires external help to complete the tutorial in session'"
-- Provides two or three concrete, measurable alternative criteria for qa-lead to choose between
-
-### Case 4: Regression test after a hotfix
-**Input**: "A hotfix was applied that changed how the inventory serialization handles nullable item slots. Write a targeted regression checklist for the affected systems."
-**Expected behavior**:
-- Identifies the affected systems: inventory save/load, any UI that reads inventory state, any quest system that checks inventory contents, any crafting system that reads inventory slots
-- Produces a regression checklist focused on those systems only — not a full game regression
-- Checklist items target the specific change: null item slot handling (empty slots, mixed full/empty slot arrays, slot count boundary conditions)
-- Each checklist item specifies: what to test, how to verify pass, and what a failure looks like
-- Does NOT produce a generic "test everything" checklist — the value of a targeted regression is specificity
-
-### Case 5: Context pass — test evidence format from coding-standards.md
-**Input context**: coding-standards.md specifies: Logic stories require automated unit tests in `tests/unit/[system]/`. Visual/Feel stories require screenshot + lead sign-off in `production/qa/evidence/`. UI stories require manual walkthrough doc in `production/qa/evidence/`.
-**Input**: "Write test cases for the inventory UI (a UI story): grid layout, item tooltip display, and drag-and-drop reordering."
-**Expected behavior**:
-- Classifies this correctly as a UI story per the provided standards
-- Produces a manual walkthrough test document (not automated unit tests) — because the coding standard specifies manual walkthrough for UI stories
-- Specifies the output location: `production/qa/evidence/` (not `tests/unit/`)
-- Test cases include: grid layout verification (all items appear, no overflow), tooltip display (correct item name, stats, description appear on hover/focus), and drag-and-drop (item moves to target slot, original slot becomes empty, slot limits respected)
-- Notes that this is ADVISORY evidence level per the coding standards, not BLOCKING — explicitly states this so the team knows the gate level
+- [ ] 存在 `description:` 字段且内容针对具体领域（提及测试用例、缺陷报告、测试执行、回归测试）
+- [ ] `allowed-tools:` 列表与代理角色相符（对 tests/ 和 production/qa/evidence/ 使用 Read/Write；不包含源代码编辑工具）
+- [ ] 模型层级为 Sonnet（QA 专家代理的默认层级）
+- [ ] 代理定义未声称拥有测试策略、修复实现或验收标准定义权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (test case authoring, bug reports, test execution documentation, regression checklists)
-- [ ] Redirects bug fix requests to appropriate programmers and offers to document the bug and write regression tests
-- [ ] Flags ambiguous acceptance criteria to qa-lead rather than inventing a testable interpretation
-- [ ] Produces targeted regression checklists (system-specific) not full-game regression passes
-- [ ] Uses the correct test evidence format and output location per coding-standards.md
+### 用例 1：领域内请求，为存档系统编写测试用例
+**输入**：“为我们的存档系统编写测试用例。它必须保存和加载玩家位置、物品栏及任务状态。”
+**预期行为**：
+- 生成测试用例列表，至少包含以下测试用例，且每个用例均包含全部四个必填字段：
+  - **TC-SAVE-001**：保存和加载玩家位置
+  - **TC-SAVE-002**：保存和加载完整物品栏（多种物品类型、数量、装备状态）
+  - **TC-SAVE-003**：保存和加载任务状态（进行中、已完成和已锁定）
+  - **TC-SAVE-004**：覆盖现有存档文件
+  - **TC-SAVE-005**：加载旧版本的存档文件（向后兼容）
+  - **TC-SAVE-006**：处理损坏的存档文件（文件存在但无效）
+- 每个测试用例包含：**前置条件**（测试前所需的游戏状态）、**步骤**（编号且无歧义）、**预期结果**（具体、可观察的结果）、**通过标准**（二元的通过/失败条件）
+- 不得将“验证存档可以正常工作”写作通过标准；标准必须可观察且无歧义
+
+### 用例 2：领域外请求，实现缺陷修复
+**输入**：“你发现了一个缺陷：版本不匹配时存档系统会丢失物品栏数据。请修复它。”
+**预期行为**：
+- 不生成任何实现代码，也不尝试修复存档系统
+- 明确说明：“缺陷修复由相应的程序员实现（存档系统逻辑由 gameplay-programmer 负责）；我负责记录缺陷，并编写回归测试用例来验证修复”
+- 提议生成：(a) 供程序员使用的结构化缺陷报告；(b) 修复后可运行的 TC-SAVE-005（版本不匹配）回归测试用例
+
+### 用例 3：验收标准含糊，提交 qa-lead
+**输入**：“为教程编写测试用例。故事中的验收标准写着‘教程应让人感觉直观’。”
+**预期行为**：
+- 识别出“应让人感觉直观”是不可度量的验收标准；这是主观质量陈述，而非可测试条件
+- 不通过擅自定义“直观”来针对含糊标准编写测试用例
+- 向 qa-lead 指出：“验收标准‘教程应让人感觉直观’按当前写法无法测试，需要澄清；例如‘X% 的初次玩家不使用提示按钮即可完成教程’，或‘没有测试人员需要外部帮助即可在测试期间完成教程’”
+- 提供两到三个具体、可度量的替代标准供 qa-lead 选择
+
+### 用例 4：热修复后的回归测试
+**输入**：“已应用一个热修复，修改了物品栏序列化处理可空物品槽位的方式。为受影响的系统编写有针对性的回归检查清单。”
+**预期行为**：
+- 识别受影响的系统：物品栏保存/加载、所有读取物品栏状态的 UI、所有检查物品栏内容的任务系统、所有读取物品栏槽位的制作系统
+- 生成仅聚焦这些系统的回归检查清单，而非完整游戏回归
+- 检查项针对具体变更：空物品槽位处理（空槽位、满/空槽位混合数组、槽位数量边界条件）
+- 每个检查项说明：测试内容、如何验证通过，以及失败时的表现
+- 不生成泛泛的“测试所有内容”检查清单；针对性回归的价值在于具体
+
+### 用例 5：上下文传递，使用 coding-standards.md 中的测试证据格式
+**输入上下文**：coding-standards.md 规定：逻辑故事需要在 `tests/unit/[system]/` 中提供自动化单元测试。视觉/体验故事需要在 `production/qa/evidence/` 中提供截图和负责人签核。UI 故事需要在 `production/qa/evidence/` 中提供手动走查文档。
+**输入**：“为物品栏 UI（一个 UI 故事）编写测试用例：网格布局、物品工具提示显示，以及拖放重新排序。”
+**预期行为**：
+- 根据所提供的标准，正确将其归类为 UI 故事
+- 生成手动走查测试文档（而非自动化单元测试），因为编码标准规定 UI 故事使用手动走查
+- 指定输出位置：`production/qa/evidence/`（而非 `tests/unit/`）
+- 测试用例包括：网格布局验证（显示所有物品、无溢出）、工具提示显示（悬停/聚焦时显示正确的物品名称、属性和说明），以及拖放（物品移动到目标槽位、原槽位变空、遵守槽位限制）
+- 说明根据编码标准，此证据级别为 ADVISORY 而非 BLOCKING；必须明确指出这一点，以便团队了解门禁级别
 
 ---
 
-## Coverage Notes
-- Case 1 (test case completeness) is the foundational quality test — missing fields (precondition, steps, expected result, pass criteria) are a failure
-- Case 3 (ambiguous criterion) is a coordination test — qa-tester must not silently accept untestable criteria
-- Case 5 requires coding-standards.md to be in context with the test evidence table; the agent must correctly apply evidence type and location
-- The ADVISORY vs. BLOCKING gate level (Case 5) is a detail that affects story completion — verify the agent reports it
-- No automated runner; review manually or via `/skill-test`
+## 协议合规性
+
+- [ ] 保持在声明的领域内（测试用例编写、缺陷报告、测试执行文档、回归检查清单）
+- [ ] 将缺陷修复请求转交给适当的程序员，并提议记录缺陷和编写回归测试
+- [ ] 将含糊的验收标准提交 qa-lead，而不是擅自创造可测试的解释
+- [ ] 生成有针对性（系统特定）的回归检查清单，而非完整游戏回归
+- [ ] 根据 coding-standards.md 使用正确的测试证据格式和输出位置
+
+---
+
+## 覆盖说明
+- 用例 1（测试用例完整性）是基础质量测试；缺少字段（前置条件、步骤、预期结果、通过标准）即视为失败
+- 用例 3（标准含糊）是协调测试；qa-tester 不得悄然接受不可测试的标准
+- 用例 5 要求上下文中包含 coding-standards.md 及其测试证据表；代理必须正确应用证据类型和位置
+- ADVISORY 与 BLOCKING 门禁级别（用例 5）是影响故事完成情况的细节；应验证代理是否报告该级别
+- 没有自动化运行器；请手动审查或通过 `/skill-test` 审查

@@ -1,82 +1,82 @@
-# Agent Test Spec: performance-analyst
+# 代理测试规范：performance-analyst
 
-## Agent Summary
-Domain: Profiling, bottleneck identification, performance metrics tracking, and optimization recommendations.
-Does NOT own: implementing optimizations (belongs to the appropriate programmer for that domain).
-Model tier: Sonnet (default).
-No gate IDs assigned.
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references profiling / bottleneck analysis / performance metrics)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition does not claim authority over implementing any optimization — explicitly identifies itself as analysis/recommendation only
+## 代理摘要
+领域：性能分析、瓶颈识别、性能指标跟踪和优化建议。
+不负责：实施优化（由对应领域的程序员负责）。
+模型层级：Sonnet（默认）。
+未分配门禁 ID。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output
-**Input:** "Analyze this frame time data: CPU 14ms, GPU 8ms, physics 6ms, draw calls 420, scripts 3ms."
-**Expected behavior:**
-- Identifies the primary bottleneck: CPU is over a 16.67ms (60fps) budget at 14ms total
-- Breaks down contributors: physics (6ms, 43% of CPU time) is the top culprit
-- Draw calls (420) flags as a secondary concern if the budget limit is lower (e.g., 200 draw calls per technical-preferences.md)
-- Produces a prioritized bottleneck report:
-  1. Physics — 6ms, reduce simulation frequency or switch broadphase algorithm
-  2. Draw calls — 420, implement batching or LOD
-  3. Scripts — 3ms, profile hot paths
-- Does NOT implement any of these optimizations
-
-### Case 2: Out-of-domain request — redirects correctly
-**Input:** "Implement the batching optimization to reduce draw calls from 420 to under 200."
-**Expected behavior:**
-- Does NOT produce implementation code for batching
-- Explicitly states that implementing optimizations belongs to the appropriate programmer (engine-programmer for rendering batching)
-- Redirects the implementation to `engine-programmer` with the recommendation context attached
-- May produce a requirements brief for the optimization so engine-programmer has a clear target
-
-### Case 3: Regression identification
-**Input:** "Performance dropped significantly after last week's commits. Frame time went from 10ms to 18ms."
-**Expected behavior:**
-- Proposes a bisection strategy to identify the offending commit range
-- Requests or reviews the diff of commits in the window to narrow the likely cause
-- Identifies affected systems based on what changed (e.g., if physics code was modified, points to physics as the primary suspect)
-- Produces a regression report naming the probable commit, the affected system, and the measured delta
-
-### Case 4: Recommendation vs. code quality trade-off
-**Input:** "The fastest optimization for the script bottleneck would be to inline all calls and remove abstraction layers."
-**Expected behavior:**
-- Surfaces the trade-off: inlining improves performance but reduces testability and violates the coding standard requiring unit-testable public methods
-- Does NOT recommend the optimization without noting the code quality cost
-- Escalates the trade-off to `lead-programmer` for a decision
-- May propose a middle path (e.g., profile-guided inlining of only the hottest 2–3 methods) that preserves testability
-
-### Case 5: Context pass — technical-preferences.md budget
-**Input:** Technical preferences from context: Target 60fps, frame budget 16.67ms, draw calls max 200, memory ceiling 512MB. Request: "Review the current build profile."
-**Expected behavior:**
-- References the specific values from the provided context: 16.67ms, 200 draw calls, 512MB
-- Compares current measurements against each threshold explicitly
-- Labels each metric as WITHIN BUDGET / AT RISK / OVER BUDGET based on the provided numbers
-- Does NOT use different budget numbers than those provided in the context
+- [ ] 存在 `description:` 字段且内容针对本领域（提及性能分析/瓶颈分析/性能指标）
+- [ ] `allowed-tools:` 列表包含 Read、Write、Edit、Bash、Glob、Grep
+- [ ] 模型层级为 Sonnet（专家代理默认值）
+- [ ] 代理定义未声称拥有实施任何优化的决定权，并明确自身仅负责分析/建议
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (profiling, analysis, recommendations — not implementation)
-- [ ] Redirects optimization implementation to the correct programmer domain agent
-- [ ] Returns structured findings (bottleneck report with severity, measured values, and recommended action owner)
-- [ ] Escalates code-quality trade-offs to lead-programmer rather than deciding unilaterally
-- [ ] Applies budget thresholds from provided context rather than assumed defaults
-- [ ] Labels all findings with a specific action owner (who should implement the fix)
+### 用例 1：领域内请求——适当输出
+**输入：**“分析以下帧时间数据：CPU 14ms、GPU 8ms、物理 6ms、绘制调用 420 次、脚本 3ms。”
+**预期行为：**
+- 识别主要瓶颈：在 16.67ms（60fps）预算中，CPU 共占 14ms
+- 拆分影响因素：物理（6ms，占 CPU 时间的 43%）是首要问题
+- 若预算上限更低（例如 technical-preferences.md 规定 200 次），则将 420 次绘制调用标为次要问题
+- 生成按优先级排序的瓶颈报告：
+  1. 物理——6ms，降低模拟频率或更换宽相算法
+  2. 绘制调用——420 次，实施批处理或 LOD
+  3. 脚本——3ms，分析热点路径
+- 不实施上述任何优化
+
+### 用例 2：领域外请求——正确转交
+**输入：**“实施批处理优化，将绘制调用从 420 次降至 200 次以下。”
+**预期行为：**
+- 不生成批处理实现代码
+- 明确说明优化实施属于适当的程序员（渲染批处理由 engine-programmer 负责）
+- 附上建议上下文，将实现请求转交给 `engine-programmer`
+- 可以生成优化需求简报，使 engine-programmer 获得明确目标
+
+### 用例 3：回归识别
+**输入：**“上周提交后性能显著下降，帧时间从 10ms 增至 18ms。”
+**预期行为：**
+- 提出二分策略以定位引发问题的提交范围
+- 请求或审查该时间窗口内提交的差异，以缩小可能原因范围
+- 根据变更内容识别受影响系统（例如修改了物理代码，则将物理列为首要嫌疑）
+- 生成回归报告，注明可能的提交、受影响系统和实测差值
+
+### 用例 4：建议与代码质量的权衡
+**输入：**“解决脚本瓶颈最快的优化方式是内联所有调用并删除抽象层。”
+**预期行为：**
+- 指出权衡：内联可提升性能，但会降低可测试性，并违反公共方法必须可单元测试的编码标准
+- 不在忽略代码质量成本的情况下建议该优化
+- 将权衡升级给 `lead-programmer` 决定
+- 可以提出保留可测试性的折中方案（例如根据性能分析仅内联最热的 2–3 个方法）
+
+### 用例 5：上下文符合性——technical-preferences.md 预算
+**输入：**上下文中的技术偏好：目标 60fps、帧预算 16.67ms、绘制调用最多 200 次、内存上限 512MB。请求：“审查当前构建的性能数据。”
+**预期行为：**
+- 引用上下文中的具体值：16.67ms、200 次绘制调用、512MB
+- 明确将当前测量值与每个阈值比较
+- 根据所提供数值，将各指标标记为 WITHIN BUDGET / AT RISK / OVER BUDGET
+- 不使用与上下文不同的预算数值
 
 ---
 
-## Coverage Notes
-- Frame time analysis (Case 1) output should be structured as a report filed in `production/qa/evidence/`
-- Regression case (Case 3) confirms the agent investigates cause, not just measures symptoms
-- Code quality trade-off (Case 4) verifies the agent does not recommend optimizations that violate coding standards without flagging the conflict
+## 协议合规性
+
+- [ ] 保持在声明的领域内（性能分析、分析、建议，不含实现）
+- [ ] 将优化实现转交给正确程序员领域的代理
+- [ ] 返回结构化结果（含严重程度、测量值和建议行动负责人的瓶颈报告）
+- [ ] 将代码质量权衡升级给 lead-programmer，而非单方面决定
+- [ ] 采用上下文提供的预算阈值，而非假定默认值
+- [ ] 为所有发现标明具体行动负责人（由谁实施修复）
+
+---
+
+## 覆盖说明
+- 帧时间分析（用例 1）输出应整理为报告并存入 `production/qa/evidence/`
+- 回归用例（用例 3）确认代理会调查原因，而非仅测量症状
+- 代码质量权衡（用例 4）验证代理不会在不标记冲突的情况下建议违反编码标准的优化

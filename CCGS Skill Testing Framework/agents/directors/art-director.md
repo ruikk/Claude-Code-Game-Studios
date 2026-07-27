@@ -1,84 +1,84 @@
-# Agent Test Spec: art-director
+# 代理测试规范：art-director
 
-## Agent Summary
-**Domain owned:** Visual identity, art bible authorship and enforcement, asset quality standards, UI/UX visual design, visual phase gate, concept art evaluation.
-**Does NOT own:** UX interaction flows and information architecture (ux-designer's domain), audio direction (audio-director), code implementation.
-**Model tier:** Sonnet (note: despite the "director" title, art-director is assigned Sonnet per coordination-rules.md — it handles individual system analysis, not multi-document phase gate synthesis at the Opus level).
-**Gate IDs handled:** AD-CONCEPT-VISUAL, AD-ART-BIBLE, AD-PHASE-GATE.
-
----
-
-## Static Assertions (Structural)
-
-Verified by reading the agent's `.claude/agents/art-director.md` frontmatter:
-
-- [ ] `description:` field is present and domain-specific (references visual identity, art bible, asset standards — not generic)
-- [ ] `allowed-tools:` list is read-focused; image review capability if supported; no Bash unless asset pipeline checks are justified
-- [ ] Model tier is `claude-sonnet-4-6` (NOT Opus — coordination-rules.md assigns Sonnet to art-director)
-- [ ] Agent definition does not claim authority over UX interaction flows or audio direction
+## 代理摘要
+**负责领域：** 视觉识别、美术圣经编写与执行、资产质量标准、UI/UX 视觉设计、视觉阶段门禁、概念美术评估。
+**不负责：** UX 交互流程和信息架构（ux-designer 的领域）、音频指导（audio-director）、代码实现。
+**模型层级：** Sonnet（注意：尽管名称中有“director”，但根据 coordination-rules.md，art-director 使用 Sonnet；它负责单个系统分析，而非 Opus 层级的多文档阶段门禁综合）。
+**负责的门禁 ID：** AD-CONCEPT-VISUAL、AD-ART-BIBLE、AD-PHASE-GATE。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output format
-**Scenario:** The art bible's color palette section is submitted for review. The section defines a desaturated earth-tone primary palette with high-contrast accent colors tied to the game pillar "beauty in decay." The palette is internally consistent and references the pillar vocabulary. Request is tagged AD-ART-BIBLE.
-**Expected:** Returns `AD-ART-BIBLE: APPROVE` with rationale confirming the palette's internal consistency and its alignment with the stated pillar.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT
-- [ ] Verdict token is formatted as `AD-ART-BIBLE: APPROVE`
-- [ ] Rationale references the specific palette characteristics and pillar alignment — not generic art advice
-- [ ] Output stays within visual domain — does not comment on UX interaction patterns or audio mood
+通过读取代理的 `.claude/agents/art-director.md` front matter 验证：
 
-### Case 2: Out-of-domain request — redirects or escalates
-**Scenario:** Sound designer asks art-director to specify how ambient audio should layer and duck when the player enters a combat zone.
-**Expected:** Agent declines to define audio behavior and redirects to audio-director.
-**Assertions:**
-- [ ] Does not make any binding decision about audio layering or ducking behavior
-- [ ] Explicitly names `audio-director` as the correct handler
-- [ ] May note if the audio has visual mood implications (e.g., "the audio should match the visual tension of the zone"), but defers all audio specification to audio-director
-
-### Case 3: Gate verdict — correct vocabulary
-**Scenario:** Concept art for the protagonist is submitted. The art uses a vivid, saturated color palette (primary: #FF4500, #00BFFF) that directly contradicts the established art bible's "desaturated earth-tones" palette specification. Request is tagged AD-CONCEPT-VISUAL.
-**Expected:** Returns `AD-CONCEPT-VISUAL: CONCERNS` with specific citation of the palette discrepancy, referencing the art bible's stated palette values versus the submitted concept's palette.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT — not freeform text
-- [ ] Verdict token is formatted as `AD-CONCEPT-VISUAL: CONCERNS`
-- [ ] Rationale specifically identifies the palette conflict — not a generic "doesn't match style" comment
-- [ ] References the art bible as the authoritative source for the correct palette
-
-### Case 4: Conflict escalation — correct parent
-**Scenario:** ux-designer proposes using high-contrast, brightly colored icons for the HUD to improve readability. art-director believes this violates the art bible's muted visual language and would undermine the visual identity.
-**Expected:** art-director states the visual identity concern and references the art bible, acknowledges ux-designer's readability goal as legitimate, and escalates to creative-director to arbitrate the trade-off between visual coherence and usability.
-**Assertions:**
-- [ ] Escalates to `creative-director` (shared parent for creative domain conflicts)
-- [ ] Does not unilaterally override ux-designer's readability recommendation
-- [ ] Clearly frames the conflict as a trade-off between two legitimate goals
-- [ ] References the specific art bible rule being violated
-
-### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes the existing art bible with specific palette values (primary: #8B7355, #6B6B47; accent: #C8A96E) and style rules ("no pure white, no pure black; all shadows have warm undertones"). A new asset is submitted for review.
-**Expected:** Assessment references the specific hex values and style rules from the provided art bible, not generic color theory advice. Any concerns are tied to specific violations of the provided rules.
-**Assertions:**
-- [ ] References specific palette values from the provided art bible context
-- [ ] Applies the specific style rules (no pure white/black, warm shadow undertones) from the provided document
-- [ ] Does not generate generic art direction feedback disconnected from the supplied art bible
-- [ ] Verdict rationale is traceable to specific lines or rules in the provided context
+- [ ] 存在 `description:` 字段且内容针对具体领域（提及视觉识别、美术圣经、资产标准，而非泛泛描述）
+- [ ] `allowed-tools:` 列表应以读取工具为主；如支持则包含图像审查能力；除非资产管线检查确有需要，否则不包含 Bash
+- [ ] 模型层级为 `claude-sonnet-4-6`（不是 Opus；coordination-rules.md 为 art-director 指定 Sonnet）
+- [ ] 代理定义未声称拥有 UX 交互流程或音频指导权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Returns verdicts using APPROVE / CONCERNS / REJECT vocabulary only
-- [ ] Stays within declared visual domain
-- [ ] Escalates UX-vs-visual conflicts to creative-director
-- [ ] Uses gate IDs in output (e.g., `AD-ART-BIBLE: APPROVE`) not inline prose verdicts
-- [ ] Does not make binding UX interaction, audio, or code implementation decisions
+### 用例 1：领域内请求，输出格式恰当
+**场景：** 提交美术圣经的调色板章节进行审查。该章节定义了低饱和度土色主色板，以及与游戏支柱“衰败之美”关联的高对比度强调色。调色板内部一致，并引用了支柱词汇。请求标记为 AD-ART-BIBLE。
+**预期：** 返回 `AD-ART-BIBLE: APPROVE`，并在理由中确认调色板内部一致，且与所述支柱保持一致。
+**断言：**
+- [ ] 结论必须恰好是 APPROVE / CONCERNS / REJECT 之一
+- [ ] 结论标记格式为 `AD-ART-BIBLE: APPROVE`
+- [ ] 理由引用具体的调色板特征及其与支柱的一致性，而非泛泛的美术建议
+- [ ] 输出保持在视觉领域内，不评价 UX 交互模式或音频氛围
+
+### 用例 2：领域外请求，正确转交或上报
+**场景：** sound-designer 要求 art-director 规定玩家进入战斗区域时环境音频应如何分层和闪避。
+**预期：** 代理拒绝定义音频行为，并将请求转交给 audio-director。
+**断言：**
+- [ ] 不对音频分层或闪避行为作出任何约束性决定
+- [ ] 明确指出 `audio-director` 是正确的处理者
+- [ ] 可以说明音频是否影响视觉氛围（例如“音频应与区域的视觉紧张感相匹配”），但将所有音频规范交给 audio-director
+
+### 用例 3：门禁结论，词汇正确
+**场景：** 提交主角的概念美术。作品使用鲜艳、高饱和度的调色板（主色：#FF4500、#00BFFF），与既定美术圣经中的“低饱和度土色”调色板规范直接冲突。请求标记为 AD-CONCEPT-VISUAL。
+**预期：** 返回 `AD-CONCEPT-VISUAL: CONCERNS`，明确指出调色板差异，对比美术圣经规定的调色板值与所提交概念的调色板。
+**断言：**
+- [ ] 结论必须恰好是 APPROVE / CONCERNS / REJECT 之一，而非自由文本
+- [ ] 结论标记格式为 `AD-CONCEPT-VISUAL: CONCERNS`
+- [ ] 理由明确指出调色板冲突，而不是泛泛地评论“风格不符”
+- [ ] 将美术圣经作为正确调色板的权威来源
+
+### 用例 4：冲突上报，父级正确
+**场景：** ux-designer 建议在 HUD 中使用高对比度、色彩明亮的图标以提高可读性。art-director 认为这违反了美术圣经中低调的视觉语言，会削弱视觉识别。
+**预期：** art-director 说明视觉识别方面的问题并引用美术圣经，承认 ux-designer 的可读性目标合理，并上报 creative-director，由其裁定视觉一致性与可用性之间的取舍。
+**断言：**
+- [ ] 上报给 `creative-director`（创意领域冲突的共同父级）
+- [ ] 不单方面推翻 ux-designer 的可读性建议
+- [ ] 清楚地将冲突表述为两个合理目标之间的取舍
+- [ ] 引用被违反的具体美术圣经规则
+
+### 用例 5：上下文传递，使用所提供的上下文
+**场景：** 代理收到一个门禁上下文块，其中包含现有美术圣经的具体调色板值（主色：#8B7355、#6B6B47；强调色：#C8A96E）和风格规则（“不使用纯白或纯黑；所有阴影均带暖色底调”）。提交一项新资产进行审查。
+**预期：** 评估引用所提供美术圣经中的具体十六进制值和风格规则，而非泛泛的色彩理论建议。任何问题均应关联到对所提供规则的具体违反情况。
+**断言：**
+- [ ] 引用所提供美术圣经上下文中的具体调色板值
+- [ ] 应用所提供文档中的具体风格规则（不使用纯白/纯黑、阴影带暖色底调）
+- [ ] 不生成脱离所提供美术圣经的泛泛美术指导反馈
+- [ ] 结论理由可追溯到所提供上下文中的具体行或规则
 
 ---
 
-## Coverage Notes
-- AD-PHASE-GATE (full visual phase advancement) is not covered — deferred to integration with /gate-check skill.
-- Asset pipeline standards (file format, resolution, naming conventions) compliance checks are not covered here.
-- Shader visual output review is not covered — that interaction with the engine specialist is deferred.
-- UI component visual review (as distinct from UX flow review) could benefit from additional cases.
+## 协议合规性
+
+- [ ] 仅使用 APPROVE / CONCERNS / REJECT 词汇返回结论
+- [ ] 保持在声明的视觉领域内
+- [ ] 将 UX 与视觉之间的冲突上报给 creative-director
+- [ ] 在输出中使用门禁 ID（例如 `AD-ART-BIBLE: APPROVE`），而不是在行文中给出结论
+- [ ] 不作出具有约束力的 UX 交互、音频或代码实现决策
+
+---
+
+## 覆盖说明
+- 未覆盖 AD-PHASE-GATE（完整视觉阶段推进）；该项延后至与 /gate-check 技能的集成测试。
+- 此处未覆盖资产管线标准（文件格式、分辨率、命名约定）合规检查。
+- 未覆盖着色器视觉输出审查；与引擎专家的该项交互已延后。
+- UI 组件视觉审查（区别于 UX 流程审查）可通过更多用例加以完善。

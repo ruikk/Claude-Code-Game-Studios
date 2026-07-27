@@ -1,84 +1,84 @@
-# Agent Test Spec: creative-director
+# 代理测试规范：creative-director
 
-## Agent Summary
-**Domain owned:** Creative vision, game pillars, GDD alignment, systems decomposition feedback, narrative direction, playtest feedback interpretation, phase gate (creative aspect).
-**Does NOT own:** Technical architecture or implementation details (delegates to technical-director), production scheduling (producer), visual art style execution (delegates to art-director).
-**Model tier:** Opus (multi-document synthesis, high-stakes phase gate verdicts).
-**Gate IDs handled:** CD-PILLARS, CD-GDD-ALIGN, CD-SYSTEMS, CD-NARRATIVE, CD-PLAYTEST, CD-PHASE-GATE.
-
----
-
-## Static Assertions (Structural)
-
-Verified by reading the agent's `.claude/agents/creative-director.md` frontmatter:
-
-- [ ] `description:` field is present and domain-specific (references creative vision, pillars, GDD alignment — not generic)
-- [ ] `allowed-tools:` list is read-heavy; should not include Bash unless justified by a creative workflow need
-- [ ] Model tier is `claude-opus-4-6` per coordination-rules.md (directors with gate synthesis = Opus)
-- [ ] Agent definition does not claim authority over technical architecture or production scheduling
+## 代理摘要
+**负责领域：** 创意愿景、游戏支柱、GDD 一致性、系统拆分反馈、叙事指导、试玩反馈解读、阶段门禁（创意方面）。
+**不负责：** 技术架构或实现细节（交给 technical-director）、制作排期（producer）、视觉美术风格执行（交给 art-director）。
+**模型层级：** Opus（多文档综合、高风险阶段门禁结论）。
+**负责的门禁 ID：** CD-PILLARS、CD-GDD-ALIGN、CD-SYSTEMS、CD-NARRATIVE、CD-PLAYTEST、CD-PHASE-GATE。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output format
-**Scenario:** A game concept document is submitted for pillar review. The concept describes a narrative survival game built around three pillars: "emergent stories," "meaningful sacrifice," and "lived-in world." Request is tagged CD-PILLARS.
-**Expected:** Returns `CD-PILLARS: APPROVE` with rationale citing how each pillar is represented in the concept and any reinforcing or weakening signals found in the document.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT
-- [ ] Verdict token is formatted as `CD-PILLARS: APPROVE` (gate ID prefix, colon, verdict keyword)
-- [ ] Rationale references the three specific pillars by name, not generic creative advice
-- [ ] Output stays within creative scope — does not comment on engine feasibility or sprint schedule
+通过读取代理的 `.claude/agents/creative-director.md` front matter 验证：
 
-### Case 2: Out-of-domain request — redirects or escalates
-**Scenario:** Developer asks creative-director to review a proposed PostgreSQL schema for storing player save data.
-**Expected:** Agent declines to evaluate the schema and redirects to technical-director.
-**Assertions:**
-- [ ] Does not make any binding decision about the schema design
-- [ ] Explicitly names `technical-director` as the correct handler
-- [ ] May note whether the data model has creative implications (e.g., what player data is tracked), but defers structural decisions entirely
-
-### Case 3: Gate verdict — correct vocabulary
-**Scenario:** A GDD for the "Crafting" system is submitted. Section 4 (Formulas) defines a resource decay formula that punishes exploration — contradicting the Player Fantasy section which calls for "freedom to roam without fear." Request is tagged CD-GDD-ALIGN.
-**Expected:** Returns `CD-GDD-ALIGN: CONCERNS` with specific citation of the contradiction between the formula behavior and the Player Fantasy statement.
-**Assertions:**
-- [ ] Verdict is exactly one of APPROVE / CONCERNS / REJECT — not freeform text
-- [ ] Verdict token is formatted as `CD-GDD-ALIGN: CONCERNS`
-- [ ] Rationale quotes or directly references GDD Section 4 (Formulas) and the Player Fantasy section
-- [ ] Does not prescribe a specific formula fix — that belongs to systems-designer
-
-### Case 4: Conflict escalation — correct parent
-**Scenario:** technical-director raises a concern that the core loop mechanic (real-time branching conversations) is prohibitively expensive to implement and recommends cutting it. creative-director disagrees on creative grounds.
-**Expected:** creative-director acknowledges the technical constraint, does not override technical-director's feasibility assessment, but retains authority to define what the creative goal is. For the conflict itself, creative-director is the top-level creative escalation point and defers to technical-director on implementation feasibility while advocating for the design intent. The resolution path is for both to jointly present trade-off options to the user.
-**Assertions:**
-- [ ] Does not unilaterally override technical-director's feasibility concern
-- [ ] Clearly separates "what we want creatively" from "how it gets built"
-- [ ] Proposes presenting trade-offs to the user rather than resolving unilaterally
-- [ ] Does not claim to own implementation decisions
-
-### Case 5: Context pass — uses provided context
-**Scenario:** Agent receives a gate context block that includes the game pillars document (`design/gdd/pillars.md`) and a new mechanic spec for review. The pillars document defines "player authorship," "consequence permanence," and "world responsiveness" as the three core pillars.
-**Expected:** Assessment uses the exact pillar vocabulary from the provided document, not generic creative heuristics. Any approval or concern is tied back to one or more of the three named pillars.
-**Assertions:**
-- [ ] Uses the exact pillar names from the provided context document
-- [ ] Does not generate generic creative feedback disconnected from the supplied pillars
-- [ ] References the specific pillar(s) most relevant to the mechanic under review
-- [ ] Does not reference pillars not present in the provided document
+- [ ] 存在 `description:` 字段且内容针对具体领域（提及创意愿景、支柱、GDD 一致性，而非泛泛描述）
+- [ ] `allowed-tools:` 列表应以读取工具为主；除非创意工作流确有需要，否则不应包含 Bash
+- [ ] 根据 coordination-rules.md，模型层级为 `claude-opus-4-6`（负责综合门禁结论的总监 = Opus）
+- [ ] 代理定义未声称拥有技术架构或制作排期权限
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Returns verdicts using APPROVE / CONCERNS / REJECT vocabulary only
-- [ ] Stays within declared creative domain
-- [ ] Escalates conflicts by presenting trade-offs to user rather than unilateral override
-- [ ] Uses gate IDs in output (e.g., `CD-PILLARS: APPROVE`) not inline prose verdicts
-- [ ] Does not make binding cross-domain decisions (technical, production, art execution)
+### 用例 1：领域内请求，输出格式恰当
+**场景：** 提交一份游戏概念文档进行支柱审查。该概念描述了一款围绕三个支柱构建的叙事生存游戏：“涌现式故事”“有意义的牺牲”和“真实生活感的世界”。请求标记为 CD-PILLARS。
+**预期：** 返回 `CD-PILLARS: APPROVE`，理由说明每个支柱如何体现在概念中，以及文档中发现的强化或削弱这些支柱的信号。
+**断言：**
+- [ ] 结论必须恰好是 APPROVE / CONCERNS / REJECT 之一
+- [ ] 结论标记格式为 `CD-PILLARS: APPROVE`（门禁 ID 前缀、冒号、结论关键词）
+- [ ] 理由明确提及三个支柱的名称，而不是泛泛的创意建议
+- [ ] 输出保持在创意范围内，不评价引擎可行性或迭代排期
+
+### 用例 2：领域外请求，正确转交或上报
+**场景：** 开发者要求 creative-director 审查一个用于存储玩家存档数据的 PostgreSQL schema 提案。
+**预期：** 代理拒绝评估该 schema，并将请求转交给 technical-director。
+**断言：**
+- [ ] 不对 schema 设计作出任何约束性决定
+- [ ] 明确指出 `technical-director` 是正确的处理者
+- [ ] 可以说明数据模型是否会影响创意（例如跟踪哪些玩家数据），但将结构性决策全部交由他人处理
+
+### 用例 3：门禁结论，词汇正确
+**场景：** 提交“制作”系统的 GDD。第 4 节（公式）定义了一个会惩罚探索行为的资源衰减公式，这与玩家幻想章节提出的“无惧地自由漫游”相矛盾。请求标记为 CD-GDD-ALIGN。
+**预期：** 返回 `CD-GDD-ALIGN: CONCERNS`，明确指出公式行为与玩家幻想陈述之间的矛盾。
+**断言：**
+- [ ] 结论必须恰好是 APPROVE / CONCERNS / REJECT 之一，而非自由文本
+- [ ] 结论标记格式为 `CD-GDD-ALIGN: CONCERNS`
+- [ ] 理由引用或直接提及 GDD 第 4 节（公式）和玩家幻想章节
+- [ ] 不指定具体的公式修复方案，该职责属于 systems-designer
+
+### 用例 4：冲突上报，父级正确
+**场景：** technical-director 提出核心循环机制（实时分支对话）的实现成本高得难以承受，并建议砍掉该机制。creative-director 基于创意理由表示反对。
+**预期：** creative-director 承认技术约束，不推翻 technical-director 的可行性评估，但保留定义创意目标的权限。对于冲突本身，creative-director 是创意领域的最高上报节点；其在倡导设计意图的同时，将实现可行性判断交给 technical-director。解决路径是双方共同向用户提出取舍选项。
+**断言：**
+- [ ] 不单方面推翻 technical-director 的可行性问题
+- [ ] 清楚区分“创意上想要什么”与“如何构建”
+- [ ] 建议将取舍提交用户，而不是单方面解决
+- [ ] 不声称拥有实现决策权
+
+### 用例 5：上下文传递，使用所提供的上下文
+**场景：** 代理收到一个门禁上下文块，其中包含游戏支柱文档（`design/gdd/pillars.md`）以及待审查的新机制规范。支柱文档将“玩家创作权”“后果永久性”和“世界响应性”定义为三个核心支柱。
+**预期：** 评估使用所提供文档中的确切支柱词汇，而非泛泛的创意启发法。任何批准或问题都应关联到三个具名支柱中的一个或多个。
+**断言：**
+- [ ] 使用所提供上下文文档中的确切支柱名称
+- [ ] 不生成脱离所提供支柱的泛泛创意反馈
+- [ ] 引用与待审机制最相关的具体支柱
+- [ ] 不引用所提供文档中不存在的支柱
 
 ---
 
-## Coverage Notes
-- Multi-gate scenario (e.g., single submission triggering both CD-PILLARS and CD-GDD-ALIGN) is not covered here — deferred to integration tests.
-- CD-PHASE-GATE (full phase advancement) involves synthesizing multiple sub-gate results; this complex case is deferred.
-- Playtest report interpretation (CD-PLAYTEST) is not covered — a dedicated case should be added when the playtest-report skill produces structured output.
-- Interaction with art-director on visual-pillar alignment is not covered.
+## 协议合规性
+
+- [ ] 仅使用 APPROVE / CONCERNS / REJECT 词汇返回结论
+- [ ] 保持在声明的创意领域内
+- [ ] 通过向用户提出取舍来上报冲突，而不是单方面推翻决定
+- [ ] 在输出中使用门禁 ID（例如 `CD-PILLARS: APPROVE`），而不是在行文中给出结论
+- [ ] 不作出具有约束力的跨领域决策（技术、制作、美术执行）
+
+---
+
+## 覆盖说明
+- 此处未覆盖多门禁场景（例如单次提交同时触发 CD-PILLARS 和 CD-GDD-ALIGN）；该项延后至集成测试。
+- CD-PHASE-GATE（完整阶段推进）涉及综合多个子门禁结果；这一复杂用例已延后。
+- 未覆盖试玩报告解读（CD-PLAYTEST）；当 playtest-report 技能生成结构化输出后，应添加专门用例。
+- 未覆盖与 art-director 在视觉支柱一致性方面的交互。

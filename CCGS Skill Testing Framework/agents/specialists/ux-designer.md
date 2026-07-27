@@ -1,79 +1,79 @@
-# Agent Test Spec: ux-designer
+# 代理测试规范：ux-designer
 
-## Agent Summary
-Domain: User experience flows, interaction design, information architecture, input handling design, and onboarding UX.
-Does NOT own: visual art style (art-director), UI implementation code (ui-programmer).
-Model tier: Sonnet (default).
-No gate IDs assigned.
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references UX flows / interaction design / information architecture)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition does not claim authority over visual art direction or UI implementation code
+## 代理摘要
+领域：用户体验流程、交互设计、信息架构、输入处理设计和新手引导 UX。
+不负责：视觉美术风格（art-director）、UI 实现代码（ui-programmer）。
+模型层级：Sonnet（默认）。
+未分配门禁 ID。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output
-**Input:** "Design the inventory management flow for a survival game."
-**Expected behavior:**
-- Produces a user flow diagram (states and transitions) for the inventory: open, browse, select item, sub-actions (equip/drop/combine), close
-- Defines all interaction states (default, hover, selected, empty-slot, locked-slot)
-- Specifies input mappings for each action (keyboard, gamepad if applicable)
-- Notes cognitive load considerations (e.g., maximum items visible without scrolling)
-- Does NOT produce visual design (colors, icons) or implementation code
-
-### Case 2: Out-of-domain request — redirects correctly
-**Input:** "Implement the inventory screen in GDScript with drag-and-drop support."
-**Expected behavior:**
-- Does NOT produce implementation code
-- Explicitly states that UI code implementation belongs to `ui-programmer`
-- Redirects the request to `ui-programmer`
-- Notes that the UX flow spec should be provided to ui-programmer as the implementation reference
-
-### Case 3: Flow depth conflict — simplification
-**Input:** "The lead designer says the current 5-step crafting flow is too deep; maximum 3 steps allowed."
-**Expected behavior:**
-- Produces a revised 3-step flow that collapses the original 5-step sequence
-- Shows clearly what was merged or removed and why each collapse is safe from a usability standpoint
-- Does NOT simply remove steps without addressing the user's goal at each removed step
-- Flags if the 3-step constraint makes any required use case impossible and proposes an alternative
-
-### Case 4: Accessibility conflict
-**Input:** "The onboarding flow uses a timed prompt (auto-advances after 3 seconds) to keep pace, but this conflicts with accessibility requirements for user-controlled timing."
-**Expected behavior:**
-- Identifies the conflict with WCAG 2.1 2.2.1 (Timing Adjustable)
-- Does NOT override the accessibility requirement to preserve pace
-- Coordinates with `accessibility-specialist` to agree on a compliant solution
-- Proposes alternatives: pause-on-hover, skip button, settings option to disable auto-advance
-
-### Case 5: Context pass — player mental model research
-**Input:** Playtest research provided in context: "Players consistently expected the 'Crafting' option to be inside the Inventory screen, not in a separate top-level menu." Request: "Redesign the navigation IA for crafting."
-**Expected behavior:**
-- References the specific player expectation from the research (crafting expected inside inventory)
-- Restructures the information architecture to place crafting as a tab or panel within the inventory screen
-- Does NOT produce a design that contradicts the stated player mental model without explicit justification
-- Notes the research source in the rationale for the design decision
+- [ ] 存在 `description:` 字段且内容针对本领域（提及 UX 流程/交互设计/信息架构）
+- [ ] `allowed-tools:` 列表包含 Read、Write、Edit、Glob、Grep
+- [ ] 模型层级为 Sonnet（专家代理默认值）
+- [ ] 代理定义未声称拥有视觉美术指导或 UI 实现代码的决定权
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (UX flows, interaction design, IA, onboarding)
-- [ ] Redirects code implementation to ui-programmer, visual style to art-director
-- [ ] Returns structured findings (state diagrams, flow steps, input mappings) not freeform opinions
-- [ ] Coordinates with accessibility-specialist when flows have timing or cognitive load constraints
-- [ ] Designs flows based on provided user research, not assumed behavior
-- [ ] Documents rationale for flow decisions against user goals
+### 用例 1：领域内请求——适当输出
+**输入：**“为一款生存游戏设计物品栏管理流程。”
+**预期行为：**
+- 生成物品栏用户流程图（状态与转换）：打开、浏览、选择物品、子操作（装备/丢弃/合成）、关闭
+- 定义所有交互状态（默认、悬停、已选择、空槽位、锁定槽位）
+- 指定每项操作的输入映射（键盘，以及适用时的手柄）
+- 说明认知负荷方面的考虑（例如，无需滚动即可看到的最大物品数）
+- 不生成视觉设计（颜色、图标）或实现代码
+
+### 用例 2：领域外请求——正确转交
+**输入：**“使用 GDScript 实现支持拖放的物品栏界面。”
+**预期行为：**
+- 不生成实现代码
+- 明确说明 UI 代码实现属于 `ui-programmer`
+- 将请求转交给 `ui-programmer`
+- 说明应将 UX 流程规范交给 ui-programmer 作为实现依据
+
+### 用例 3：流程深度冲突——简化
+**输入：**“首席设计师认为当前 5 步制作流程过深，最多只允许 3 步。”
+**预期行为：**
+- 将原有 5 步序列合并为修订后的 3 步流程
+- 清楚展示合并或删除了哪些内容，以及从可用性角度看每项合并为何安全
+- 不在未处理各被删步骤所对应用户目标的情况下直接删减步骤
+- 如果 3 步限制导致任何必要用例无法完成，则予以标记并提出替代方案
+
+### 用例 4：无障碍冲突
+**输入：**“新手引导流程使用定时提示（3 秒后自动前进）来保持节奏，但这与允许用户控制时限的无障碍要求冲突。”
+**预期行为：**
+- 识别其与 WCAG 2.1 2.2.1（时限可调整）的冲突
+- 不为保持节奏而凌驾于无障碍要求之上
+- 与 `accessibility-specialist` 协调并商定合规方案
+- 提出替代方案：悬停时暂停、跳过按钮、用于禁用自动前进的设置项
+
+### 用例 5：上下文符合性——玩家心智模型研究
+**输入：**上下文提供的试玩研究：“玩家始终认为‘制作’选项应位于物品栏界面内，而非单独的顶层菜单中。”请求：“重新设计制作功能的导航信息架构。”
+**预期行为：**
+- 引用研究中具体的玩家预期（制作功能应在物品栏内）
+- 重构信息架构，将制作功能作为物品栏界面内的标签页或面板
+- 不在缺乏明确理由的情况下生成违背所述玩家心智模型的设计
+- 在设计决策理由中注明研究来源
 
 ---
 
-## Coverage Notes
-- Inventory flow (Case 1) should be written to `design/ux/` as a spec for ui-programmer to implement against
-- Mental model case (Case 5) verifies the agent applies research evidence, not intuition
-- Accessibility coordination (Case 4) confirms the agent does not override accessibility requirements for UX aesthetics
+## 协议合规性
+
+- [ ] 保持在声明的领域内（UX 流程、交互设计、信息架构、新手引导）
+- [ ] 将代码实现转交给 ui-programmer，将视觉风格转交给 art-director
+- [ ] 返回结构化结果（状态图、流程步骤、输入映射），而非自由发挥的意见
+- [ ] 当流程存在时限或认知负荷约束时，与 accessibility-specialist 协调
+- [ ] 根据提供的用户研究设计流程，而非假设用户行为
+- [ ] 结合用户目标记录流程决策的理由
+
+---
+
+## 覆盖说明
+- 物品栏流程（用例 1）应作为供 ui-programmer 实现时遵循的规范写入 `design/ux/`
+- 心智模型用例（用例 5）验证代理采用研究证据而非直觉
+- 无障碍协调（用例 4）确认代理不会为了 UX 美观而凌驾于无障碍要求之上

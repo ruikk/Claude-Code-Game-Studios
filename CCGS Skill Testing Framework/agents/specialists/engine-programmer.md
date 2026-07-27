@@ -1,79 +1,79 @@
-# Agent Test Spec: engine-programmer
+# 代理测试规范：engine-programmer
 
-## Agent Summary
-Domain: Rendering pipeline, physics integration, memory management, resource loading, and core engine framework.
-Does NOT own: gameplay mechanics (gameplay-programmer), editor/debug tool UI (tools-programmer).
-Model tier: Sonnet (default).
-No gate IDs assigned.
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references rendering / memory / engine core)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition does not claim authority over gameplay mechanics or tool UI
+## 代理摘要
+领域：渲染管线、物理集成、内存管理、资源加载和核心引擎框架。
+不负责：游戏玩法机制（gameplay-programmer）、编辑器/调试工具 UI（tools-programmer）。
+模型层级：Sonnet（默认）。
+未分配门禁 ID。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output
-**Input:** "Implement a custom object pool for projectiles to avoid per-frame allocation."
-**Expected behavior:**
-- Produces an engine-level object pool implementation with acquire/release interface
-- Pool is typed to the projectile object type, uses pre-allocated fixed-size storage
-- Provides thread-safety notes (or clearly marks as single-threaded-only with rationale)
-- Includes doc comments on the public API per coding standards
-- Output is compatible with the project's configured engine and language
-
-### Case 2: Out-of-domain request — redirects correctly
-**Input:** "Add a pause menu screen with volume sliders and a 'back to main menu' button."
-**Expected behavior:**
-- Does NOT produce UI screen code
-- Explicitly states that menu screens belong to `ui-programmer`
-- Redirects the request to `ui-programmer`
-- May note it can provide engine-level audio volume API endpoints for the ui-programmer to call
-
-### Case 3: Memory leak diagnosis
-**Input:** "Memory usage grows by ~50MB per level load and never releases. We suspect the resource loading system."
-**Expected behavior:**
-- Produces a systematic diagnosis approach: reference counting audit, resource handle lifecycle check, cache invalidation review
-- Identifies likely causes (orphaned resource handles, circular references, cache that never evicts)
-- Produces a concrete fix for the identified leak pattern
-- Provides a test to verify the fix (memory baseline before load, measure after unload, confirm return to baseline)
-
-### Case 4: Cross-domain coordination — shared system optimization
-**Input:** "I need to optimize the physics broadphase, but the gameplay system is tightly coupled to the physics query API."
-**Expected behavior:**
-- Does NOT unilaterally change the physics query API surface (would break gameplay-programmer's code)
-- Coordinates with `lead-programmer` to plan the change safely
-- Proposes a migration path: new optimized API alongside old API, with a deprecation period
-- Documents the coordination requirement before proceeding
-
-### Case 5: Context pass — checks engine version reference
-**Input:** Engine version reference (Godot 4.6) provided in context. Request: "Set up the default physics engine for the project."
-**Expected behavior:**
-- Reads the engine version reference and notes Godot 4.6 change: Jolt physics is now the default
-- Produces configuration guidance that accounts for the Jolt-as-default change (4.6 migration note)
-- Flags any API differences between GodotPhysics and Jolt that could affect existing code
-- Does NOT suggest deprecated or pre-4.6 physics setup steps without noting they apply to older versions
+- [ ] 存在 `description:` 字段且内容针对本领域（提及渲染/内存/引擎核心）
+- [ ] `allowed-tools:` 列表包含 Read、Write、Edit、Bash、Glob、Grep
+- [ ] 模型层级为 Sonnet（专家代理默认值）
+- [ ] 代理定义未声称拥有游戏玩法机制或工具 UI 的决定权
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (rendering, physics, memory, resource loading, core framework)
-- [ ] Redirects UI/menu requests to ui-programmer
-- [ ] Returns structured findings (implementation code, diagnosis steps, migration plans)
-- [ ] Coordinates with lead-programmer before changing shared API surfaces
-- [ ] Checks engine version reference before suggesting engine-specific APIs
-- [ ] Provides test evidence for fixes (memory before/after, performance measurements)
+### 用例 1：领域内请求——适当输出
+**输入：**“为投射物实现自定义对象池，以避免逐帧分配。”
+**预期行为：**
+- 生成带 acquire/release 接口的引擎级对象池实现
+- 对象池使用投射物对象类型，并采用预分配的固定大小存储
+- 提供线程安全说明（或明确标记仅限单线程并说明理由）
+- 按编码标准为公共 API 添加文档注释
+- 输出与项目配置的引擎和语言兼容
+
+### 用例 2：领域外请求——正确转交
+**输入：**“添加带音量滑块和‘返回主菜单’按钮的暂停菜单界面。”
+**预期行为：**
+- 不生成 UI 界面代码
+- 明确说明菜单界面属于 `ui-programmer`
+- 将请求转交给 `ui-programmer`
+- 可以说明它能提供供 ui-programmer 调用的引擎级音量 API 端点
+
+### 用例 3：内存泄漏诊断
+**输入：**“每次加载关卡，内存用量增加约 50MB 且从不释放。怀疑资源加载系统。”
+**预期行为：**
+- 生成系统化诊断方案：引用计数审计、资源句柄生命周期检查、缓存失效审查
+- 识别可能原因（孤立资源句柄、循环引用、从不逐出的缓存）
+- 针对识别出的泄漏模式生成具体修复
+- 提供验证修复的测试（加载前记录内存基线，卸载后测量，确认恢复至基线）
+
+### 用例 4：跨领域协调——共享系统优化
+**输入：**“我需要优化物理宽相，但游戏玩法系统与物理查询 API 紧密耦合。”
+**预期行为：**
+- 不单方面更改物理查询 API 接口（这会破坏 gameplay-programmer 的代码）
+- 与 `lead-programmer` 协调，安全规划变更
+- 提出迁移路径：新优化 API 与旧 API 并存，并设弃用期
+- 继续前记录协调要求
+
+### 用例 5：上下文符合性——查阅引擎版本参考
+**输入：**上下文提供引擎版本参考（Godot 4.6）。请求：“设置项目的默认物理引擎。”
+**预期行为：**
+- 阅读引擎版本参考，并说明 Godot 4.6 的变化：Jolt 物理现为默认值
+- 生成考虑 Jolt 默认化变更的配置指导（4.6 迁移说明）
+- 标记 GodotPhysics 与 Jolt 之间可能影响现有代码的 API 差异
+- 不在未注明其适用于旧版本的情况下建议已弃用或 4.6 之前的物理设置步骤
 
 ---
 
-## Coverage Notes
-- Object pool (Case 1) must include a unit test in `tests/unit/engine/`
-- Memory leak diagnosis (Case 3) should produce evidence artifacts in `production/qa/evidence/`
-- Engine version check (Case 5) confirms the agent treats VERSION.md as authoritative, not LLM training data
+## 协议合规性
+
+- [ ] 保持在声明的领域内（渲染、物理、内存、资源加载、核心框架）
+- [ ] 将 UI/菜单请求转交给 ui-programmer
+- [ ] 返回结构化结果（实现代码、诊断步骤、迁移计划）
+- [ ] 更改共享 API 接口前与 lead-programmer 协调
+- [ ] 建议引擎特定 API 前查阅引擎版本参考
+- [ ] 为修复提供测试证据（前后内存、性能测量）
+
+---
+
+## 覆盖说明
+- 对象池（用例 1）必须在 `tests/unit/engine/` 中包含单元测试
+- 内存泄漏诊断（用例 3）应在 `production/qa/evidence/` 中生成证据产物
+- 引擎版本检查（用例 5）确认代理将 VERSION.md 而非 LLM 训练数据视为权威来源

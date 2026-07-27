@@ -1,79 +1,79 @@
-# Agent Test Spec: ai-programmer
+# 代理测试规范：ai-programmer
 
-## Agent Summary
-Domain: NPC behavior, state machines, pathfinding, perception systems, and AI decision-making.
-Does NOT own: player mechanics (gameplay-programmer), rendering or engine internals (engine-programmer).
-Model tier: Sonnet (default).
-No gate IDs assigned.
-
----
-
-## Static Assertions (Structural)
-
-- [ ] `description:` field is present and domain-specific (references NPC behavior / AI systems)
-- [ ] `allowed-tools:` list includes Read, Write, Edit, Bash, Glob, Grep
-- [ ] Model tier is Sonnet (default for specialists)
-- [ ] Agent definition does not claim authority over player mechanics or engine rendering
+## 代理摘要
+领域：NPC 行为、状态机、寻路、感知系统和 AI 决策。
+不负责：玩家机制（gameplay-programmer）、渲染或引擎内部实现（engine-programmer）。
+模型层级：Sonnet（默认）。
+未分配门禁 ID。
 
 ---
 
-## Test Cases
+## 静态断言（结构）
 
-### Case 1: In-domain request — appropriate output
-**Input:** "Implement a patrol-and-alert behavior tree for a guard NPC: patrol between waypoints, detect the player within 10 units, then enter an alert state and pursue."
-**Expected behavior:**
-- Produces a behavior tree spec (nodes: Selector, Sequence, Leaf actions) plus corresponding code scaffold
-- Defines clearly named states: Patrol, Alert, Pursue
-- Uses a perception/detection check as a condition node, not inline in movement code
-- Waypoints are data-driven (passed as a resource or export), not hardcoded positions
-- Output includes doc comments on public API
-
-### Case 2: Out-of-domain request — redirects correctly
-**Input:** "Implement player input handling for the WASD movement and dash ability."
-**Expected behavior:**
-- Does NOT produce player input or movement code
-- Explicitly states this is outside its domain (player mechanics belong to gameplay-programmer)
-- Redirects the request to `gameplay-programmer`
-- May note that once player position is available via API, AI perception can reference it
-
-### Case 3: Cross-domain coordination — level constraints
-**Input:** "Design pathfinding for the warehouse level, but the level has narrow corridors that confuse the navmesh."
-**Expected behavior:**
-- Does NOT unilaterally modify level layout or navmesh assets
-- Coordinates with `level-designer` to clarify navmesh requirements and corridor dimensions
-- Proposes a pathfinding approach (e.g., navmesh with agent radius tuning, flow fields) conditional on level geometry
-- Documents assumptions and flags blockers clearly
-
-### Case 4: Performance escalation — custom data structures
-**Input:** "The pathfinding priority queue is the bottleneck; I need a custom binary heap implementation for performance."
-**Expected behavior:**
-- Recognizes that a low-level, engine-integrated data structure is within engine-programmer's domain
-- Escalates to `engine-programmer` with a clear description of the bottleneck and required interface
-- May provide the algorithmic spec (binary heap interface, expected operations) to guide the engine-programmer
-- Does NOT implement the low-level structure unilaterally if it requires engine memory management
-
-### Case 5: Context pass — uses level layout for pathfinding design
-**Input:** Level layout document provided in context showing two choke points: a doorway at (12, 0) and a bridge at (40, 5). Request: "Design the patrol route and threat response for enemies in this level."
-**Expected behavior:**
-- References the specific choke point coordinates from the provided context
-- Designs patrol routes that leverage the choke points as tactical positions
-- Specifies alert state transitions that funnel NPCs toward identified choke points during pursuit
-- Does not invent geometry not present in the provided layout document
+- [ ] 存在 `description:` 字段且内容针对本领域（提及 NPC 行为/AI 系统）
+- [ ] `allowed-tools:` 列表包含 Read、Write、Edit、Bash、Glob、Grep
+- [ ] 模型层级为 Sonnet（专家代理默认值）
+- [ ] 代理定义未声称拥有玩家机制或引擎渲染的决定权
 
 ---
 
-## Protocol Compliance
+## 测试用例
 
-- [ ] Stays within declared domain (NPC behavior, pathfinding, perception, state machines)
-- [ ] Redirects out-of-domain requests to correct agent (gameplay-programmer, engine-programmer, level-designer)
-- [ ] Returns structured findings (behavior tree specs, state machine diagrams, code scaffolds)
-- [ ] Does not modify player mechanics files without explicit delegation
-- [ ] Escalates performance-critical low-level structures to engine-programmer
-- [ ] Uses data-driven NPC configuration (waypoints, detection radii) not hardcoded values
+### 用例 1：领域内请求——适当输出
+**输入：**“为守卫 NPC 实现巡逻与警戒行为树：在路径点间巡逻，探测 10 单位内的玩家，然后进入警戒状态并追击。”
+**预期行为：**
+- 生成行为树规范（节点：Selector、Sequence、Leaf 动作）及对应代码脚手架
+- 定义名称清晰的状态：Patrol、Alert、Pursue
+- 将感知/探测检查用作条件节点，而非内联到移动代码中
+- 路径点由数据驱动（作为资源或 export 传入），而非硬编码位置
+- 输出包含公共 API 的文档注释
+
+### 用例 2：领域外请求——正确转交
+**输入：**“实现 WASD 移动和迭代能力的玩家输入处理。”
+**预期行为：**
+- 不生成玩家输入或移动代码
+- 明确说明该请求超出其领域（玩家机制属于 gameplay-programmer）
+- 将请求转交给 `gameplay-programmer`
+- 可以说明，通过 API 获取玩家位置后，AI 感知即可引用该位置
+
+### 用例 3：跨领域协调——关卡约束
+**输入：**“为仓库关卡设计寻路，但狭窄走廊会让导航网格出错。”
+**预期行为：**
+- 不单方面修改关卡布局或导航网格资产
+- 与 `level-designer` 协调，明确导航网格要求和走廊尺寸
+- 根据关卡几何形状提出寻路方案（例如调整代理半径的导航网格、流场）
+- 记录假设并清楚标记阻塞项
+
+### 用例 4：性能升级——自定义数据结构
+**输入：**“寻路优先队列是瓶颈；我需要自定义二叉堆实现来提升性能。”
+**预期行为：**
+- 识别底层、与引擎集成的数据结构属于 engine-programmer 的领域
+- 将问题升级给 `engine-programmer`，清楚描述瓶颈和所需接口
+- 可以提供算法规范（二叉堆接口、预期操作）来指导 engine-programmer
+- 若底层结构需要引擎内存管理，则不单方面实现
+
+### 用例 5：上下文符合性——使用关卡布局设计寻路
+**输入：**上下文提供的关卡布局文档显示两个咽喉点：(12, 0) 的门口和 (40, 5) 的桥。请求：“设计本关卡敌人的巡逻路线和威胁响应。”
+**预期行为：**
+- 引用上下文提供的具体咽喉点坐标
+- 设计将咽喉点用作战术位置的巡逻路线
+- 指定警戒状态转换，使 NPC 在追击时汇向已识别的咽喉点
+- 不发明所提供布局文档中不存在的几何结构
 
 ---
 
-## Coverage Notes
-- Behavior tree output (Case 1) should be validated by a unit test in `tests/unit/ai/`
-- Level-layout context (Case 5) verifies the agent reads and applies provided documents rather than inventing
-- Performance escalation (Case 4) confirms the agent recognizes the engine-programmer boundary
+## 协议合规性
+
+- [ ] 保持在声明的领域内（NPC 行为、寻路、感知、状态机）
+- [ ] 将领域外请求转交给正确代理（gameplay-programmer、engine-programmer、level-designer）
+- [ ] 返回结构化结果（行为树规范、状态机图、代码脚手架）
+- [ ] 未经明确委派不修改玩家机制文件
+- [ ] 将性能关键的底层结构升级给 engine-programmer
+- [ ] 使用数据驱动的 NPC 配置（路径点、探测半径），而非硬编码值
+
+---
+
+## 覆盖说明
+- 行为树输出（用例 1）应通过 `tests/unit/ai/` 中的单元测试验证
+- 关卡布局上下文（用例 5）验证代理读取并采用所提供文档，而非自行发明
+- 性能升级（用例 4）确认代理能识别 engine-programmer 的领域边界
