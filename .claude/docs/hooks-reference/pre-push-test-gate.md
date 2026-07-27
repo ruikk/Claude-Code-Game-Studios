@@ -1,17 +1,15 @@
 # Hook: pre-push-test-gate
 
-## Trigger
+## Trigger（触发时机）
 
-Runs before any push to a remote branch. Mandatory for pushes to `develop`
-and `main`.
+在任何推送到远程分支之前运行。对推送到 `develop`
+和 `main` 为强制要求。
 
-## Purpose
+## Purpose（目的）
 
-Ensures the build compiles, unit tests pass, and critical smoke tests pass
-before code reaches shared branches. This is the last automated quality gate
-before code affects other developers.
+确保在代码进入共享分支之前，构建可编译、单元测试通过、关键冒烟测试通过。这是代码影响其他开发者之前的最后一道自动化质量闸门（quality gate）。
 
-## Implementation
+## Implementation（实现）
 
 ```bash
 #!/bin/bash
@@ -71,10 +69,9 @@ echo "=== All gates passed ==="
 exit 0
 ```
 
-## Agent Integration
+## Agent Integration（Agent 集成）
 
-When this hook fails:
-1. Build failure: invoke `lead-programmer` to diagnose
-2. Unit test failure: invoke `qa-tester` to identify the failing test and
-   `gameplay-programmer` or relevant programmer to fix
-3. Performance regression: invoke `performance-analyst` to analyze
+当此 hook 失败时：
+1. 构建失败：调用 `lead-programmer` 进行诊断
+2. 单元测试失败：调用 `qa-tester` 定位失败测试，并调用 `gameplay-programmer` 或相关程序员修复
+3. 性能回归：调用 `performance-analyst` 进行分析

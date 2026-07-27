@@ -1,39 +1,36 @@
 # Hook: post-sprint-retrospective
 
-## Trigger
+## 触发（Trigger）
 
-Manual trigger at the end of each sprint (typically invoked by the producer
-agent or the human developer).
+在每个冲刺（sprint）结束时手动触发（通常由 `producer` agent 或人类开发者调用）。
 
-## Purpose
+## 目的（Purpose）
 
-Automatically generates a retrospective starting point by analyzing the sprint
-data: what was planned vs completed, velocity changes, bug trends, and common
-blockers. This is not a git hook but a workflow hook invoked through the
-`producer` agent.
+通过分析冲刺（sprint）数据，自动生成复盘起点：计划与完成对比、速度变化、缺陷趋势以及常见阻塞项。
+这不是 git hook，而是通过 `producer` agent 调用的 workflow hook（工作流钩子）。
 
-## Implementation
+## 实现（Implementation）
 
-This is a workflow hook, not a git hook. It is invoked by running:
+这是一个 workflow hook（工作流钩子），不是 git hook。通过运行以下命令调用：
 
 ```
 @producer Generate sprint retrospective for Sprint [N]
 ```
 
-The producer agent should:
+`producer` agent 应当：
 
-1. **Read the sprint plan** from `production/sprints/sprint-[N].md`
-2. **Calculate metrics**:
-   - Tasks planned vs completed
-   - Story points planned vs completed (if used)
-   - Carryover items from previous sprint
-   - New tasks added mid-sprint
-   - Average task completion time
-3. **Analyze patterns**:
-   - Most common blockers
-   - Which agent/area had the most incomplete work
-   - Which estimates were most inaccurate
-4. **Generate the retrospective**:
+1. 从 `production/sprints/sprint-[N].md` **读取冲刺计划**
+2. **计算指标**：
+   - 计划任务数 vs 完成任务数
+   - 计划故事点 vs 完成故事点（若使用）
+   - 从上一个冲刺（sprint）结转的事项
+   - 冲刺中途新增任务
+   - 任务平均完成时间
+3. **分析模式**：
+   - 最常见阻塞项
+   - 哪个 agent/领域未完成工作最多
+   - 哪些估算最不准确
+4. **生成复盘文档**：
 
 ```markdown
 # Sprint [N] Retrospective
@@ -75,4 +72,4 @@ Trend: [Improving / Stable / Declining]
 |------|------------|-----------|----------|
 ```
 
-5. **Save** to `production/sprints/sprint-[N]-retro.md`
+5. **保存**到 `production/sprints/sprint-[N]-retro.md`
