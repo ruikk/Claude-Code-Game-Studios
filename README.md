@@ -7,6 +7,8 @@
   </p>
 </p>
 
+> 本项目已完成绝大部分文件的汉化，可能仍有少部分内容尚未完整翻译，但不影响正常使用。非翻译相关问题请向原作者提交 issue。本项目仅承担汉化工作，源项目地址：[Claude-Code-Game-Studios](https://github.com/Donchitos/Claude-Code-Game-Studios)。
+
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT License"></a>
   <a href=".claude/agents"><img src="https://img.shields.io/badge/agents-49-blueviolet" alt="49 Agents"></a>
