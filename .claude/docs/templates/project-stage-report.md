@@ -1,4 +1,4 @@
-# Project Stage Analysis Report
+# 项目阶段分析报告 / Project Stage Analysis Report
 
 **Generated**: [DATE]
 **Stage**: [Concept | Systems Design | Technical Setup | Pre-Production | Production | Polish | Release]
@@ -6,167 +6,167 @@
 
 ---
 
-## Executive Summary
+## 执行摘要 / Executive Summary
 
-[1-2 paragraph overview of project state, primary gaps, and recommended priority]
+[用 1-2 段概述项目当前状态、主要缺口与建议优先级]
 
-**Current Focus**: [What the project is actively working on]
-**Blocking Issues**: [Critical gaps preventing progress]
-**Estimated Time to Next Stage**: [If applicable]
+**Current Focus**: [项目当前正在重点推进的工作]
+**Blocking Issues**: [阻碍推进的关键缺口]
+**Estimated Time to Next Stage**: [如适用]
 
 ---
 
-## Completeness Overview
+## 完整性概览 / Completeness Overview
 
-### Design Documentation
+### 设计文档 / Design Documentation
 - **Status**: [X%] complete
 - **Files Found**: [N] documents in `design/`
   - GDD sections: [N] files in `design/gdd/`
   - Narrative docs: [N] files in `design/narrative/`
   - Level designs: [N] files in `design/levels/`
 - **Key Gaps**:
-  - [ ] [Missing doc 1 + why it matters]
-  - [ ] [Missing doc 2 + why it matters]
+  - [ ] [缺失文档 1 + 其重要性]
+  - [ ] [缺失文档 2 + 其重要性]
 
-### Source Code
+### 源代码 / Source Code
 - **Status**: [X%] complete
 - **Files Found**: [N] source files in `src/`
 - **Major Systems Identified**:
-  - ✅ [System 1] (`src/path/`) — [brief status]
-  - ✅ [System 2] (`src/path/`) — [brief status]
-  - ⚠️  [System 3] (`src/path/`) — [issue or incomplete]
+  - ✅ [系统 1] (`src/path/`) — [简要状态]
+  - ✅ [系统 2] (`src/path/`) — [简要状态]
+  - ⚠️  [系统 3] (`src/path/`) — [问题或未完成项]
 - **Key Gaps**:
-  - [ ] [Missing system 1 + impact]
-  - [ ] [Missing system 2 + impact]
+  - [ ] [缺失系统 1 + 影响]
+  - [ ] [缺失系统 2 + 影响]
 
-### Architecture Documentation
+### 架构文档 / Architecture Documentation
 - **Status**: [X%] complete
 - **ADRs Found**: [N] decisions documented in `docs/architecture/`
 - **Coverage**:
-  - ✅ [Decision area 1] — documented
-  - ⚠️  [Decision area 2] — undocumented but implemented
-  - ❌ [Decision area 3] — neither documented nor decided
+  - ✅ [决策领域 1] — 已文档化
+  - ⚠️  [决策领域 2] — 已实现但未文档化
+  - ❌ [决策领域 3] — 既未文档化也未决策
 - **Key Gaps**:
-  - [ ] [Missing ADR 1 + why it's needed]
-  - [ ] [Missing ADR 2 + why it's needed]
+  - [ ] [缺失 ADR 1 + 为何需要]
+  - [ ] [缺失 ADR 2 + 为何需要]
 
-### Production Management
+### 生产管理 / Production Management
 - **Status**: [X%] complete
 - **Found**:
   - Sprint plans: [N] in `production/sprints/`
   - Milestones: [N] in `production/milestones/`
   - Roadmap: [Exists | Missing]
 - **Key Gaps**:
-  - [ ] [Missing production artifact + impact]
+  - [ ] [缺失的生产工件 + 影响]
 
-### Testing
+### 测试 / Testing
 - **Status**: [X%] coverage (estimated)
 - **Test Files**: [N] in `tests/`
 - **Coverage by System**:
   - [System 1]: [X%] (estimated)
   - [System 2]: [X%] (estimated)
 - **Key Gaps**:
-  - [ ] [Missing test area + risk]
+  - [ ] [缺失测试领域 + 风险]
 
-### Prototypes
+### 原型 / Prototypes
 - **Active Prototypes**: [N] in `prototypes/`
-  - ✅ [Prototype 1] — documented with README
-  - ⚠️  [Prototype 2] — no README, unclear status
-- **Archived**: [N] (experiments completed)
+  - ✅ [原型 1] — 有 README 文档
+  - ⚠️  [原型 2] — 无 README，状态不清晰
+- **Archived**: [N] (已完成实验)
 - **Key Gaps**:
-  - [ ] [Undocumented prototype + why it matters]
+  - [ ] [未文档化原型 + 其重要性]
 
 ---
 
-## Stage Classification Rationale
+## 阶段分类依据 / Stage Classification Rationale
 
 **Why [Stage]?**
 
-[Explain why the project is classified at this stage based on indicators found]
+[说明为何基于已发现指标将项目归类为此阶段]
 
 **Indicators for this stage**:
-- [Indicator 1 that matches this stage]
-- [Indicator 2 that matches this stage]
+- [与该阶段匹配的指标 1]
+- [与该阶段匹配的指标 2]
 
 **Next stage requirements**:
-- [ ] [Requirement 1 to reach next stage]
-- [ ] [Requirement 2 to reach next stage]
-- [ ] [Requirement 3 to reach next stage]
+- [ ] [达到下一阶段所需条件 1]
+- [ ] [达到下一阶段所需条件 2]
+- [ ] [达到下一阶段所需条件 3]
 
 ---
 
-## Gaps Identified (with Clarifying Questions)
+## 已识别缺口（含澄清问题）/ Gaps Identified (with Clarifying Questions)
 
-### Critical Gaps (block progress)
+### 关键缺口（阻塞进度）/ Critical Gaps (block progress)
 
-1. **[Gap Name]**
-   - **Impact**: [Why this blocks progress]
-   - **Question**: [Clarifying question before assuming solution]
-   - **Suggested Action**: [What could be done, pending clarification]
+1. **[缺口名称]**
+   - **Impact**: [为何会阻塞进度]
+   - **Question**: [在假设解决方案前需要澄清的问题]
+   - **Suggested Action**: [在澄清后可执行的动作]
 
-### Important Gaps (affect quality/velocity)
+### 重要缺口（影响质量/速度）/ Important Gaps (affect quality/velocity)
 
-2. **[Gap Name]**
-   - **Impact**: [Why this matters]
-   - **Question**: [Clarifying question]
-   - **Suggested Action**: [Proposed solution]
+2. **[缺口名称]**
+   - **Impact**: [为何重要]
+   - **Question**: [澄清问题]
+   - **Suggested Action**: [建议方案]
 
-### Nice-to-Have Gaps (polish/best practices)
+### 可选优化缺口（打磨/最佳实践）/ Nice-to-Have Gaps (polish/best practices)
 
-3. **[Gap Name]**
-   - **Impact**: [Minor but valuable]
-   - **Question**: [Clarifying question]
-   - **Suggested Action**: [Optional improvement]
+3. **[缺口名称]**
+   - **Impact**: [影响较小但有价值]
+   - **Question**: [澄清问题]
+   - **Suggested Action**: [可选改进]
 
 ---
 
-## Recommended Next Steps
+## 建议下一步 / Recommended Next Steps
 
 ### Immediate Priority (Do First)
-1. **[Action 1]** — [Why it's priority 1]
+1. **[行动 1]** — [为何是优先级 1]
    - Suggested skill: `/[skill-name]` or manual work
    - Estimated effort: [S/M/L]
 
-2. **[Action 2]** — [Why it's priority 2]
+2. **[行动 2]** — [为何是优先级 2]
    - Suggested skill: `/[skill-name]`
    - Estimated effort: [S/M/L]
 
 ### Short-Term (This Sprint/Week)
-3. **[Action 3]** — [Why it's important soon]
-4. **[Action 4]** — [Why it's important soon]
+3. **[行动 3]** — [为何近期重要]
+4. **[行动 4]** — [为何近期重要]
 
 ### Medium-Term (Next Milestone)
-5. **[Action 5]** — [Future need]
-6. **[Action 6]** — [Future need]
+5. **[行动 5]** — [未来需求]
+6. **[行动 6]** — [未来需求]
 
 ---
 
-## Role-Specific Recommendations
+## 角色专项建议 / Role-Specific Recommendations
 
-[If role filter was used, provide role-specific guidance]
+[若使用了角色过滤，在此提供该角色的专项建议]
 
 ### For [Role]:
-- **Focus areas**: [What this role should prioritize]
-- **Blockers**: [What's blocking this role's work]
+- **Focus areas**: [该角色应优先关注的领域]
+- **Blockers**: [阻碍该角色工作的因素]
 - **Next tasks**:
-  1. [Task 1]
-  2. [Task 2]
+  1. [任务 1]
+  2. [任务 2]
 
 ---
 
-## Follow-Up Skills to Run
+## 后续可运行技能 / Follow-Up Skills to Run
 
-Based on gaps identified, consider running:
+基于已识别的缺口，可考虑运行：
 
-- `/reverse-document [type] [path]` — [For which gap]
-- `/architecture-decision` — [For which gap]
-- `/sprint-plan` — [If production planning missing]
-- `/milestone-review` — [If approaching deadline]
-- `/onboard [role]` — [If new contributor joining]
+- `/reverse-document [type] [path]` — [对应哪个缺口]
+- `/architecture-decision` — [对应哪个缺口]
+- `/sprint-plan` — [若缺少生产计划]
+- `/milestone-review` — [若临近截止日期]
+- `/onboard [role]` — [若有新贡献者加入]
 
 ---
 
-## Appendix: File Counts by Directory
+## 附录：按目录统计文件数 / Appendix: File Counts by Directory
 
 ```
 design/

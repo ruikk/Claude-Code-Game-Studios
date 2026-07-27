@@ -1,111 +1,111 @@
-# Level: [Level Name]
+# 关卡（Level）: [关卡名称]
 
-## Quick Reference
+## 快速参考（Quick Reference）
 
-- **Area/Region**: [Where in the game world]
-- **Type**: [Combat / Exploration / Puzzle / Hub / Boss / Mixed]
-- **Estimated Play Time**: [X-Y minutes]
-- **Difficulty**: [1-10 relative scale]
-- **Prerequisite**: [What the player must have done to reach this level]
-- **Status**: [Concept | Layout | Graybox | Art Pass | Polish | Final]
+- **区域/地区（Area/Region）**: [在游戏世界中的位置]
+- **类型（Type）**: [战斗 / 探索 / 解谜 / 枢纽 / Boss / 混合]
+- **预计游玩时长（Estimated Play Time）**: [X-Y 分钟]
+- **难度（Difficulty）**: [1-10 相对量表]
+- **前置条件（Prerequisite）**: [玩家到达此关卡前必须完成的内容]
+- **状态（Status）**: [概念 | 布局 | 灰盒 | 美术迭代 | 打磨 | 最终]
 
-## Narrative Context
+## 叙事语境（Narrative Context）
 
-- **Story Moment**: [Where in the narrative arc does this level occur]
-- **Narrative Purpose**: [What story beat this level delivers]
-- **Emotional Target**: [What the player should feel during this level]
-- **Lore Discoveries**: [What world-building the player can find here]
+- **故事节点（Story Moment）**: [该关卡在叙事弧线中的位置]
+- **叙事目的（Narrative Purpose）**: [该关卡承载的剧情节拍]
+- **情绪目标（Emotional Target）**: [玩家在该关卡中应感受到的情绪]
+- **世界观发现（Lore Discoveries）**: [玩家在此可发现的世界观信息]
 
-## Layout
+## 布局（Layout）
 
-### Overview Map
+### 总览地图（Overview Map）
 
 ```
-[ASCII diagram of the level layout. Use these symbols:]
-[S] = Start point
-[E] = Exit/end point
-[C] = Combat encounter
-[P] = Puzzle
-[R] = Reward/loot
-[!] = Story beat
-[?] = Secret/optional
-[>] = One-way passage
-[=] = Two-way passage
+[关卡布局的 ASCII 图。使用以下符号:]
+[S] = 起点
+[E] = 出口/终点
+[C] = 战斗遭遇
+[P] = 解谜
+[R] = 奖励/战利品
+[!] = 剧情节点
+[?] = 秘密/可选内容
+[>] = 单向通路
+[=] = 双向通路
 [@] = NPC
-[B] = Boss encounter
+[B] = Boss 遭遇
 ```
 
-### Critical Path
+### 关键路径（Critical Path）
 
-[The mandatory route through the level, step by step.]
+[关卡中的强制路线，按步骤描述。]
 
-1. Player enters at [S]
-2. [Description of what happens along the path]
-3. Player exits at [E]
+1. 玩家从 [S] 进入
+2. [沿路径发生内容的描述]
+3. 玩家从 [E] 离开
 
-### Optional Paths
+### 可选路径（Optional Paths）
 
-| Path | Access Requirement | Reward | Discovery Hint |
-|------|-------------------|--------|---------------|
+| 路径 | 进入条件 | 奖励 | 探索提示 |
+|------|---------|------|---------|
 
-### Points of Interest
+### 兴趣点（Points of Interest）
 
-| Location | Type | Description | Purpose |
-|----------|------|-------------|---------|
+| 位置 | 类型 | 描述 | 目的 |
+|------|------|------|------|
 
-## Encounters
+## 遭遇设计（Encounters）
 
-### Combat Encounters
+### 战斗遭遇（Combat Encounters）
 
-| ID | Position | Enemy Composition | Difficulty | Arena Notes |
-|----|----------|------------------|-----------|-------------|
-| E-01 | [Map ref] | [2x Grunt, 1x Ranged] | 3/10 | Open area, cover on flanks |
-| E-02 | [Map ref] | [1x Elite, 3x Grunt] | 5/10 | Narrow corridor, no retreat |
+| ID | 位置 | 敌人构成 | 难度 | 场地备注 |
+|----|------|---------|------|---------|
+| E-01 | [地图引用] | [2x 杂兵, 1x 远程] | 3/10 | 开阔区域，两侧有掩体 |
+| E-02 | [地图引用] | [1x 精英, 3x 杂兵] | 5/10 | 狭窄走廊，无法撤退 |
 
-### Non-Combat Encounters
+### 非战斗遭遇（Non-Combat Encounters）
 
-| ID | Position | Type | Description | Solution Hint |
-|----|----------|------|-------------|---------------|
+| ID | 位置 | 类型 | 描述 | 解法提示 |
+|----|------|------|------|---------|
 
-## Pacing Chart
+## 节奏曲线图（Pacing Chart）
 
 ```
-Intensity
+强度（Intensity）
 10 |                              *
  8 |                         *   * *
  6 |            *  *        * * *   *
  4 |     *  *  * ** *   *  *
  2 | * ** ** *        * * *          *
  0 |S-----------------------------------------E
-     [Start]    [Mid]              [Climax] [Exit]
+     [开始]    [中段]              [高潮] [出口]
 ```
 
-[Describe the intended rhythm: where are the peaks, valleys, rest points?]
+[描述预期节奏：峰值、低谷与休息点分别在哪里？]
 
-## Audio Direction
+## 音频方向（Audio Direction）
 
-| Zone/Moment | Music Track | Ambience | Key SFX |
-|-------------|------------|----------|---------|
-| [Entry] | [Track] | [Ambient sounds] | [Door opening] |
-| [Combat] | [Combat music] | [Muted ambience] | [Combat SFX] |
-| [Post-combat] | [Calm transition] | [Return to ambience] | |
+| 区域/时刻 | 音乐轨道 | 环境音 | 关键音效 |
+|----------|---------|-------|---------|
+| [入口] | [曲目] | [环境声音] | [开门声] |
+| [战斗] | [战斗音乐] | [弱化环境音] | [战斗音效] |
+| [战后] | [平缓过渡] | [恢复环境音] | |
 
-## Visual Direction
+## 视觉方向（Visual Direction）
 
-- **Lighting**: [Key, fill, ambient description]
-- **Color Palette**: [Dominant colors and why]
-- **Mood Board References**: [Description of visual references]
-- **Landmarks**: [Visible navigation aids and their locations]
-- **Sight Lines**: [What the player should see from key positions]
+- **光照（Lighting）**: [主光、补光、环境光描述]
+- **色彩方案（Color Palette）**: [主导色及其原因]
+- **情绪板参考（Mood Board References）**: [视觉参考描述]
+- **地标（Landmarks）**: [可见导航锚点及其位置]
+- **视线设计（Sight Lines）**: [玩家在关键位置应看到什么]
 
-## Collectibles and Secrets
+## 收集品与秘密（Collectibles and Secrets）
 
-| Item | Location | Visibility | Hint | Required For |
-|------|----------|-----------|------|-------------|
+| 物品 | 位置 | 可见性 | 提示 | 用于 |
+|------|------|-------|------|------|
 
-## Technical Notes
+## 技术说明（Technical Notes）
 
-- **Estimated Object Count**: [N]
-- **Streaming Zones**: [Where to break the level for streaming]
-- **Performance Concerns**: [Any known heavy areas]
-- **Required Systems**: [What game systems are active in this level]
+- **预估对象数量（Estimated Object Count）**: [N]
+- **流送分区（Streaming Zones）**: [关卡中进行流式切分的位置]
+- **性能关注点（Performance Concerns）**: [已知的高负载区域]
+- **所需系统（Required Systems）**: [此关卡启用的游戏系统]

@@ -1,9 +1,9 @@
-# Architecture Traceability Index
+# Architecture Traceability Index（架构可追溯性索引）
 
 <!-- Living document — updated by /architecture-review after each review run.
      Do not edit manually unless correcting an error. -->
 
-## Document Status
+## Document Status（文档状态）
 
 - **Last Updated**: [YYYY-MM-DD]
 - **Engine**: [e.g. Godot 4.6]
@@ -11,7 +11,7 @@
 - **ADRs Indexed**: [M]
 - **Last Review**: [link to docs/architecture/architecture-review-[date].md]
 
-## Coverage Summary
+## Coverage Summary（覆盖情况汇总）
 
 | Status | Count | Percentage |
 |--------|-------|-----------|
@@ -22,7 +22,7 @@
 
 ---
 
-## Traceability Matrix
+## Traceability Matrix（可追溯性矩阵）
 
 <!-- One row per technical requirement extracted from a GDD.
      A "technical requirement" is any GDD statement that implies a specific
@@ -36,7 +36,7 @@
 
 ---
 
-## Known Gaps
+## Known Gaps（已知缺口）
 
 Requirements with no ADR coverage, prioritised by layer (Foundation first):
 
@@ -54,7 +54,7 @@ Requirements with no ADR coverage, prioritised by layer (Foundation first):
 
 ---
 
-## Cross-ADR Conflicts
+## Cross-ADR Conflicts（ADR 交叉冲突）
 
 <!-- Pairs of ADRs that make contradictory claims. Must be resolved. -->
 
@@ -64,7 +64,7 @@ Requirements with no ADR coverage, prioritised by layer (Foundation first):
 
 ---
 
-## ADR → GDD Coverage (Reverse Index)
+## ADR → GDD Coverage (Reverse Index)（ADR → GDD 覆盖（反向索引））
 
 <!-- For each ADR, which GDD requirements does it address? -->
 
@@ -74,7 +74,7 @@ Requirements with no ADR coverage, prioritised by layer (Foundation first):
 
 ---
 
-## Superseded Requirements
+## Superseded Requirements（已被替代的需求）
 
 <!-- Requirements that existed in a GDD when an ADR was written, but the GDD
      has since changed. The ADR may need updating. -->
@@ -85,7 +85,7 @@ Requirements with no ADR coverage, prioritised by layer (Foundation first):
 
 ---
 
-## How to Use This Document
+## How to Use This Document（如何使用本文档）
 
 **When writing a new ADR**: Add it to the "ADR → GDD Coverage" table and mark
 the requirements it satisfies as ✅ in the matrix.

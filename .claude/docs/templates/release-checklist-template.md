@@ -1,111 +1,111 @@
-# Release Checklist: [Version] -- [Platform]
+# 发布检查清单（Release Checklist）: [Version] -- [Platform]
 
-**Release Date**: [Target Date]
-**Release Manager**: [Name]
-**Status**: [ ] GO / [ ] NO-GO
-
----
-
-## Build Verification
-
-- [ ] Clean build succeeds on all target platforms
-- [ ] No compiler warnings (zero-warning policy)
-- [ ] Build version number set correctly: `[version]`
-- [ ] Build is reproducible from tagged commit: `[commit hash]`
-- [ ] Build size within budget: [actual] / [budget]
-- [ ] All assets included and loading correctly
-- [ ] No debug/development features enabled in release build
+**发布日期**: [Target Date]
+**发布经理**: [Name]
+**状态**: [ ] GO / [ ] NO-GO
 
 ---
 
-## Quality Gates
+## 构建验证（Build Verification）
 
-### Critical Bugs
-- [ ] Zero S1 (Critical) bugs open
-- [ ] Zero S2 (Major) bugs -- or documented exceptions below:
+- [ ] 在所有目标平台上，干净构建成功
+- [ ] 无编译器警告（零警告策略）
+- [ ] 构建版本号设置正确：`[version]`
+- [ ] 可从已打标签的提交复现构建：`[commit hash]`
+- [ ] 构建体积在预算内：[actual] / [budget]
+- [ ] 所有资源均已包含且加载正常
+- [ ] 发布构建中未启用调试/开发功能
+
+---
+
+## 质量门禁（Quality Gates）
+
+### 严重缺陷（Critical Bugs）
+- [ ] 未关闭的 S1（Critical）缺陷为零
+- [ ] 未关闭的 S2（Major）缺陷为零——或在下方记录例外：
 
 | Bug ID | Description | Exception Rationale | Approved By |
 | ---- | ---- | ---- | ---- |
 | | | | |
 
-### Test Coverage
-- [ ] All critical path features tested and signed off
-- [ ] Full regression suite passed: [pass rate]%
-- [ ] Soak test passed (4+ hours continuous play)
-- [ ] Edge case testing complete
+### 测试覆盖（Test Coverage）
+- [ ] 所有关键路径功能均已测试并签字确认
+- [ ] 完整回归测试套件通过：[pass rate]%
+- [ ] 浸泡测试通过（连续游玩 4 小时以上）
+- [ ] 边界/异常场景测试完成
 
-### Performance
-- [ ] Target FPS met on minimum spec: [actual] / [target] FPS
-- [ ] Memory usage within budget: [actual] / [budget] MB
-- [ ] Load times within budget: [actual] / [target] seconds
-- [ ] No memory leaks over extended play (soak test)
-- [ ] No frame drops below [threshold] in normal gameplay
-
----
-
-## Content Complete
-
-- [ ] All placeholder assets replaced with final versions
-- [ ] All player-facing text proofread
-- [ ] All text localization-ready (no hardcoded strings)
-- [ ] Localization complete for: [list locales]
-- [ ] Audio mix finalized and approved
-- [ ] Credits complete and accurate
-- [ ] Legal notices and third-party attributions complete
+### 性能（Performance）
+- [ ] 最低配置达到目标 FPS：[actual] / [target] FPS
+- [ ] 内存使用在预算内：[actual] / [budget] MB
+- [ ] 加载时长在预算内：[actual] / [target] seconds
+- [ ] 长时游玩（浸泡测试）无内存泄漏
+- [ ] 正常游戏过程中无低于 [threshold] 的掉帧
 
 ---
 
-## Platform: PC
+## 内容完备（Content Complete）
 
-- [ ] Minimum and recommended specs documented
-- [ ] Keyboard+mouse controls fully functional
-- [ ] Controller support tested (Xbox, PlayStation, generic)
-- [ ] Resolution scaling tested: 1080p, 1440p, 4K, ultrawide
-- [ ] Windowed, borderless, fullscreen modes working
-- [ ] Graphics settings save and load correctly
-- [ ] Store SDK integrated and tested: [Steam/Epic/GOG]
-- [ ] Achievements functional
-- [ ] Cloud saves functional
-
-## Platform: Console (if applicable)
-
-- [ ] TRC/TCR/Lotcheck requirements met
-- [ ] Platform controller prompts correct
-- [ ] Suspend/resume works
-- [ ] User switching handled
-- [ ] Network loss handled gracefully
-- [ ] Storage full scenario handled
-- [ ] Parental controls respected
-- [ ] Certification submission prepared
+- [ ] 所有占位资源已替换为最终版本
+- [ ] 所有面向玩家的文本已完成校对
+- [ ] 所有文本已具备本地化准备状态（无硬编码字符串）
+- [ ] 以下语言/地区的本地化已完成：[list locales]
+- [ ] 音频混音已定版并获批准
+- [ ] 制作人员名单完整且准确
+- [ ] 法律声明与第三方署名完整
 
 ---
 
-## Store and Distribution
+## 平台：PC（Platform: PC）
 
-- [ ] Store page metadata complete and proofread
-- [ ] Screenshots current and meet platform requirements
-- [ ] Trailer current
-- [ ] Key art and capsule images final
-- [ ] Age ratings obtained: [ ] ESRB [ ] PEGI [ ] Other
-- [ ] Legal: EULA, Privacy Policy, Terms of Service
-- [ ] Pricing configured for all regions
+- [ ] 最低与推荐配置已文档化
+- [ ] 键盘+鼠标控制功能完整可用
+- [ ] 控制器支持已测试（Xbox、PlayStation、通用手柄）
+- [ ] 分辨率缩放已测试：1080p、1440p、4K、超宽屏
+- [ ] 窗口化、无边框、全屏模式工作正常
+- [ ] 图形设置可正确保存并加载
+- [ ] 商店 SDK 已集成并测试：[Steam/Epic/GOG]
+- [ ] 成就功能正常
+- [ ] 云存档功能正常
+
+## 平台：主机（如适用）（Platform: Console）
+
+- [ ] 满足 TRC/TCR/Lotcheck 要求
+- [ ] 平台控制器提示正确
+- [ ] 挂起/恢复功能正常
+- [ ] 用户切换处理正确
+- [ ] 网络断开可平滑处理
+- [ ] 存储已满场景处理正确
+- [ ] 遵循家长控制限制
+- [ ] 认证提交流程已准备完成
 
 ---
 
-## Launch Readiness
+## 商店与分发（Store and Distribution）
 
-- [ ] Analytics/telemetry verified and receiving data
-- [ ] Crash reporting configured: [service name]
-- [ ] Day-one patch prepared (if needed)
-- [ ] On-call team schedule set for first 72 hours
-- [ ] Community announcements drafted
-- [ ] Press/influencer keys prepared
-- [ ] Support team briefed on known issues
-- [ ] Rollback plan documented and tested
+- [ ] 商店页面元数据完整且已校对
+- [ ] 截图为最新版本并满足平台要求
+- [ ] 预告片为最新版本
+- [ ] 关键视觉与胶囊图已定稿
+- [ ] 已取得分级：[ ] ESRB [ ] PEGI [ ] Other
+- [ ] 法务材料：EULA、Privacy Policy、Terms of Service
+- [ ] 所有地区定价已配置完成
 
 ---
 
-## Sign-offs
+## 上线就绪（Launch Readiness）
+
+- [ ] 分析/遥测已验证并正在接收数据
+- [ ] 崩溃上报已配置：[service name]
+- [ ] 首日补丁已准备（如需要）
+- [ ] 首发 72 小时值班团队排班已确定
+- [ ] 社区公告文案已起草
+- [ ] 媒体/创作者密钥已准备
+- [ ] 支持团队已知会已知问题
+- [ ] 回滚方案已文档化并测试
+
+---
+
+## 签字确认（Sign-offs）
 
 | Role | Name | Status | Date |
 | ---- | ---- | ---- | ---- |
@@ -116,10 +116,10 @@
 
 ---
 
-## Final Decision
+## 最终决策（Final Decision）
 
 **GO / NO-GO**: ____________
 
-**Rationale**: [Summary of readiness. If NO-GO, list specific blocking items and estimated time to resolve.]
+**Rationale**: [就绪情况摘要。若为 NO-GO，请列出具体阻塞项及预计解决时间。]
 
-**Notes**: [Any additional context, known risks accepted, or conditions on the release.]
+**Notes**: [任何补充背景、已接受的已知风险，或发布附带条件。]

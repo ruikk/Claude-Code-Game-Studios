@@ -1,62 +1,62 @@
-# What's New in [Version]
+# [Version] 更新内容（What's New）
 
-**Release Date**: [Date]
-
----
-
-## New Features
-
-- **[Feature Name]**: [Player-friendly description of what they can now do. Focus on the experience, not the implementation. 1-2 sentences.]
-
-- **[Feature Name]**: [Description]
+**发布日期（Release Date）**: [Date]
 
 ---
 
-## Improvements
+## 新功能（New Features）
 
-- **[Area Improved]**: [How this makes the game better for the player. Be specific.]
+- **[Feature Name]**: [以玩家易懂的方式描述他们现在可以做什么。聚焦体验，而非实现细节。1-2 句。]
 
-- **[Area Improved]**: [Description]
-
----
-
-## Balance Changes
-
-- **[What Changed]**: [Old value] -> [New value]. [Brief design reasoning in player terms. Example: "Healing potions now restore 50 HP (up from 30) -- late-game encounters needed more recovery options."]
-
-- **[What Changed]**: [Description]
+- **[Feature Name]**: [描述]
 
 ---
 
-## Bug Fixes
+## 改进项（Improvements）
 
-- Fixed an issue where [describe the player-visible symptom, not the code fix]
-- Fixed [another player-visible symptom]
-- Fixed [symptom]
+- **[Area Improved]**: [这项改进如何让玩家体验变得更好。请具体说明。]
 
----
-
-## Known Issues
-
-- [Issue description in player terms]. [Workaround if one exists.] We're working on a fix.
+- **[Area Improved]**: [描述]
 
 ---
 
-## Technical Notes (Internal Only -- Remove Before Publishing)
+## 平衡性调整（Balance Changes）
 
-### Commits Covered
+- **[What Changed]**: [Old value] -> [New value]。[用玩家视角简要说明设计原因。示例：“治疗药水现在恢复 50 HP（原为 30）——后期遭遇战需要更多回复手段。”]
+
+- **[What Changed]**: [描述]
+
+---
+
+## Bug 修复（Bug Fixes）
+
+- 修复了一个问题：当 [描述玩家可感知到的现象，而非代码层修复] 时会出现异常
+- 修复了 [另一个玩家可感知到的现象]
+- 修复了 [现象]
+
+---
+
+## 已知问题（Known Issues）
+
+- [用玩家视角描述问题]。[如有可行临时方案，请写明。] 我们正在修复中。
+
+---
+
+## 技术说明（仅内部）(Technical Notes, Internal Only -- Remove Before Publishing)
+
+### 覆盖的提交（Commits Covered）
 - Range: `[first-hash]..[last-hash]`
 - Total commits: [N]
 
-### Internal Changes
-- [Refactoring, infrastructure, or tooling changes not visible to players]
+### 内部变更（Internal Changes）
+- [玩家不可见的重构、基础设施或工具链变更]
 
-### Deferred Items
-- [Features or fixes originally planned for this release but moved to next]
-  - Reason: [why deferred]
+### 延后项（Deferred Items）
+- [原计划在本次发布上线、但已延期到下个版本的功能或修复]
+  - Reason: [延期原因]
   - New target: [version or sprint]
 
 ---
 
-Thank you for playing! Your feedback helps us improve the game.
-Report issues at [support link].
+感谢游玩！你们的反馈能帮助我们持续改进游戏。
+问题反馈请前往 [support link]。
