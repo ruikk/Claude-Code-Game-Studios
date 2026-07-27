@@ -1,29 +1,29 @@
-# Unreal Engine 5.7 — Animation Module Reference
+# Unreal Engine 5.7 — 动画模块参考
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 animation authoring improvements, Control Rig 2.0
+**最后验证时间：** 2026-02-13
+**知识缺口：** UE 5.7 动画制作流程改进、Control Rig 2.0
 
 ---
 
-## Overview
+## 概览
 
-UE 5.7 animation systems:
-- **Animation Blueprint**: State machine-based animation logic
-- **Control Rig**: Runtime procedural animation (production-ready in UE5)
-- **IK Rig + Retargeter**: Modern retargeting system
-- **Sequencer**: Cinematic animation
+UE 5.7 的动画系统包括：
+- **Animation Blueprint**：基于状态机的动画逻辑
+- **Control Rig**：运行时程序化动画（在 UE5 中已达到可用于生产的成熟度）
+- **IK Rig + Retargeter**：现代动画重定向系统
+- **Sequencer**：过场与电影式动画系统
 
 ---
 
 ## Animation Blueprint
 
-### Create Animation Blueprint
+### 创建 Animation Blueprint
 
-1. Content Browser > Right Click > Animation > Animation Blueprint
-2. Select parent class: `AnimInstance`
-3. Select skeleton
+1. Content Browser > 右键 > Animation > Animation Blueprint
+2. 选择父类：`AnimInstance`
+3. 选择 skeleton
 
-### Animation State Machine
+### 动画状态机
 
 ```cpp
 // In Animation Blueprint Event Graph:
@@ -37,7 +37,7 @@ AnimInstance->Montage_Play(AttackMontage);
 
 ---
 
-## Play Animation Montages
+## 播放 Animation Montages
 
 ### Animation Montage
 
@@ -76,7 +76,7 @@ public:
 
 ## Blend Spaces
 
-### 1D Blend Space (Speed Blending)
+### 1D Blend Space（速度混合）
 
 ```cpp
 // Create: Content Browser > Animation > Blend Space 1D
@@ -88,7 +88,7 @@ public:
 // - Feed into Blend Space
 ```
 
-### 2D Blend Space (Directional Movement)
+### 2D Blend Space（方向移动）
 
 ```cpp
 // Create: Content Browser > Animation > Blend Space
@@ -99,15 +99,15 @@ public:
 
 ---
 
-## Control Rig (Procedural Animation)
+## Control Rig（程序化动画）
 
-### Create Control Rig
+### 创建 Control Rig
 
 1. Content Browser > Animation > Control Rig
-2. Select skeleton
-3. Build rig hierarchy (bones, controls, IK)
+2. 选择 skeleton
+3. 构建 rig 层级（bones、controls、IK）
 
-### Use Control Rig in Animation Blueprint
+### 在 Animation Blueprint 中使用 Control Rig
 
 ```cpp
 // Add "Control Rig" node to Anim Blueprint
@@ -115,7 +115,7 @@ public:
 // Procedurally modify bones at runtime
 ```
 
-### Control Rig in C++
+### 在 C++ 中使用 Control Rig
 
 ```cpp
 // Get control rig component
@@ -127,24 +127,24 @@ ControlRig->SetControlValue<FVector>(TEXT("IK_Hand_R"), TargetLocation);
 
 ---
 
-## IK Rig & Retargeting (UE5)
+## IK Rig 与重定向（UE5）
 
-### Create IK Rig
+### 创建 IK Rig
 
 1. Content Browser > Animation > IK Rig
-2. Select skeleton
-3. Add IK goals (hands, feet)
-4. Set up solver chains
+2. 选择 skeleton
+3. 添加 IK goals（手、脚）
+4. 设置 solver chains
 
-### Retarget Animations
+### 重定向动画
 
-1. Create IK Rig for source skeleton
-2. Create IK Rig for target skeleton
-3. Create IK Retargeter asset
-4. Assign source and target IK Rigs
-5. Batch retarget animations
+1. 为源 skeleton 创建 IK Rig
+2. 为目标 skeleton 创建 IK Rig
+3. 创建 IK Retargeter asset
+4. 分配源和目标 IK Rigs
+5. 批量重定向动画
 
-### Retargeting in C++
+### 在 C++ 中进行重定向
 
 ```cpp
 // Retargeting is primarily editor-based
@@ -155,7 +155,7 @@ ControlRig->SetControlValue<FVector>(TEXT("IK_Hand_R"), TargetLocation);
 
 ## Animation Notify States
 
-### Custom Notify State (Duration-Based Events)
+### 自定义 Notify State（基于持续时间的事件）
 
 ```cpp
 UCLASS()
@@ -179,9 +179,9 @@ public:
 
 ---
 
-## Skeletal Mesh & Sockets
+## Skeletal Mesh 与 Sockets
 
-### Attach Objects to Sockets
+### 将对象附加到 Socket
 
 ```cpp
 // Create socket in Skeletal Mesh Editor (Skeleton Tree > Add Socket)
@@ -195,7 +195,7 @@ Weapon->SetupAttachment(GetMesh(), TEXT("hand_r_socket"));
 
 ## Animation Curves
 
-### Use Animation Curves
+### 使用 Animation Curves
 
 ```cpp
 // Add curve to animation:
@@ -210,7 +210,7 @@ float CurveValue = AnimInstance->GetCurveValue(TEXT("MyCurve"));
 
 ## Root Motion
 
-### Enable Root Motion
+### 启用 Root Motion
 
 ```cpp
 // In Animation Sequence: Asset Details > Root Motion > Enable Root Motion
@@ -221,9 +221,9 @@ GetCharacterMovement()->bAllowPhysicsRotationDuringAnimRootMotion = true;
 
 ---
 
-## Animation Layers (Linked Anim Graphs)
+## Animation Layers（Linked Anim Graphs）
 
-### Use Linked Anim Layers
+### 使用 Linked Anim Layers
 
 ```cpp
 // Create separate Anim Blueprints for layers (e.g., upper body, lower body)
@@ -236,14 +236,14 @@ AnimInstance->LinkAnimClassLayers(NewLayerClass);
 
 ---
 
-## Sequencer (Cinematic Animation)
+## Sequencer（电影式动画）
 
-### Create Sequence
+### 创建 Sequence
 
 1. Content Browser > Cinematics > Level Sequence
-2. Add tracks: Camera, Character, Animation, etc.
+2. 添加轨道：Camera、Character、Animation 等
 
-### Play Sequence from C++
+### 从 C++ 播放 Sequence
 
 ```cpp
 #include "LevelSequenceActor.h"
@@ -255,9 +255,9 @@ SequenceActor->GetSequencePlayer()->Play();
 
 ---
 
-## Performance Tips
+## 性能建议
 
-### Animation Optimization
+### 动画优化
 
 ```cpp
 // LOD (Level of Detail) for skeletal meshes
@@ -271,9 +271,9 @@ GetMesh()->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyT
 
 ---
 
-## Debugging
+## 调试
 
-### Animation Debug Visualization
+### 动画调试可视化
 
 ```cpp
 // Console commands:
@@ -286,7 +286,7 @@ DrawDebugCoordinateSystem(GetWorld(), BoneLocation, BoneRotation, 50.0f, false, 
 
 ---
 
-## Sources
+## 来源
 - https://docs.unrealengine.com/5.7/en-US/animation-in-unreal-engine/
 - https://docs.unrealengine.com/5.7/en-US/control-rig-in-unreal-engine/
 - https://docs.unrealengine.com/5.7/en-US/ik-rig-in-unreal-engine/

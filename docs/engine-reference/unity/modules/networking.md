@@ -1,32 +1,32 @@
-# Unity 6.3 — Networking Module Reference
+# Unity 6.3 — Networking 模块参考
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** Unity 6 uses Netcode for GameObjects (UNet deprecated)
+**最后验证时间：** 2026-02-13
+**知识缺口：** Unity 6 使用 Netcode for GameObjects（UNet 已弃用）
 
 ---
 
-## Overview
+## 概览
 
-Unity 6 networking options:
-- **Netcode for GameObjects** (RECOMMENDED): Official Unity multiplayer framework
-- **Mirror**: Community-driven (UNet successor)
-- **Photon**: Third-party service (PUN2)
-- **Custom**: Low-level sockets
+Unity 6 的联网选项：
+- **Netcode for GameObjects**（推荐）：Unity 官方多人游戏框架
+- **Mirror**：社区驱动（UNet 的后继方案）
+- **Photon**：第三方服务（PUN2）
+- **Custom**：底层 sockets
 
-**UNet (Legacy)**: Deprecated, do not use.
+**UNet（旧版）**：已弃用，不要使用。
 
 ---
 
 ## Netcode for GameObjects
 
-### Installation
+### 安装
 1. `Window > Package Manager`
-2. Search "Netcode for GameObjects"
-3. Install `com.unity.netcode.gameobjects`
+2. 搜索 “Netcode for GameObjects”
+3. 安装 `com.unity.netcode.gameobjects`
 
 ---
 
-## Basic Setup
+## 基础配置
 
 ### NetworkManager
 
@@ -49,15 +49,15 @@ public class CustomNetworkManager : MonoBehaviour {
 
 ---
 
-## NetworkObject (Networked GameObjects)
+## NetworkObject（联网 GameObject）
 
-### Mark GameObject as Networked
+### 将 GameObject 标记为可联网对象
 
-1. Add `NetworkObject` component to GameObject
-2. Must be in root of prefab (not nested)
-3. Register prefab in `NetworkManager > NetworkPrefabs List`
+1. 给 GameObject 添加 `NetworkObject` 组件
+2. 必须位于 prefab 根节点（不能嵌套）
+3. 在 `NetworkManager > NetworkPrefabs List` 中注册 prefab
 
-### Spawn Network Objects
+### 生成网络对象
 
 ```csharp
 using Unity.Netcode;
@@ -75,9 +75,9 @@ public class GameManager : NetworkBehaviour {
 
 ---
 
-## NetworkBehaviour (Networked Scripts)
+## NetworkBehaviour（联网脚本）
 
-### NetworkBehaviour Base Class
+### NetworkBehaviour 基类
 
 ```csharp
 using Unity.Netcode;
@@ -110,7 +110,7 @@ public class Player : NetworkBehaviour {
 
 ---
 
-## Network Variables (Synchronized State)
+## Network Variables（同步状态）
 
 ### NetworkVariable<T>
 
@@ -139,7 +139,7 @@ public class Player : NetworkBehaviour {
 }
 ```
 
-### NetworkVariable Permissions
+### NetworkVariable 权限
 
 ```csharp
 // Server can write, clients read-only (default)
@@ -155,9 +155,9 @@ private NetworkVariable<int> ammo = new NetworkVariable<int>(
 
 ---
 
-## RPCs (Remote Procedure Calls)
+## RPC（远程过程调用）
 
-### ServerRpc (Client → Server)
+### ServerRpc（客户端 → 服务器）
 
 ```csharp
 // Client calls, server executes
@@ -173,7 +173,7 @@ if (IsOwner && Input.GetKeyDown(KeyCode.Space)) {
 }
 ```
 
-### ClientRpc (Server → All Clients)
+### ClientRpc（服务器 → 所有客户端）
 
 ```csharp
 // Server calls, all clients execute
@@ -194,7 +194,7 @@ void ExplodeServerRpc(Vector3 position) {
 }
 ```
 
-### RPC Parameters
+### RPC 参数
 
 ```csharp
 // ✅ Supported: Primitives, structs, strings, arrays
@@ -209,9 +209,9 @@ void UpdateScoresClientRpc(int[] scores) { }
 
 ---
 
-## Network Ownership
+## 网络所有权
 
-### Check Ownership
+### 检查所有权
 
 ```csharp
 if (IsOwner) {
@@ -231,7 +231,7 @@ if (IsLocalPlayer) {
 }
 ```
 
-### Transfer Ownership
+### 转移所有权
 
 ```csharp
 // Server transfers ownership
@@ -241,7 +241,7 @@ netObj.ChangeOwnership(newOwnerClientId);
 
 ---
 
-## NetworkObjectReference (Pass GameObjects in RPCs)
+## NetworkObjectReference（在 RPC 中传递 GameObject）
 
 ```csharp
 using Unity.Netcode;
@@ -261,9 +261,9 @@ AttackTargetServerRpc(targetNetObj);
 
 ---
 
-## Client-Server Architecture
+## 客户端-服务器架构
 
-### Server-Authoritative Pattern (RECOMMENDED)
+### 服务器权威（Server-Authoritative）模式（推荐）
 
 ```csharp
 public class Player : NetworkBehaviour {
@@ -290,9 +290,9 @@ public class Player : NetworkBehaviour {
 
 ---
 
-## Network Transport
+## 网络传输层
 
-### Unity Transport (Default)
+### Unity Transport（默认）
 
 ```csharp
 // Configured in NetworkManager:
@@ -301,7 +301,7 @@ public class Player : NetworkBehaviour {
 // - Port: 7777 (default)
 ```
 
-### Connection Events
+### 连接事件
 
 ```csharp
 void Start() {
@@ -320,32 +320,32 @@ void OnClientDisconnected(ulong clientId) {
 
 ---
 
-## Performance Tips
+## 性能建议
 
-### Reduce Network Traffic
-- Use `NetworkVariable` for state that changes infrequently
-- Batch multiple changes before syncing
-- Use delta compression for large data
+### 减少网络流量
+- 对变更频率较低的状态使用 `NetworkVariable`
+- 在同步前批量合并多次变更
+- 对大体量数据使用 delta compression
 
-### Prediction & Reconciliation
-- Run movement locally for responsiveness
-- Reconcile with server authoritative state
-- Use interpolation for smooth movement
+### Prediction 与 Reconciliation
+- 在本地运行移动逻辑以提升响应性
+- 与服务器权威状态进行 reconciliation
+- 使用 interpolation 实现平滑移动
 
 ---
 
-## Debugging
+## 调试
 
 ### Network Profiler
 - `Window > Analysis > Network Profiler`
-- Monitor bandwidth, RPC calls, variable updates
+- 监控带宽、RPC 调用、变量更新
 
-### Network Simulator (Test Latency/Packet Loss)
+### Network Simulator（测试延迟/丢包）
 - `NetworkManager > Network Simulator`
-- Add artificial lag and packet loss for testing
+- 添加人工延迟和丢包进行测试
 
 ---
 
-## Sources
+## 资料来源
 - https://docs-multiplayer.unity3d.com/netcode/current/about/
 - https://docs-multiplayer.unity3d.com/netcode/current/learn/bossroom/

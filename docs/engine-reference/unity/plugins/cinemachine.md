@@ -1,74 +1,74 @@
 # Unity 6.3 — Cinemachine
 
-**Last verified:** 2026-02-13
-**Status:** Production-Ready
-**Package:** `com.unity.cinemachine` v3.0+ (Package Manager)
+**最后验证时间：** 2026-02-13
+**状态：** 可用于生产环境
+**包：** `com.unity.cinemachine` v3.0+ (Package Manager)
 
 ---
 
-## Overview
+## 概述
 
-**Cinemachine** is Unity's virtual camera system that enables professional, dynamic camera
-behavior without manual scripting. It's the industry standard for Unity camera work.
+**Cinemachine** 是 Unity 的虚拟摄像机系统，无需手写脚本即可实现专业级、动态化的镜头行为。
+它是 Unity 相机工作流中的业界标准方案。
 
-**Use Cinemachine for:**
-- 3rd person follow cameras
-- Cutscenes and cinematics
-- Camera blending and transitions
-- Dynamic camera framing
-- Screen shake and camera effects
+**Cinemachine 适用于：**
+- 第三人称跟随相机
+- 过场动画与电影化镜头
+- 相机混合与转场
+- 动态镜头构图
+- 屏幕震动与相机特效
 
-**⚠️ Knowledge Gap:** Cinemachine 3.0 (Unity 6) is a major rewrite from 2.x.
-Many API names and components changed.
+**⚠️ 知识缺口：** Cinemachine 3.0 (Unity 6) 相比 2.x 是一次重大重写。
+许多 API 名称和组件都发生了变化。
 
 ---
 
-## Installation
+## 安装
 
-### Install via Package Manager
+### 通过 Package Manager 安装
 
 1. `Window > Package Manager`
-2. Unity Registry > Search "Cinemachine"
-3. Install `Cinemachine` (version 3.0+)
+2. Unity Registry > 搜索 "Cinemachine"
+3. 安装 `Cinemachine`（版本 3.0+）
 
 ---
 
-## Core Concepts
+## 核心概念
 
-### 1. **Virtual Cameras**
-- Define camera behavior (position, rotation, lens)
-- Multiple virtual cameras can exist; only one is "live" at a time
+### 1. **虚拟摄像机 (Virtual Cameras)**
+- 定义相机行为（位置、旋转、镜头参数）
+- 可以同时存在多个虚拟摄像机；但任一时刻只有一个处于“live”状态
 
 ### 2. **Cinemachine Brain**
-- Component on main Camera
-- Blends between virtual cameras
-- Applies virtual camera settings to Unity Camera
+- 挂载在主 Camera 上的组件
+- 负责在虚拟摄像机之间进行混合
+- 将虚拟摄像机的设置应用到 Unity Camera
 
-### 3. **Priorit**ies**
-- Virtual cameras have priority values
-- Highest priority camera is active
-- Blends smoothly when priority changes
+### 3. **优先级 (Priorities)**
+- 虚拟摄像机具有优先级数值
+- 优先级最高的相机会成为当前激活相机
+- 当优先级变化时会平滑混合切换
 
 ---
 
-## Basic Setup
+## 基础设置
 
-### 1. Add Cinemachine Brain to Main Camera
+### 1. 给主 Camera 添加 Cinemachine Brain
 
 ```csharp
 // Automatically added when creating first virtual camera
 // Or manually: Add Component > Cinemachine Brain
 ```
 
-### 2. Create Virtual Camera
+### 2. 创建虚拟摄像机
 
 `GameObject > Cinemachine > Cinemachine Camera`
 
-This creates a **CinemachineCamera** GameObject with default settings.
+这会创建一个带有默认设置的 **CinemachineCamera** GameObject。
 
 ---
 
-## Virtual Camera Components
+## 虚拟摄像机组件
 
 ### CinemachineCamera (Unity 6 / Cinemachine 3.0+)
 
@@ -93,9 +93,9 @@ public class CameraController : MonoBehaviour {
 
 ---
 
-## Follow Modes (Body Component)
+## 跟随模式（Body 组件）
 
-### 3rd Person Follow (Orbital Follow)
+### 第三人称跟随（Orbital Follow）
 
 ```csharp
 // In Inspector:
@@ -107,7 +107,7 @@ public class CameraController : MonoBehaviour {
 // - Vertical Damping: 0.5 (smooth up/down)
 ```
 
-### Framing Transposer (Smooth Follow)
+### Framing Transposer（平滑跟随）
 
 ```csharp
 // CinemachineCamera > Body > Position Composer
@@ -118,7 +118,7 @@ public class CameraController : MonoBehaviour {
 // - Damping: Smooth following
 ```
 
-### Hard Lock (Exact Follow)
+### Hard Lock（精确跟随）
 
 ```csharp
 // CinemachineCamera > Body > Hard Lock to Target
@@ -127,9 +127,9 @@ public class CameraController : MonoBehaviour {
 
 ---
 
-## Aim Modes (Aim Component)
+## 瞄准模式（Aim 组件）
 
-### Composer (Frame Target)
+### Composer（让目标入镜）
 
 ```csharp
 // CinemachineCamera > Aim > Composer
@@ -149,9 +149,9 @@ public class CameraController : MonoBehaviour {
 
 ---
 
-## Blending Between Cameras
+## 相机之间的混合切换
 
-### Priority-Based Blending
+### 基于优先级的混合
 
 ```csharp
 public CinemachineCamera normalCamera; // Priority: 10
@@ -168,7 +168,7 @@ void StopAiming() {
 }
 ```
 
-### Custom Blend Times
+### 自定义混合时长
 
 ```csharp
 // Create Custom Blends Asset:
@@ -181,9 +181,9 @@ void StopAiming() {
 
 ---
 
-## Camera Shake
+## 相机震动
 
-### Impulse Source (Trigger Shake)
+### Impulse Source（触发震动）
 
 ```csharp
 using Unity.Cinemachine;
@@ -198,7 +198,7 @@ public class ExplosionShake : MonoBehaviour {
 }
 ```
 
-### Impulse Listener (Receive Shake)
+### Impulse Listener（接收震动）
 
 ```csharp
 // Add to CinemachineCamera:
@@ -209,7 +209,7 @@ public class ExplosionShake : MonoBehaviour {
 
 ---
 
-## Freelook Camera (Third Person with Mouse Look)
+## Freelook Camera（第三人称鼠标环视）
 
 ### Cinemachine Free Look
 
@@ -225,7 +225,7 @@ public class ExplosionShake : MonoBehaviour {
 
 ---
 
-## State-Driven Camera (Anim ator-Based)
+## State-Driven Camera（基于 Animator 的状态驱动）
 
 ### Cinemachine State-Driven Camera
 
@@ -242,7 +242,7 @@ public class ExplosionShake : MonoBehaviour {
 
 ---
 
-## Dolly Tracks (Cutscenes)
+## Dolly Tracks（过场镜头轨道）
 
 ### Cinemachine Dolly Track
 
@@ -259,9 +259,9 @@ public class ExplosionShake : MonoBehaviour {
 
 ---
 
-## Common Patterns
+## 常见模式
 
-### Third-Person Follow Camera
+### 第三人称跟随相机
 
 ```csharp
 // CinemachineCamera
@@ -272,7 +272,7 @@ public class ExplosionShake : MonoBehaviour {
 
 ---
 
-### Aiming Camera (Zoom In)
+### 瞄准相机（拉近镜头）
 
 ```csharp
 // Normal Camera (Priority 10):
@@ -290,7 +290,7 @@ void StartAiming() {
 
 ---
 
-### Cutscene Camera Sequence
+### 过场镜头序列
 
 ```csharp
 // Use Timeline:
@@ -302,9 +302,9 @@ void StartAiming() {
 
 ---
 
-## Migration from Cinemachine 2.x (Unity 2021)
+## 从 Cinemachine 2.x (Unity 2021) 迁移
 
-### API Changes (Unity 6 / Cinemachine 3.0)
+### API 变更（Unity 6 / Cinemachine 3.0）
 
 ```csharp
 // ❌ OLD (Cinemachine 2.x):
@@ -316,25 +316,25 @@ CinemachineCamera vcam;
 vcam.Follow = target; // Cleaner API
 ```
 
-**Major Changes:**
+**主要变化：**
 - `CinemachineVirtualCamera` → `CinemachineCamera`
-- `m_Follow`, `m_LookAt` → `Follow`, `LookAt` (no "m_" prefix)
-- Components renamed for clarity
-- Better performance
+- `m_Follow`, `m_LookAt` → `Follow`, `LookAt`（不再使用 `"m_"` 前缀）
+- 组件命名更清晰
+- 性能更好
 
 ---
 
-## Performance Tips
+## 性能建议
 
-- Limit active virtual cameras (only activate when needed)
-- Use lower-priority cameras instead of destroying/creating
-- Disable virtual cameras when far from player
+- 限制处于激活状态的虚拟摄像机数量（仅在需要时激活）
+- 使用低优先级相机，而不是频繁销毁/创建
+- 当虚拟摄像机远离玩家时将其禁用
 
 ---
 
-## Debugging
+## 调试
 
-### Cinemachine Debug
+### Cinemachine 调试器
 
 ```csharp
 // Window > Analysis > Cinemachine Debugger
@@ -343,6 +343,6 @@ vcam.Follow = target; // Cleaner API
 
 ---
 
-## Sources
+## 资料来源
 - https://docs.unity3d.com/Packages/com.unity.cinemachine@3.0/manual/index.html
 - https://learn.unity.com/tutorial/cinemachine

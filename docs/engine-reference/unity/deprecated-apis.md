@@ -1,134 +1,134 @@
-# Unity 6.3 LTS — Deprecated APIs
+# Unity 6.3 LTS — 已弃用 API
 
-**Last verified:** 2026-02-13
+**最后验证时间：** 2026-02-13
 
-Quick lookup table for deprecated APIs and their replacements.
-Format: **Don't use X** → **Use Y instead**
+用于快速查阅已弃用 API 及其替代方案的对照表。
+格式：**不要使用 X** → **请改用 Y**
 
 ---
 
 ## Input
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| `Input.GetKey()` | `Keyboard.current[Key.X].isPressed` | New Input System |
-| `Input.GetKeyDown()` | `Keyboard.current[Key.X].wasPressedThisFrame` | New Input System |
-| `Input.GetMouseButton()` | `Mouse.current.leftButton.isPressed` | New Input System |
-| `Input.GetAxis()` | `InputAction` callbacks | New Input System |
-| `Input.mousePosition` | `Mouse.current.position.ReadValue()` | New Input System |
+| `Input.GetKey()` | `Keyboard.current[Key.X].isPressed` | 新 Input System |
+| `Input.GetKeyDown()` | `Keyboard.current[Key.X].wasPressedThisFrame` | 新 Input System |
+| `Input.GetMouseButton()` | `Mouse.current.leftButton.isPressed` | 新 Input System |
+| `Input.GetAxis()` | `InputAction` callbacks | 新 Input System |
+| `Input.mousePosition` | `Mouse.current.position.ReadValue()` | 新 Input System |
 
-**Migration:** Install `com.unity.inputsystem` package.
+**迁移说明：** 安装 `com.unity.inputsystem` package。
 
 ---
 
 ## UI
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| `Canvas` (UGUI) | `UIDocument` (UI Toolkit) | UI Toolkit is now production-ready |
-| `Text` component | `TextMeshPro` or UI Toolkit `Label` | Better rendering, fewer draw calls |
-| `Image` component | UI Toolkit `VisualElement` with background | More flexible styling |
+| `Canvas` (UGUI) | `UIDocument` (UI Toolkit) | UI Toolkit 现已可用于生产环境 |
+| `Text` component | `TextMeshPro` 或 UI Toolkit 的 `Label` | 渲染效果更好，draw call 更少 |
+| `Image` component | 使用带背景的 UI Toolkit `VisualElement` | 样式更灵活 |
 
-**Migration:** UGUI still works, but UI Toolkit is recommended for new projects.
+**迁移说明：** UGUI 仍然可用，但新项目推荐使用 UI Toolkit。
 
 ---
 
 ## DOTS/Entities
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| `ComponentSystem` | `ISystem` (unmanaged) | Entities 1.0+ complete rewrite |
-| `JobComponentSystem` | `ISystem` with `IJobEntity` | Burst-compatible |
-| `GameObjectEntity` | Pure ECS workflow | No GameObject conversion |
-| `EntityManager.CreateEntity()` (old signature) | `EntityManager.CreateEntity(EntityArchetype)` | Explicit archetype |
-| `ComponentDataFromEntity<T>` | `ComponentLookup<T>` | Entities 1.0+ rename |
+| `ComponentSystem` | `ISystem` (unmanaged) | Entities 1.0+ 完全重写 |
+| `JobComponentSystem` | 搭配 `IJobEntity` 的 `ISystem` | 兼容 Burst |
+| `GameObjectEntity` | 纯 ECS 工作流 | 不再进行 GameObject 转换 |
+| `EntityManager.CreateEntity()` (old signature) | `EntityManager.CreateEntity(EntityArchetype)` | 显式指定 archetype |
+| `ComponentDataFromEntity<T>` | `ComponentLookup<T>` | Entities 1.0+ 中重命名 |
 
-**Migration:** See Entities package migration guide. Major refactor required.
+**迁移说明：** 请参阅 Entities package migration guide。需要进行较大规模的重构。
 
 ---
 
 ## Rendering
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| `CommandBuffer.DrawMesh()` | RenderGraph API | URP/HDRP render passes |
-| `OnPreRender()` / `OnPostRender()` | `RenderPipelineManager` callbacks | SRP compatibility |
-| `Camera.SetReplacementShader()` | Custom render pass | Not supported in SRP |
+| `CommandBuffer.DrawMesh()` | RenderGraph API | 用于 URP/HDRP 渲染通道 |
+| `OnPreRender()` / `OnPostRender()` | `RenderPipelineManager` callbacks | 兼容 SRP |
+| `Camera.SetReplacementShader()` | 自定义 render pass | SRP 中不支持 |
 
 ---
 
 ## Physics
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| `Physics.RaycastAll()` | `Physics.RaycastNonAlloc()` | Avoid GC allocations |
-| `Rigidbody.velocity` (direct write) | `Rigidbody.AddForce()` | Better physics stability |
+| `Physics.RaycastAll()` | `Physics.RaycastNonAlloc()` | 避免 GC 分配 |
+| `Rigidbody.velocity` (direct write) | `Rigidbody.AddForce()` | 物理稳定性更好 |
 
 ---
 
 ## Asset Loading
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| `Resources.Load()` | Addressables | Better memory control, async loading |
-| Synchronous asset loading | `Addressables.LoadAssetAsync()` | Non-blocking |
+| `Resources.Load()` | Addressables | 更好的内存控制与异步加载 |
+| 同步资源加载 | `Addressables.LoadAssetAsync()` | 非阻塞 |
 
 ---
 
 ## Animation
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| Legacy Animation component | Animator Controller | Mecanim system |
-| `Animation.Play()` | `Animator.Play()` | State machine control |
+| Legacy Animation component | Animator Controller | Mecanim 系统 |
+| `Animation.Play()` | `Animator.Play()` | 状态机控制 |
 
 ---
 
 ## Particles
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| Legacy Particle System | Visual Effect Graph | GPU-accelerated, more performant |
+| Legacy Particle System | Visual Effect Graph | GPU 加速，性能更高 |
 
 ---
 
 ## Scripting
 
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| `WWW` class | `UnityWebRequest` | Modern async networking |
-| `Application.LoadLevel()` | `SceneManager.LoadScene()` | Scene management |
+| `WWW` class | `UnityWebRequest` | 现代异步网络请求 |
+| `Application.LoadLevel()` | `SceneManager.LoadScene()` | 场景管理 |
 
 ---
 
 ## Platform-Specific
 
 ### WebGL
-| Deprecated | Replacement | Notes |
+| 已弃用 | 替代方案 | 说明 |
 |------------|-------------|-------|
-| WebGL 1.0 | WebGL 2.0 or WebGPU | Unity 6+ defaults to WebGPU |
+| WebGL 1.0 | WebGL 2.0 或 WebGPU | Unity 6+ 默认使用 WebGPU |
 
 ---
 
-## Quick Migration Patterns
+## 快速迁移模式
 
-### Input Example
+### Input 示例
 ```csharp
-// ❌ Deprecated
+// ❌ 已弃用
 if (Input.GetKeyDown(KeyCode.Space)) {
     Jump();
 }
 
-// ✅ New Input System
+// ✅ 新 Input System
 using UnityEngine.InputSystem;
 if (Keyboard.current.spaceKey.wasPressedThisFrame) {
     Jump();
 }
 ```
 
-### Asset Loading Example
+### Asset Loading 示例
 ```csharp
-// ❌ Deprecated
+// ❌ 已弃用
 var prefab = Resources.Load<GameObject>("Enemies/Goblin");
 
 // ✅ Addressables
@@ -137,9 +137,9 @@ await handle.Task;
 var prefab = handle.Result;
 ```
 
-### UI Example
+### UI 示例
 ```csharp
-// ❌ Deprecated (UGUI)
+// ❌ 已弃用 (UGUI)
 GetComponent<Text>().text = "Score: 100";
 
 // ✅ TextMeshPro
@@ -151,6 +151,6 @@ rootVisualElement.Q<Label>("score-label").text = "Score: 100";
 
 ---
 
-**Sources:**
+**来源：**
 - https://docs.unity3d.com/6000.0/Documentation/Manual/deprecated-features.html
 - https://docs.unity3d.com/Packages/com.unity.inputsystem@1.11/manual/Migration.html

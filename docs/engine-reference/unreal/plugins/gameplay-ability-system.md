@@ -1,57 +1,55 @@
 # Unreal Engine 5.7 — Gameplay Ability System (GAS)
 
-**Last verified:** 2026-02-13
-**Status:** Production-Ready
-**Plugin:** `GameplayAbilities` (built-in, enable in Plugins)
+**最后验证时间：** 2026-02-13
+**状态：** 可用于生产
+**插件：** `GameplayAbilities`（内置，在 Plugins 中启用）
 
 ---
 
-## Overview
+## 概述
 
-**Gameplay Ability System (GAS)** is a modular framework for building abilities, attributes,
-effects, and gameplay mechanics. It's the standard for RPGs, MOBAs, shooters with abilities,
-and any game with complex ability systems.
+**Gameplay Ability System (GAS)** 是一个用于构建能力、属性、效果和游戏机制的模块化框架。它是 RPG、MOBA、带技能系统的射击游戏，以及任何具有复杂能力系统游戏的标准方案。
 
-**Use GAS for:**
-- Character abilities (spells, skills, attacks)
-- Attributes (health, mana, stamina, stats)
-- Buffs/debuffs (temporary effects)
-- Cooldowns and costs
-- Damage calculation
-- Multiplayer-ready ability replication
+**以下场景适合使用 GAS：**
+- 角色能力（法术、技能、攻击）
+- 属性（生命、法力、耐力、数值）
+- Buff / Debuff（临时效果）
+- 冷却时间与消耗
+- 伤害计算
+- 面向多人游戏的能力复制
 
 ---
 
-## Core Concepts
+## 核心概念
 
-### 1. **Ability System Component** (ASC)
-- The main component that owns abilities, attributes, and effects
-- Added to Characters or PlayerStates
+### 1. **Ability System Component**（ASC）
+- 拥有能力、属性和效果的核心组件
+- 可添加到 Character 或 PlayerState 上
 
 ### 2. **Gameplay Abilities**
-- Individual skills/actions (fireball, heal, dash, etc.)
-- Activated, committed (cost/cooldown), and can be cancelled
+- 单个技能/动作（火球、治疗、冲刺等）
+- 可被激活、提交（消耗/冷却），也可取消
 
 ### 3. **Attributes & Attribute Sets**
-- Stats that can be modified (Health, Mana, Stamina, Strength, etc.)
-- Stored in Attribute Sets
+- 可被修改的数值属性（Health、Mana、Stamina、Strength 等）
+- 存储在 Attribute Set 中
 
 ### 4. **Gameplay Effects**
-- Modify attributes (damage, healing, buffs, debuffs)
-- Can be instant, duration-based, or infinite
+- 用于修改属性（伤害、治疗、buff、debuff）
+- 可以是瞬时、持续时间型或无限持续
 
 ### 5. **Gameplay Tags**
-- Hierarchical tags for ability logic (e.g., `Ability.Attack.Melee`, `Status.Stunned`)
+- 用于能力逻辑的层级标签（例如 `Ability.Attack.Melee`、`Status.Stunned`）
 
 ---
 
-## Setup
+## 设置
 
-### 1. Enable Plugin
+### 1. 启用插件
 
 `Edit > Plugins > Gameplay Abilities > Enabled > Restart`
 
-### 2. Add Ability System Component
+### 2. 添加 Ability System Component
 
 ```cpp
 #include "AbilitySystemComponent.h"
@@ -81,7 +79,7 @@ protected:
 };
 ```
 
-### 3. Initialize ASC (Important for Multiplayer)
+### 3. 初始化 ASC（多人游戏中很重要）
 
 ```cpp
 void AMyCharacter::PossessedBy(AController* NewController) {
@@ -108,7 +106,7 @@ void AMyCharacter::OnRep_PlayerState() {
 
 ## Attributes & Attribute Sets
 
-### Create Attribute Set
+### 创建 Attribute Set
 
 ```cpp
 #include "AttributeSet.h"
@@ -149,7 +147,7 @@ protected:
 };
 ```
 
-### Implement Attribute Set
+### 实现 Attribute Set
 
 ```cpp
 #include "Net/UnrealNetwork.h"
@@ -180,7 +178,7 @@ void UMyAttributeSet::OnRep_Health(const FGameplayAttributeData& OldHealth) {
 
 ## Gameplay Abilities
 
-### Create Gameplay Ability
+### 创建 Gameplay Ability
 
 ```cpp
 #include "Abilities/GameplayAbility.h"
@@ -221,7 +219,7 @@ public:
 };
 ```
 
-### Grant Abilities to Character
+### 向角色授予能力
 
 ```cpp
 void AMyCharacter::GiveDefaultAbilities() {
@@ -233,7 +231,7 @@ void AMyCharacter::GiveDefaultAbilities() {
 }
 ```
 
-### Activate Ability
+### 激活能力
 
 ```cpp
 // Activate by class
@@ -249,7 +247,7 @@ AbilitySystemComponent->TryActivateAbilitiesByTag(TagContainer);
 
 ## Gameplay Effects
 
-### Create Gameplay Effect (Damage)
+### 创建 Gameplay Effect（伤害）
 
 ```cpp
 // Create Blueprint: Content Browser > Gameplay > Gameplay Effect
@@ -275,7 +273,7 @@ public:
 };
 ```
 
-### Apply Gameplay Effect
+### 应用 Gameplay Effect
 
 ```cpp
 // Apply damage to target
@@ -296,11 +294,11 @@ if (UAbilitySystemComponent* TargetASC = UAbilitySystemBlueprintLibrary::GetAbil
 
 ## Gameplay Tags
 
-### Define Tags
+### 定义标签
 
 `Project Settings > Project > Gameplay Tags > Gameplay Tag List`
 
-Example hierarchy:
+示例层级：
 ```
 Ability
   ├─ Ability.Attack
@@ -315,7 +313,7 @@ Status
   └─ Status.Silenced
 ```
 
-### Use Tags in Abilities
+### 在 Ability 中使用标签
 
 ```cpp
 UCLASS()
@@ -341,9 +339,9 @@ public:
 
 ---
 
-## Cooldowns & Costs
+## 冷却与消耗
 
-### Add Cooldown
+### 添加冷却
 
 ```cpp
 // In Ability Blueprint or C++:
@@ -351,7 +349,7 @@ public:
 // Assign to Ability > Cooldown Gameplay Effect Class
 ```
 
-### Add Cost (Mana)
+### 添加消耗（Mana）
 
 ```cpp
 // Create Gameplay Effect that reduces Mana
@@ -360,15 +358,15 @@ public:
 
 ---
 
-## Common Patterns
+## 常见模式
 
-### Get Current Attribute Value
+### 获取当前属性值
 
 ```cpp
 float CurrentHealth = AbilitySystemComponent->GetNumericAttribute(UMyAttributeSet::GetHealthAttribute());
 ```
 
-### Listen for Attribute Changes
+### 监听属性变化
 
 ```cpp
 AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(UMyAttributeSet::GetHealthAttribute())

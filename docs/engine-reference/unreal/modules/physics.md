@@ -1,22 +1,22 @@
-# Unreal Engine 5.7 — Physics Module Reference
+# Unreal Engine 5.7 —— Physics 模块参考
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 Chaos Physics improvements
-
----
-
-## Overview
-
-UE 5 uses **Chaos Physics** (replaced PhysX in UE 4):
-- Better performance
-- Destruction support
-- Vehicle physics improvements
+**最后验证时间：** 2026-02-13
+**知识缺口：** UE 5.7 中 Chaos Physics 的改进
 
 ---
 
-## Rigid Body Physics
+## 概览
 
-### Enable Physics on Static Mesh
+UE 5 使用 **Chaos Physics**（在 UE 4 中已取代 PhysX）：
+- 性能更好
+- 支持破坏效果
+- 车辆物理表现改进
+
+---
+
+## 刚体物理
+
+### 在 Static Mesh 上启用物理
 
 ```cpp
 UStaticMeshComponent* MeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Mesh"));
@@ -25,43 +25,43 @@ MeshComp->SetEnableGravity(true);
 MeshComp->SetMassOverrideInKg(NAME_None, 50.0f); // 50 kg
 ```
 
-### Apply Forces
+### 施加力
 
 ```cpp
-// Apply impulse (instant velocity change)
+// 施加冲量（瞬时速度变化）
 MeshComp->AddImpulse(FVector(0, 0, 1000), NAME_None, true);
 
-// Apply force (continuous)
+// 施加力（持续作用）
 MeshComp->AddForce(FVector(0, 0, 500));
 
-// Apply torque (rotation)
+// 施加扭矩（旋转）
 MeshComp->AddTorqueInRadians(FVector(0, 0, 100));
 ```
 
 ---
 
-## Collision
+## 碰撞
 
-### Collision Channels
+### Collision Channel
 
 ```cpp
 // Project Settings > Engine > Collision
-// Define custom collision channels and responses
+// 定义自定义碰撞通道和响应
 
-// Set collision in C++
+// 在 C++ 中设置碰撞
 MeshComp->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 MeshComp->SetCollisionObjectType(ECollisionChannel::ECC_Pawn);
 MeshComp->SetCollisionResponseToAllChannels(ECR_Block);
 MeshComp->SetCollisionResponseToChannel(ECC_Camera, ECR_Ignore);
 ```
 
-### Collision Events
+### 碰撞事件
 
 ```cpp
-// Enable collision events
+// 启用碰撞事件
 MeshComp->SetNotifyRigidBodyCollision(true);
 
-// Bind to OnComponentHit
+// 绑定到 OnComponentHit
 MeshComp->OnComponentHit.AddDynamic(this, &AMyActor::OnHit);
 
 UFUNCTION()
@@ -71,13 +71,13 @@ void AMyActor::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor,
 }
 ```
 
-### Overlap Events
+### Overlap 事件
 
 ```cpp
-// Enable overlap events
+// 启用 overlap 事件
 MeshComp->SetGenerateOverlapEvents(true);
 
-// Bind to OnComponentBeginOverlap
+// 绑定到 OnComponentBeginOverlap
 MeshComp->OnComponentBeginOverlap.AddDynamic(this, &AMyActor::OnOverlapBegin);
 
 UFUNCTION()
@@ -89,9 +89,9 @@ void AMyActor::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 ---
 
-## Raycasting (Line Traces)
+## 射线检测（Line Trace）
 
-### Single Line Trace
+### 单次 Line Trace
 
 ```cpp
 FHitResult HitResult;
@@ -101,7 +101,7 @@ FVector End = Start + GetActorForwardVector() * 1000.0f;
 FCollisionQueryParams QueryParams;
 QueryParams.AddIgnoredActor(this);
 
-// Perform trace
+// 执行检测
 bool bHit = GetWorld()->LineTraceSingleByChannel(
     HitResult,
     Start,
@@ -116,7 +116,7 @@ if (bHit) {
 }
 ```
 
-### Multi Line Trace
+### 多次 Line Trace
 
 ```cpp
 TArray<FHitResult> HitResults;
@@ -133,7 +133,7 @@ for (const FHitResult& Hit : HitResults) {
 }
 ```
 
-### Sweep (Thick Trace)
+### Sweep（厚射线检测）
 
 ```cpp
 FHitResult HitResult;
@@ -152,15 +152,15 @@ bool bHit = GetWorld()->SweepSingleByChannel(
 
 ---
 
-## Character Movement
+## 角色移动
 
 ### Character Movement Component
 
 ```cpp
-// Built into ACharacter class
+// ACharacter 类内置
 UCharacterMovementComponent* MoveComp = GetCharacterMovement();
 
-// Configure movement
+// 配置移动参数
 MoveComp->MaxWalkSpeed = 600.0f;
 MoveComp->JumpZVelocity = 600.0f;
 MoveComp->AirControl = 0.2f;
@@ -168,10 +168,10 @@ MoveComp->GravityScale = 1.0f;
 MoveComp->bOrientRotationToMovement = true;
 ```
 
-### Add Movement Input
+### 添加移动输入
 
 ```cpp
-// In Character class
+// 在 Character 类中
 void AMyCharacter::MoveForward(float Value) {
     if (Value != 0.0f) {
         AddMovementInput(GetActorForwardVector(), Value);
@@ -187,26 +187,26 @@ void AMyCharacter::MoveRight(float Value) {
 
 ---
 
-## Physical Materials
+## 物理材质
 
-### Create Physical Material
+### 创建 Physical Material
 
-1. Content Browser > Right Click > Physics > Physical Material
-2. Configure properties:
-   - Friction: 0.0 - 1.0
-   - Restitution (bounciness): 0.0 - 1.0
+1. Content Browser > 右键 > Physics > Physical Material
+2. 配置属性：
+   - Friction：0.0 - 1.0
+   - Restitution（弹性/反弹系数）：0.0 - 1.0
 
-### Assign Physical Material
+### 指定 Physical Material
 
 ```cpp
-// In static mesh editor: Physics > Phys Material Override
-// Or in C++:
+// 在 static mesh 编辑器中：Physics > Phys Material Override
+// 或在 C++ 中：
 MeshComp->SetPhysMaterialOverride(PhysicalMaterial);
 ```
 
 ---
 
-## Constraints (Physics Joints)
+## 约束（物理关节）
 
 ### Physics Constraint Component
 
@@ -214,7 +214,7 @@ MeshComp->SetPhysMaterialOverride(PhysicalMaterial);
 UPhysicsConstraintComponent* Constraint = CreateDefaultSubobject<UPhysicsConstraintComponent>(TEXT("Constraint"));
 Constraint->SetConstrainedComponents(ComponentA, NAME_None, ComponentB, NAME_None);
 
-// Configure constraint
+// 配置约束
 Constraint->SetLinearXLimit(ELinearConstraintMotion::LCM_Limited, 100.0f);
 Constraint->SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0.0f);
 Constraint->SetLinearZLimit(ELinearConstraintMotion::LCM_Free, 0.0f);
@@ -224,60 +224,60 @@ Constraint->SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, 45.0f);
 
 ---
 
-## Destruction (Chaos Destruction)
+## 破坏（Chaos Destruction）
 
-### Enable Chaos Destruction
+### 启用 Chaos Destruction
 
 ```cpp
-// Plugin: Enable "Chaos" plugin
-// Create Geometry Collection asset for destructible objects
+// 插件：启用 "Chaos" 插件
+// 为可破坏物体创建 Geometry Collection 资源
 ```
 
-### Destroy Geometry Collection
+### 破坏 Geometry Collection
 
 ```cpp
-// Fracture mesh in Chaos editor
-// In game, apply damage:
+// 在 Chaos 编辑器中对 mesh 进行断裂处理
+// 在游戏中施加伤害：
 UGeometryCollectionComponent* GeoComp = /* Get component */;
 GeoComp->ApplyPhysicsField(/* Field parameters */);
 ```
 
 ---
 
-## Performance Tips
+## 性能建议
 
-### Physics Optimization
+### 物理优化
 
 ```cpp
-// Simplify collision shapes (use simple primitives)
-MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); // Disable when not needed
+// 简化碰撞形状（使用简单基础几何体）
+MeshComp->SetCollisionEnabled(ECollisionEnabled::NoCollision); // 不需要时禁用
 
-// Use Physics Asset for skeletal meshes (simplified collision)
-// Don't simulate physics for distant objects
+// 对 skeletal mesh 使用 Physics Asset（简化碰撞）
+// 不要为远处物体模拟物理
 
-// Reduce physics substeps:
+// 减少物理子步进：
 // Project Settings > Engine > Physics > Max Substep Delta Time
 ```
 
 ---
 
-## Debugging
+## 调试
 
-### Physics Debug Visualization
+### 物理调试可视化
 
 ```cpp
-// Console commands:
-// show collision - Show collision shapes
-// p.Chaos.DebugDraw.Enabled 1 - Show Chaos debug
-// pxvis collision - Visualize collision
+// 控制台命令：
+// show collision - 显示碰撞形状
+// p.Chaos.DebugDraw.Enabled 1 - 显示 Chaos 调试信息
+// pxvis collision - 可视化碰撞
 
-// Draw debug shapes:
+// 绘制调试形状：
 DrawDebugSphere(GetWorld(), Location, Radius, 12, FColor::Green, false, 2.0f);
 DrawDebugBox(GetWorld(), Location, Extent, FColor::Red, false, 2.0f);
 ```
 
 ---
 
-## Sources
+## 来源
 - https://docs.unrealengine.com/5.7/en-US/physics-in-unreal-engine/
 - https://docs.unrealengine.com/5.7/en-US/chaos-physics-overview-in-unreal-engine/

@@ -1,40 +1,40 @@
-# Unreal Engine 5.7 — Navigation Module Reference
+# Unreal Engine 5.7 — 导航模块参考
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** UE 5.7 navigation improvements
-
----
-
-## Overview
-
-UE 5.7 navigation systems:
-- **Nav Mesh**: Automatic pathfinding mesh for AI
-- **AI Controller**: Controls AI movement and behavior
-- **Behavior Trees**: AI decision-making (covered in AI module)
+**最后验证时间：** 2026-02-13
+**知识缺口：** UE 5.7 导航改进
 
 ---
 
-## Nav Mesh Setup
+## 概览
 
-### Add Nav Mesh Bounds Volume
+UE 5.7 的导航系统包括：
+- **Nav Mesh**：供 AI 使用的自动寻路网格
+- **AI Controller**：控制 AI 的移动与行为
+- **Behavior Trees**：AI 决策系统（详见 AI 模块）
 
-1. Place Actors > Volumes > Nav Mesh Bounds Volume
-2. Scale to cover walkable areas
-3. Press `P` to toggle Nav Mesh visualization (green overlay)
+---
 
-### Nav Mesh Settings
+## Nav Mesh 设置
+
+### 添加 Nav Mesh Bounds Volume
+
+1. 放置 Actors > Volumes > Nav Mesh Bounds Volume
+2. 缩放到覆盖可行走区域
+3. 按 `P` 切换 Nav Mesh 可视化（绿色覆盖层）
+
+### Nav Mesh 设置项
 
 ```cpp
 // Project Settings > Engine > Navigation System
-// - Generate Navigation Only Around Navigation Invokers: Performance optimization
-// - Auto Update Enabled: Rebuild NavMesh when geometry changes
+// - Generate Navigation Only Around Navigation Invokers: 性能优化
+// - Auto Update Enabled: 几何体变化时重新构建 NavMesh
 ```
 
 ---
 
-## AI Controller & Movement
+## AI Controller 与移动
 
-### Create AI Controller
+### 创建 AI Controller
 
 ```cpp
 UCLASS()
@@ -45,14 +45,14 @@ public:
     void BeginPlay() override {
         Super::BeginPlay();
 
-        // Move to location
+        // 移动到指定位置
         FVector TargetLocation = FVector(1000, 0, 0);
         MoveToLocation(TargetLocation);
     }
 };
 ```
 
-### Assign AI Controller to Pawn
+### 将 AI Controller 分配给 Pawn
 
 ```cpp
 UCLASS()
@@ -61,7 +61,7 @@ class AEnemyCharacter : public ACharacter {
 
 public:
     AEnemyCharacter() {
-        // ✅ Assign AI Controller class
+        // ✅ 分配 AI Controller 类
         AIControllerClass = AEnemyAIController::StaticClass();
         AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
     }
@@ -70,9 +70,9 @@ public:
 
 ---
 
-## Basic AI Movement
+## 基础 AI 移动
 
-### Move to Location
+### 移动到位置
 
 ```cpp
 AAIController* AIController = Cast<AAIController>(GetController());
@@ -86,14 +86,14 @@ if (AIController) {
 }
 ```
 
-### Move to Actor
+### 移动到 Actor
 
 ```cpp
 AActor* Target = /* Get target actor */;
-AIController->MoveToActor(Target, 100.0f); // Stop 100 units away
+AIController->MoveToActor(Target, 100.0f); // 在距离目标 100 单位处停止
 ```
 
-### Stop Movement
+### 停止移动
 
 ```cpp
 AIController->StopMovement();
@@ -101,7 +101,7 @@ AIController->StopMovement();
 
 ---
 
-## Path Following Events
+## 路径跟随事件
 
 ### On Move Completed
 
@@ -114,7 +114,7 @@ public:
     void BeginPlay() override {
         Super::BeginPlay();
 
-        // Bind to move completed event
+        // 绑定移动完成事件
         ReceiveMoveCompleted.AddDynamic(this, &AEnemyAIController::OnMoveCompleted);
     }
 
@@ -131,9 +131,9 @@ public:
 
 ---
 
-## Pathfinding Queries
+## 寻路查询
 
-### Find Path to Location
+### 查找通往目标位置的路径
 
 ```cpp
 #include "NavigationSystem.h"
@@ -153,12 +153,12 @@ if (NavSys) {
 
     if (Result.IsSuccessful()) {
         UNavigationPath* NavPath = Result.Path.Get();
-        // Use path points: NavPath->GetPathPoints()
+        // 使用路径点：NavPath->GetPathPoints()
     }
 }
 ```
 
-### Check if Location is Reachable
+### 检查位置是否可达
 
 ```cpp
 UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
@@ -172,18 +172,18 @@ if (bReachable) {
 
 ---
 
-## Nav Mesh Modifiers
+## Nav Mesh 修改器
 
-### Nav Modifier Volume (Block/Allow Areas)
+### Nav Modifier Volume（阻挡/允许区域）
 
-1. Place Actors > Volumes > Nav Modifier Volume
-2. Configure Area Class (e.g., NavArea_Null to block, NavArea_LowHeight for crouching)
+1. 放置 Actors > Volumes > Nav Modifier Volume
+2. 配置 Area Class（例如用 NavArea_Null 阻挡，用 NavArea_LowHeight 表示需蹲伏通过）
 
 ---
 
-## Custom Nav Areas
+## 自定义 Nav Area
 
-### Create Custom Nav Area
+### 创建自定义 Nav Area
 
 ```cpp
 UCLASS()
@@ -192,35 +192,35 @@ class UNavArea_Jump : public UNavArea {
 
 public:
     UNavArea_Jump() {
-        DefaultCost = 10.0f; // Higher cost = AI avoids unless necessary
-        FixedAreaEnteringCost = 100.0f; // One-time cost to enter
+        DefaultCost = 10.0f; // 更高的代价 = AI 会尽量避开，除非必要
+        FixedAreaEnteringCost = 100.0f; // 进入时的一次性代价
     }
 };
 ```
 
-### Use Custom Nav Area
+### 使用自定义 Nav Area
 
 ```cpp
-// Assign to Nav Modifier Volume or geometry
+// 分配给 Nav Modifier Volume 或几何体
 ```
 
 ---
 
-## Nav Mesh Generation
+## Nav Mesh 生成
 
-### Rebuild Nav Mesh at Runtime
+### 在运行时重建 Nav Mesh
 
 ```cpp
 UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
-NavSys->Build(); // Rebuild entire NavMesh
+NavSys->Build(); // 重建整个 NavMesh
 ```
 
-### Dynamic Nav Mesh (Moving Obstacles)
+### 动态 Nav Mesh（移动障碍物）
 
 ```cpp
-// Enable: Project Settings > Navigation System > Runtime Generation = Dynamic
+// 启用：Project Settings > Navigation System > Runtime Generation = Dynamic
 
-// Mark actor as dynamic obstacle:
+// 将 actor 标记为动态障碍物：
 UStaticMeshComponent* Mesh = /* Get mesh */;
 Mesh->SetCanEverAffectNavigation(true);
 Mesh->bDynamicObstacle = true;
@@ -228,26 +228,26 @@ Mesh->bDynamicObstacle = true;
 
 ---
 
-## Nav Links (Off-Mesh Connections)
+## Nav Links（离网格连接）
 
-### Nav Link Proxy (Jump, Teleport)
+### Nav Link Proxy（跳跃、传送）
 
-1. Place Actors > Navigation > Nav Link Proxy
-2. Set up start and end points
-3. Configure:
-   - **Direction**: One-way or bidirectional
-   - **Smart Link**: Animate character during traversal
+1. 放置 Actors > Navigation > Nav Link Proxy
+2. 设置起点和终点
+3. 配置：
+   - **Direction**：单向或双向
+   - **Smart Link**：在穿越期间播放角色动画
 
 ---
 
-## Crowd Management
+## 人群管理
 
-### Detour Crowd (Avoid Overlapping)
+### Detour Crowd（避免重叠）
 
 ```cpp
-// Enable: Character Movement Component > Avoidance Enabled = true
+// 启用：Character Movement Component > Avoidance Enabled = true
 
-// Configure avoidance group and flags
+// 配置避让组和标记
 UCharacterMovementComponent* MoveComp = GetCharacterMovement();
 MoveComp->SetAvoidanceGroup(1);
 MoveComp->SetGroupsToAvoid(1);
@@ -256,30 +256,30 @@ MoveComp->SetAvoidanceEnabled(true);
 
 ---
 
-## Performance Tips
+## 性能提示
 
-### Nav Mesh Optimization
+### Nav Mesh 优化
 
 ```cpp
-// Reduce tile size for large worlds:
+// 对于大型世界，减小 tile 大小：
 // Project Settings > Navigation System > Cell Size = 19 (default)
 
-// Use Navigation Invokers for dynamic generation:
-// Only generate NavMesh around players/important actors
+// 对动态生成使用 Navigation Invokers：
+// 仅在玩家/重要 actor 周围生成 NavMesh
 ```
 
 ---
 
-## Debugging
+## 调试
 
-### Visualize Nav Mesh
+### 可视化 Nav Mesh
 
 ```cpp
-// Console commands:
-// show navigation - Toggle NavMesh visualization
-// p - Toggle NavMesh (editor viewport)
+// 控制台命令：
+// show navigation - 切换 NavMesh 可视化
+// p - 切换 NavMesh（编辑器视口）
 
-// Draw debug path:
+// 绘制调试路径：
 if (NavPath) {
     for (int i = 0; i < NavPath->GetPathPoints().Num() - 1; i++) {
         DrawDebugLine(GetWorld(), NavPath->GetPathPoints()[i], NavPath->GetPathPoints()[i + 1], FColor::Green, false, 5.0f, 0, 5.0f);
@@ -289,9 +289,9 @@ if (NavPath) {
 
 ---
 
-## Common Patterns
+## 常见模式
 
-### Patrol Between Waypoints
+### 在路点之间巡逻
 
 ```cpp
 UPROPERTY(EditAnywhere, Category = "AI")
@@ -301,14 +301,14 @@ int32 CurrentPatrolIndex = 0;
 
 void OnMoveCompleted(FAIRequestID RequestID, EPathFollowingResult::Type Result) {
     if (Result == EPathFollowingResult::Success) {
-        // Move to next waypoint
+        // 移动到下一个路点
         CurrentPatrolIndex = (CurrentPatrolIndex + 1) % PatrolPoints.Num();
         MoveToActor(PatrolPoints[CurrentPatrolIndex]);
     }
 }
 ```
 
-### Chase Player
+### 追击玩家
 
 ```cpp
 void Tick(float DeltaTime) {
@@ -321,10 +321,10 @@ void Tick(float DeltaTime) {
         float Distance = FVector::Dist(GetActorLocation(), PlayerPawn->GetActorLocation());
 
         if (Distance < 1000.0f) {
-            // Chase player
+            // 追击玩家
             AIController->MoveToActor(PlayerPawn, 100.0f);
         } else {
-            // Stop chasing
+            // 停止追击
             AIController->StopMovement();
         }
     }
@@ -333,6 +333,6 @@ void Tick(float DeltaTime) {
 
 ---
 
-## Sources
+## 来源
 - https://docs.unrealengine.com/5.7/en-US/navigation-system-in-unreal-engine/
 - https://docs.unrealengine.com/5.7/en-US/ai-in-unreal-engine/

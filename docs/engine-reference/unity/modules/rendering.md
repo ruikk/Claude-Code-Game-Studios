@@ -1,23 +1,23 @@
-# Unity 6.3 — Rendering Module Reference
+# Unity 6.3 — Rendering 模块参考
 
-**Last verified:** 2026-02-13
-**Knowledge Gap:** LLM trained on Unity 2022 LTS; Unity 6 has major rendering changes
-
----
-
-## Overview
-
-Unity 6.3 LTS uses **Scriptable Render Pipelines (SRP)** as the modern rendering architecture:
-- **URP (Universal Render Pipeline)**: Cross-platform, mobile-friendly (RECOMMENDED)
-- **HDRP (High Definition Render Pipeline)**: High-end PC/console, photorealistic
-- **Built-in Pipeline**: Deprecated, avoid for new projects
+**最后校验时间：** 2026-02-13
+**知识缺口：** LLM 训练基于 Unity 2022 LTS；Unity 6 在渲染方面有重大变化
 
 ---
 
-## Key Changes from 2022 LTS
+## 概览
+
+Unity 6.3 LTS 使用 **Scriptable Render Pipelines (SRP)** 作为现代渲染架构：
+- **URP (Universal Render Pipeline)**：跨平台，适合移动端（推荐）
+- **HDRP (High Definition Render Pipeline)**：面向高端 PC/主机，追求照片级真实感
+- **Built-in Pipeline**：已弃用，新项目应避免使用
+
+---
+
+## 相比 2022 LTS 的关键变化
 
 ### RenderGraph API (Unity 6+)
-Custom render passes now use RenderGraph instead of CommandBuffer:
+自定义渲染通道现在使用 RenderGraph，而不是 CommandBuffer：
 
 ```csharp
 // ✅ Unity 6+ (RenderGraph)
@@ -33,7 +33,7 @@ public override void Execute(ScriptableRenderContext context, ref RenderingData 
 ```
 
 ### GPU Resident Drawer (Unity 6+)
-Automatic batching for massive draw call reduction:
+用于大幅减少 draw call 的自动批处理机制：
 
 ```csharp
 // Enable in URP Asset settings:
@@ -43,14 +43,14 @@ Automatic batching for massive draw call reduction:
 
 ---
 
-## URP Quick Reference
+## URP 快速参考
 
-### Creating a URP Asset
+### 创建 URP Asset
 1. `Assets > Create > Rendering > URP Asset (with Universal Renderer)`
-2. Assign to `Project Settings > Graphics > Scriptable Render Pipeline Settings`
+2. 分配到 `Project Settings > Graphics > Scriptable Render Pipeline Settings`
 
 ### URP Renderer Features
-Add custom render passes:
+添加自定义渲染通道：
 
 ```csharp
 using UnityEngine.Rendering.Universal;
@@ -70,17 +70,17 @@ public class OutlineRendererFeature : ScriptableRendererFeature {
 
 ---
 
-## Materials & Shaders
+## 材质与 Shader
 
-### Shader Graph (Visual Shader Editor)
-Unity 6 Shader Graph is production-ready for all shader types:
+### Shader Graph（可视化 Shader 编辑器）
+Unity 6 的 Shader Graph 已可用于生产环境，适用于所有 Shader 类型：
 
 ```csharp
 // Create: Assets > Create > Shader Graph > URP > Lit Shader Graph
 // No code needed, visual node-based editing
 ```
 
-### HLSL Custom Shaders (URP)
+### HLSL 自定义 Shader（URP）
 
 ```hlsl
 // URP Lit shader template
@@ -125,16 +125,16 @@ Shader "Custom/URPLit" {
 
 ---
 
-## Lighting
+## 光照
 
-### Baked Lighting (Unity 6 Progressive Lightmapper)
+### 烘焙光照（Unity 6 Progressive Lightmapper）
 
 ```csharp
 // Mark objects as static: Inspector > Static > Contribute GI
 // Bake: Window > Rendering > Lighting > Generate Lighting
 ```
 
-### Real-Time Lights (URP)
+### 实时光源（URP）
 
 ```csharp
 // Main Light (Directional): Auto-handled by URP
@@ -146,9 +146,9 @@ int lightCount = GetAdditionalLightsCount();
 
 ---
 
-## Post-Processing
+## 后处理
 
-### Volume System (Unity 6+)
+### Volume 系统（Unity 6+）
 
 ```csharp
 using UnityEngine.Rendering;
@@ -167,9 +167,9 @@ if (volume.profile.TryGet<Bloom>(out var bloom)) {
 
 ---
 
-## Performance
+## 性能
 
-### SRP Batcher (Auto-batching)
+### SRP Batcher（自动批处理）
 
 ```csharp
 // Enable: URP Asset > Advanced > SRP Batcher = Enabled
@@ -190,7 +190,7 @@ Graphics.RenderMeshInstanced(
 );
 ```
 
-### Occlusion Culling
+### Occlusion Culling（遮挡剔除）
 
 ```csharp
 // Window > Rendering > Occlusion Culling
@@ -199,9 +199,9 @@ Graphics.RenderMeshInstanced(
 
 ---
 
-## Common Patterns
+## 常见模式
 
-### Custom Camera Rendering
+### 自定义相机渲染
 
 ```csharp
 // Get URP camera data
@@ -212,7 +212,7 @@ var camera = cameraData.camera;
 var colorTarget = cameraData.renderer.cameraColorTargetHandle;
 ```
 
-### Screen-Space Effects
+### 屏幕空间效果
 
 ```csharp
 // Create ScriptableRendererFeature
@@ -221,18 +221,18 @@ var colorTarget = cameraData.renderer.cameraColorTargetHandle;
 
 ---
 
-## Debugging
+## 调试
 
 ### Frame Debugger
 - `Window > Analysis > Frame Debugger`
-- Step through draw calls, inspect state
+- 逐步查看 draw call，并检查状态
 
 ### Rendering Debugger (Unity 6+)
 - `Window > Analysis > Rendering Debugger`
-- Live view of URP settings, overdraw, lighting
+- 实时查看 URP 设置、overdraw、光照等信息
 
 ---
 
-## Sources
+## 参考来源
 - https://docs.unity3d.com/Packages/com.unity.render-pipelines.universal@17.0/manual/index.html
 - https://docs.unity3d.com/6000.0/Documentation/Manual/render-pipelines.html

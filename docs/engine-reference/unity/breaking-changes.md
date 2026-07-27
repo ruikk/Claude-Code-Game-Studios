@@ -1,85 +1,84 @@
-# Unity 6.3 LTS — Breaking Changes
+# Unity 6.3 LTS — 破坏性变更
 
-**Last verified:** 2026-02-13
+**最后验证时间：** 2026-02-13
 
-This document tracks breaking API changes and behavioral differences between Unity 2022 LTS
-(likely in model training) and Unity 6.3 LTS (current version). Organized by risk level.
+本文用于追踪 Unity 2022 LTS（很可能包含在模型训练数据中）与 Unity 6.3 LTS（当前版本）之间的 API 破坏性变更以及行为差异，并按风险等级进行整理。
 
-## HIGH RISK — Will Break Existing Code
+## HIGH RISK — 会导致现有代码失效
 
-### Entities/DOTS API Complete Overhaul
-**Versions:** Entities 1.0+ (Unity 6.0+)
+### Entities/DOTS API 完全重构
+**版本：** Entities 1.0+（Unity 6.0+）
 
 ```csharp
-// ❌ OLD (pre-Unity 6, GameObjectEntity pattern)
+// ❌ OLD（Unity 6 之前，GameObjectEntity 模式）
 public class HealthComponent : ComponentData {
     public float Value;
 }
 
-// ✅ NEW (Unity 6+, IComponentData)
+// ✅ NEW（Unity 6+，IComponentData）
 public struct HealthComponent : IComponentData {
     public float Value;
 }
 
-// ❌ OLD: ComponentSystem
+// ❌ OLD：ComponentSystem
 public class DamageSystem : ComponentSystem { }
 
-// ✅ NEW: ISystem (unmanaged, Burst-compatible)
+// ✅ NEW：ISystem（非托管，可兼容 Burst）
 public partial struct DamageSystem : ISystem {
     public void OnCreate(ref SystemState state) { }
     public void OnUpdate(ref SystemState state) { }
 }
 ```
 
-**Migration:** Follow Unity's ECS migration guide. Major architectural changes required.
+**迁移方式：** 按照 Unity 的 ECS 迁移指南处理。需要进行较大幅度的架构调整。
 
 ---
 
-### Input System — Legacy Input Deprecated
-**Versions:** Unity 6.0+
+### Input System — 旧版 Input 已弃用
+**版本：** Unity 6.0+
 
 ```csharp
-// ❌ OLD: Input class (deprecated)
+// ❌ OLD：Input 类（已弃用）
 if (Input.GetKeyDown(KeyCode.Space)) { }
 
-// ✅ NEW: Input System package
+// ✅ NEW：Input System package
 using UnityEngine.InputSystem;
 if (Keyboard.current.spaceKey.wasPressedThisFrame) { }
 ```
 
-**Migration:** Install Input System package, replace all `Input.*` calls with new API.
+**迁移方式：** 安装 Input System package，并将所有 `Input.*` 调用替换为新 API。
 
 ---
 
-### URP/HDRP Renderer Feature API Changes
-**Versions:** Unity 6.0+
+### URP/HDRP Renderer Feature API 变更
+**版本：** Unity 6.0+
 
 ```csharp
-// ❌ OLD: ScriptableRenderPass.Execute signature
+// ❌ OLD：ScriptableRenderPass.Execute 签名
 public override void Execute(ScriptableRenderContext context, ref RenderingData data)
 
-// ✅ NEW: Uses RenderGraph API
+// ✅ NEW：改用 RenderGraph API
 public override void RecordRenderGraph(RenderGraph renderGraph, ContextContainer frameData)
 ```
 
-**Migration:** Update custom render passes to use RenderGraph API.
+**迁移方式：** 将自定义渲染 Pass 更新为使用 RenderGraph API。
 
 ---
 
-## MEDIUM RISK — Behavioral Changes
+## MEDIUM RISK — 行为变更
 
-### Addressables — Asset Loading Returns
-**Versions:** Unity 6.2+
+### Addressables — 资源加载返回行为变化
+**版本：** Unity 6.2+
 
-Asset loading failures now throw exceptions by default instead of returning null.
-Add proper exception handling or use `TryLoad` variants.
+资源加载失败时，现在默认会抛出异常，而不是返回 null。
+请补充合适的异常处理，或改用 `TryLoad` 变体。
 
 ```csharp
-// ❌ OLD: Silent null on failure
+// ❌ OLD：失败时静默返回 null
 var handle = Addressables.LoadAssetAsync<Sprite>("key");
-var sprite = handle.Result; // null if failed
+var sprite = handle.Result; // 失败时为 null
 
-// ✅ NEW: Throws on failure, use try/catch or TryLoad
+// ✅ NEW：失败时抛出异常，使用 try/catch 或 TryLoad
 try {
     var handle = Addressables.LoadAssetAsync<Sprite>("key");
     var sprite = await handle.Task;
@@ -90,62 +89,62 @@ try {
 
 ---
 
-### Physics — Default Solver Iterations Changed
-**Versions:** Unity 6.0+
+### Physics — 默认求解器迭代次数已更改
+**版本：** Unity 6.0+
 
-Default solver iterations increased for better stability.
-Check `Physics.defaultSolverIterations` if you rely on old behavior.
-
----
-
-## LOW RISK — Deprecations (Still Functional)
-
-### UGUI (Legacy UI)
-**Status:** Deprecated but supported
-**Replacement:** UI Toolkit
-
-UGUI still works but UI Toolkit is recommended for new projects.
+为提升稳定性，默认求解器迭代次数已增加。
+如果你的项目依赖旧行为，请检查 `Physics.defaultSolverIterations`。
 
 ---
 
-### Legacy Particle System
-**Status:** Deprecated
-**Replacement:** Visual Effect Graph (VFX Graph)
+## LOW RISK — 弃用项（仍可使用）
+
+### UGUI（旧版 UI）
+**状态：** 已弃用，但仍受支持
+**替代方案：** UI Toolkit
+
+UGUI 仍可继续使用，但新项目建议采用 UI Toolkit。
 
 ---
 
-### Old Animation System
-**Status:** Deprecated
-**Replacement:** Animator Controller (Mecanim)
+### 旧版粒子系统
+**状态：** 已弃用
+**替代方案：** Visual Effect Graph (VFX Graph)
 
 ---
 
-## Platform-Specific Breaking Changes
+### 旧版动画系统
+**状态：** 已弃用
+**替代方案：** Animator Controller (Mecanim)
+
+---
+
+## 平台相关破坏性变更
 
 ### WebGL
-- **Unity 6.0+**: WebGPU is now the default (WebGL 2.0 fallback available)
-- Update shaders for WebGPU compatibility
+- **Unity 6.0+**：WebGPU 现已成为默认选项（仍可回退到 WebGL 2.0）
+- 需要更新 shader 以兼容 WebGPU
 
 ### Android
-- **Unity 6.0+**: Minimum API level raised to 24 (Android 7.0)
+- **Unity 6.0+**：最低 API 级别提升至 24（Android 7.0）
 
 ### iOS
-- **Unity 6.0+**: Minimum deployment target raised to iOS 13
+- **Unity 6.0+**：最低部署目标版本提升至 iOS 13
 
 ---
 
-## Migration Checklist
+## 迁移检查清单
 
-When upgrading from 2022 LTS to Unity 6.3 LTS:
+当从 2022 LTS 升级到 Unity 6.3 LTS 时：
 
-- [ ] Audit all DOTS/ECS code (complete rewrite likely needed)
-- [ ] Replace `Input` class with Input System package
-- [ ] Update custom render passes to RenderGraph API
-- [ ] Add exception handling to Addressables calls
-- [ ] Test physics behavior (solver iterations changed)
-- [ ] Consider migrating UGUI to UI Toolkit for new UI
-- [ ] Update WebGL shaders for WebGPU
-- [ ] Verify minimum platform versions (Android/iOS)
+- [ ] 审查所有 DOTS/ECS 代码（很可能需要完全重写）
+- [ ] 将 `Input` 类替换为 Input System package
+- [ ] 将自定义渲染 Pass 更新到 RenderGraph API
+- [ ] 为 Addressables 调用补充异常处理
+- [ ] 测试 Physics 行为（求解器迭代次数已变化）
+- [ ] 为新 UI 评估是否从 UGUI 迁移到 UI Toolkit
+- [ ] 更新 WebGL shader 以适配 WebGPU
+- [ ] 验证最低平台版本要求（Android/iOS）
 
 ---
 

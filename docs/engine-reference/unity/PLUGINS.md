@@ -1,250 +1,250 @@
-# Unity 6.3 LTS — Optional Packages & Systems
+# Unity 6.3 LTS — 可选包与系统
 
-**Last verified:** 2026-02-13
+**最后验证时间：** 2026-02-13
 
-This document indexes **optional packages and systems** available in Unity 6.3 LTS.
-These are NOT part of the core engine but are commonly used for specific game types.
-
----
-
-## How to Use This Guide
-
-**✅ Detailed Documentation Available** - See `plugins/` directory for comprehensive guides
-**🟡 Brief Overview Only** - Links to official docs, use WebSearch for details
-**⚠️ Preview** - May have breaking changes in future versions
-**📦 Package Required** - Install via Package Manager
+本文档汇总了 Unity 6.3 LTS 中可用的**可选包与系统**。
+这些内容**不属于核心引擎**，但在特定类型的游戏开发中非常常用。
 
 ---
 
-## Production-Ready Packages (Detailed Docs Available)
+## 如何使用本指南
+
+**✅ 提供详细文档** - 参见 `plugins/` 目录中的完整指南
+**🟡 仅简要概览** - 提供官方文档链接，详情请使用 WebSearch
+**⚠️ Preview** - 未来版本中可能存在破坏性变更
+**📦 需要安装包** - 通过 Package Manager 安装
+
+---
+
+## 可用于生产环境的包（提供详细文档）
 
 ### ✅ Cinemachine
-- **Purpose:** Virtual camera system (dynamic cameras, cutscenes, camera blending)
-- **When to use:** 3rd person games, cinematics, complex camera behavior
-- **Knowledge Gap:** Cinemachine 3.0+ (Unity 6) has major API changes vs 2.x
-- **Status:** Production-Ready
-- **Package:** `com.unity.cinemachine` (Package Manager)
-- **Detailed Docs:** [plugins/cinemachine.md](plugins/cinemachine.md)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.cinemachine@3.0/manual/index.html
+- **用途：** 虚拟相机系统（动态相机、过场动画、相机混合）
+- **适用场景：** 第三人称游戏、电影化演出、复杂相机行为
+- **知识缺口：** Cinemachine 3.0+（Unity 6）相较 2.x 有重大 API 变化
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.cinemachine` (Package Manager)
+- **详细文档：** [plugins/cinemachine.md](plugins/cinemachine.md)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.cinemachine@3.0/manual/index.html
 
 ---
 
 ### ✅ Addressables
-- **Purpose:** Advanced asset management (async loading, remote content, memory control)
-- **When to use:** Large projects, DLC, remote content delivery
-- **Knowledge Gap:** Unity 6 improvements, better performance
-- **Status:** Production-Ready
-- **Package:** `com.unity.addressables` (Package Manager)
-- **Detailed Docs:** [plugins/addressables.md](plugins/addressables.md)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.addressables@2.0/manual/index.html
+- **用途：** 高级资源管理（异步加载、远程内容、内存控制）
+- **适用场景：** 大型项目、DLC、远程内容分发
+- **知识缺口：** Unity 6 带来了一些改进，性能更好
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.addressables` (Package Manager)
+- **详细文档：** [plugins/addressables.md](plugins/addressables.md)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.addressables@2.0/manual/index.html
 
 ---
 
 ### ✅ DOTS / Entities (ECS)
-- **Purpose:** Data-Oriented Technology Stack (high-performance ECS for massive scale)
-- **When to use:** Games with 1000s of entities, RTS, simulations
-- **Knowledge Gap:** Entities 1.3+ (Unity 6) is production-ready, major rewrite from 0.x
-- **Status:** Production-Ready (as of Unity 6.3 LTS)
-- **Package:** `com.unity.entities` (Package Manager)
-- **Detailed Docs:** [plugins/dots-entities.md](plugins/dots-entities.md)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.entities@1.3/manual/index.html
+- **用途：** 数据导向技术栈（Data-Oriented Technology Stack，高性能 ECS，适合超大规模场景）
+- **适用场景：** 拥有数千实体的游戏、RTS、模拟类游戏
+- **知识缺口：** Entities 1.3+（Unity 6）已可用于生产环境，与 0.x 相比几乎是重写
+- **状态：** 可用于生产环境（截至 Unity 6.3 LTS）
+- **Package：** `com.unity.entities` (Package Manager)
+- **详细文档：** [plugins/dots-entities.md](plugins/dots-entities.md)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.entities@1.3/manual/index.html
 
 ---
 
-## Other Production-Ready Packages (Brief Overview)
+## 其他可用于生产环境的包（简要概览）
 
-### 🟡 Input System (Already Covered)
-- **Purpose:** Modern input handling (rebindable, cross-platform)
-- **Status:** Production-Ready (default in Unity 6)
-- **Package:** `com.unity.inputsystem`
-- **Docs:** See [modules/input.md](../modules/input.md)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.inputsystem@1.11/manual/index.html
+### 🟡 Input System（已覆盖）
+- **用途：** 现代输入处理（可重绑定、跨平台）
+- **状态：** 可用于生产环境（Unity 6 默认方案）
+- **Package：** `com.unity.inputsystem`
+- **文档：** 参见 [modules/input.md](modules/input.md)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.inputsystem@1.11/manual/index.html
 
 ---
 
-### 🟡 UI Toolkit (Already Covered)
-- **Purpose:** Modern runtime UI (HTML/CSS-like, performant)
-- **Status:** Production-Ready (Unity 6)
-- **Package:** Built-in
-- **Docs:** See [modules/ui.md](../modules/ui.md)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.ui@2.0/manual/index.html
+### 🟡 UI Toolkit（已覆盖）
+- **用途：** 现代运行时 UI（类似 HTML/CSS，性能优秀）
+- **状态：** 可用于生产环境（Unity 6）
+- **Package：** 内置
+- **文档：** 参见 [modules/ui.md](modules/ui.md)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.ui@2.0/manual/index.html
 
 ---
 
 ### 🟡 Visual Effect Graph (VFX Graph)
-- **Purpose:** GPU-accelerated particle system (millions of particles)
-- **When to use:** Large-scale VFX, fire, smoke, magic, explosions
-- **Status:** Production-Ready
-- **Package:** `com.unity.visualeffectgraph` (URP/HDRP only)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.visualeffectgraph@17.0/manual/index.html
+- **用途：** GPU 加速粒子系统（可支持数百万粒子）
+- **适用场景：** 大规模特效、火焰、烟雾、魔法、爆炸
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.visualeffectgraph` (仅限 URP/HDRP)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.visualeffectgraph@17.0/manual/index.html
 
 ---
 
 ### 🟡 Shader Graph
-- **Purpose:** Visual shader editor (node-based shader creation)
-- **When to use:** Custom shaders without HLSL coding
-- **Status:** Production-Ready
-- **Package:** `com.unity.shadergraph` (URP/HDRP)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.shadergraph@17.0/manual/index.html
+- **用途：** 可视化 Shader 编辑器（基于节点创建 Shader）
+- **适用场景：** 无需编写 HLSL 也能制作自定义 Shader
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.shadergraph` (URP/HDRP)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.shadergraph@17.0/manual/index.html
 
 ---
 
 ### 🟡 Timeline
-- **Purpose:** Cinematic sequencing (cutscenes, scripted events)
-- **When to use:** Story-driven games, cinematics, scripted sequences
-- **Status:** Production-Ready
-- **Package:** `com.unity.timeline` (built-in)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.timeline@1.8/manual/index.html
+- **用途：** 电影化序列编辑（过场动画、脚本事件）
+- **适用场景：** 剧情驱动游戏、电影化演出、脚本化流程
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.timeline` (内置)
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.timeline@1.8/manual/index.html
 
 ---
 
 ### 🟡 Animation Rigging
-- **Purpose:** Runtime IK, procedural animation
-- **When to use:** Foot IK, aim offsets, procedural limb placement
-- **Status:** Production-Ready (Unity 6)
-- **Package:** `com.unity.animation.rigging`
-- **Official:** https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/index.html
+- **用途：** 运行时 IK、程序化动画
+- **适用场景：** 脚部 IK、瞄准偏移、程序化肢体摆放
+- **状态：** 可用于生产环境（Unity 6）
+- **Package：** `com.unity.animation.rigging`
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.animation.rigging@1.3/manual/index.html
 
 ---
 
 ### 🟡 ProBuilder
-- **Purpose:** In-editor 3D modeling (level prototyping, greyboxing)
-- **When to use:** Rapid prototyping, level blockout
-- **Status:** Production-Ready
-- **Package:** `com.unity.probuilder`
-- **Official:** https://docs.unity3d.com/Packages/com.unity.probuilder@6.0/manual/index.html
+- **用途：** 编辑器内 3D 建模（关卡原型、灰盒搭建）
+- **适用场景：** 快速原型制作、关卡白盒/灰盒搭建
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.probuilder`
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.probuilder@6.0/manual/index.html
 
 ---
 
 ### 🟡 Netcode for GameObjects
-- **Purpose:** Official Unity multiplayer networking
-- **When to use:** Multiplayer games (client-server architecture)
-- **Status:** Production-Ready
-- **Package:** `com.unity.netcode.gameobjects`
-- **Official:** https://docs-multiplayer.unity3d.com/netcode/current/about/
+- **用途：** Unity 官方多人联机网络方案
+- **适用场景：** 多人游戏（客户端-服务器架构）
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.netcode.gameobjects`
+- **官方文档：** https://docs-multiplayer.unity3d.com/netcode/current/about/
 
 ---
 
 ### 🟡 Burst Compiler
-- **Purpose:** LLVM-based compiler for C# Jobs (massive performance boost)
-- **When to use:** Performance-critical code, DOTS, Jobs System
-- **Status:** Production-Ready
-- **Package:** `com.unity.burst` (auto-installed with DOTS)
-- **Official:** https://docs.unity3d.com/Packages/com.unity.burst@1.8/manual/index.html
+- **用途：** 面向 C# Jobs 的 LLVM 编译器（大幅提升性能）
+- **适用场景：** 性能关键代码、DOTS、Jobs System
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.burst`（随 DOTS 自动安装）
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.burst@1.8/manual/index.html
 
 ---
 
 ### 🟡 Jobs System
-- **Purpose:** Multi-threaded job scheduling (CPU parallelism)
-- **When to use:** Performance optimization, parallel processing
-- **Status:** Production-Ready
-- **Package:** Built-in
-- **Official:** https://docs.unity3d.com/Manual/JobSystem.html
+- **用途：** 多线程作业调度系统（CPU 并行化）
+- **适用场景：** 性能优化、并行处理
+- **状态：** 可用于生产环境
+- **Package：** 内置
+- **官方文档：** https://docs.unity3d.com/Manual/JobSystem.html
 
 ---
 
 ### 🟡 Mathematics
-- **Purpose:** SIMD math library (optimized for Burst)
-- **When to use:** DOTS, high-performance math
-- **Status:** Production-Ready
-- **Package:** `com.unity.mathematics`
-- **Official:** https://docs.unity3d.com/Packages/com.unity.mathematics@1.3/manual/index.html
+- **用途：** SIMD 数学库（针对 Burst 优化）
+- **适用场景：** DOTS、高性能数学计算
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.mathematics`
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.mathematics@1.3/manual/index.html
 
 ---
 
-### 🟡 ML-Agents (Machine Learning)
-- **Purpose:** Train AI with reinforcement learning
-- **When to use:** Advanced AI training, procedural behavior
-- **Status:** Production-Ready
-- **Package:** `com.unity.ml-agents`
-- **Official:** https://github.com/Unity-Technologies/ml-agents
+### 🟡 ML-Agents（机器学习）
+- **用途：** 使用强化学习训练 AI
+- **适用场景：** 高级 AI 训练、程序化行为
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.ml-agents`
+- **官方文档：** https://github.com/Unity-Technologies/ml-agents
 
 ---
 
 ### 🟡 Recorder
-- **Purpose:** Capture gameplay footage, screenshots, animation clips
-- **When to use:** Trailers, replays, debug recording
-- **Status:** Production-Ready
-- **Package:** `com.unity.recorder`
-- **Official:** https://docs.unity3d.com/Packages/com.unity.recorder@5.0/manual/index.html
+- **用途：** 录制游戏画面、截图、动画片段
+- **适用场景：** 预告片、回放、调试录制
+- **状态：** 可用于生产环境
+- **Package：** `com.unity.recorder`
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.recorder@5.0/manual/index.html
 
 ---
 
-## Preview/Experimental Packages (Use with Caution)
+## Preview/实验性包（谨慎使用）
 
 ### ⚠️ Splines
-- **Purpose:** Runtime spline creation and editing
-- **When to use:** Roads, paths, procedural content
-- **Status:** Production-Ready (Unity 6)
-- **Package:** `com.unity.splines`
-- **Official:** https://docs.unity3d.com/Packages/com.unity.splines@2.6/manual/index.html
+- **用途：** 运行时样条创建与编辑
+- **适用场景：** 道路、路径、程序化内容
+- **状态：** 可用于生产环境（Unity 6）
+- **Package：** `com.unity.splines`
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.splines@2.6/manual/index.html
 
 ---
 
-### ⚠️ Muse (AI Assistant)
-- **Purpose:** AI-powered asset creation (textures, sprites, animations)
-- **Status:** Preview (Unity 6)
-- **Package:** `com.unity.muse.*`
-- **Official:** https://unity.com/products/muse
+### ⚠️ Muse（AI Assistant）
+- **用途：** AI 驱动的资源创作（纹理、精灵、动画）
+- **状态：** Preview（Unity 6）
+- **Package：** `com.unity.muse.*`
+- **官方文档：** https://unity.com/products/muse
 
 ---
 
-### ⚠️ Sentis (Neural Network Inference)
-- **Purpose:** Run neural networks in Unity (AI inference)
-- **Status:** Preview
-- **Package:** `com.unity.sentis`
-- **Official:** https://docs.unity3d.com/Packages/com.unity.sentis@2.0/manual/index.html
+### ⚠️ Sentis（神经网络推理）
+- **用途：** 在 Unity 中运行神经网络（AI 推理）
+- **状态：** Preview
+- **Package：** `com.unity.sentis`
+- **官方文档：** https://docs.unity3d.com/Packages/com.unity.sentis@2.0/manual/index.html
 
 ---
 
-## Deprecated Packages (Avoid for New Projects)
+## 已弃用的包（新项目应避免使用）
 
-### ❌ UGUI (Canvas UI)
-- **Deprecated:** Still supported, but UI Toolkit recommended
-- **Use Instead:** UI Toolkit
+### ❌ UGUI（Canvas UI）
+- **已弃用：** 仍受支持，但推荐使用 UI Toolkit
+- **替代方案：** UI Toolkit
 
 ---
 
 ### ❌ Legacy Particle System
-- **Deprecated:** Use Visual Effect Graph (VFX Graph)
-- **Use Instead:** VFX Graph
+- **已弃用：** 请使用 Visual Effect Graph (VFX Graph)
+- **替代方案：** VFX Graph
 
 ---
 
 ### ❌ Legacy Animation
-- **Deprecated:** Use Animator (Mecanim)
-- **Use Instead:** Animator Controller
+- **已弃用：** 请使用 Animator (Mecanim)
+- **替代方案：** Animator Controller
 
 ---
 
-## On-Demand WebSearch Strategy
+## 按需使用 WebSearch 的策略
 
-For packages NOT listed above, use the following approach when users ask:
+对于上方**未列出**的包，当用户提问时，建议采用以下流程：
 
-1. **WebSearch** for latest documentation: `"Unity 6.3 [package name]"`
-2. Verify if package is:
-   - Post-cutoff (beyond May 2025 training data)
-   - Preview vs Production-Ready
-   - Still supported in Unity 6.3 LTS
-3. Optionally cache findings in `plugins/[package-name].md` for future reference
-
----
-
-## Quick Decision Guide
-
-**I need virtual cameras** → **Cinemachine**
-**I need async asset loading / DLC** → **Addressables**
-**I need 1000s of entities (RTS, sim)** → **DOTS/Entities**
-**I need modern input** → **Input System** (see modules/input.md)
-**I need GPU particles** → **Visual Effect Graph**
-**I need visual shaders** → **Shader Graph**
-**I need cinematics** → **Timeline**
-**I need runtime IK** → **Animation Rigging**
-**I need level prototyping** → **ProBuilder**
-**I need multiplayer** → **Netcode for GameObjects**
+1. 使用 **WebSearch** 查询最新文档：`"Unity 6.3 [package name]"`
+2. 验证该包是否：
+   - 属于知识截止日期之后的内容（超出 2025 年 5 月训练数据）
+   - 是 Preview 还是可用于生产环境
+   - 在 Unity 6.3 LTS 中是否仍受支持
+3. 如有需要，可将结果缓存到 `plugins/[package-name].md` 供后续参考
 
 ---
 
-**Last Updated:** 2026-02-13
-**Engine Version:** Unity 6.3 LTS
-**LLM Knowledge Cutoff:** May 2025
+## 快速决策指南
+
+**我需要虚拟相机** → **Cinemachine**
+**我需要异步资源加载 / DLC** → **Addressables**
+**我需要数千个实体（RTS、模拟）** → **DOTS/Entities**
+**我需要现代输入系统** → **Input System**（见 modules/input.md）
+**我需要 GPU 粒子** → **Visual Effect Graph**
+**我需要可视化 Shader** → **Shader Graph**
+**我需要电影化演出** → **Timeline**
+**我需要运行时 IK** → **Animation Rigging**
+**我需要关卡原型工具** → **ProBuilder**
+**我需要多人联机** → **Netcode for GameObjects**
+
+---
+
+**最后更新时间：** 2026-02-13
+**引擎版本：** Unity 6.3 LTS
+**LLM 知识截止：** 2025 年 5 月
