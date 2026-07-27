@@ -1,173 +1,158 @@
-# Skill Test Spec: /start
+# 技能测试规范：/start
 
-## Skill Summary
+## 技能摘要
 
-`/start` is the first-time onboarding skill for new projects. It guides the
-user through naming the project, choosing a game engine, and setting up the
-initial directory structure. It creates stub configuration files (CLAUDE.md,
-technical-preferences.md) and then routes to `/setup-engine` with the chosen
-engine as an argument. Each file or directory created is gated behind a
-"May I write" ask, following the collaborative protocol.
+`/start` 是新项目首次入门技能。它引导用户命名项目、选择游戏引擎并设置初始目录结构。它创建配置文件存根（CLAUDE.md、technical-preferences.md），然后将所选引擎作为参数传递给 `/setup-engine`。每个要创建的文件或目录都遵循协作协议，必须先询问“May I write”。
 
-The skill detects whether a project is already configured and whether a
-partial setup exists, offering to resume or restart as appropriate. It has
-no director gates — it is a utility setup skill that runs before any agent
-hierarchy exists.
+技能会检测项目是否已经配置，以及是否存在部分设置，并适时提供继续或重新开始的选项。它没有 director 门禁，是一个在代理层级建立前运行的工具设置技能。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: COMPLETE, BLOCKED
-- [ ] Contains "May I write" collaborative protocol language for each config file
-- [ ] Has a next-step handoff at the end (routes to `/setup-engine`)
-
----
-
-## Director Gate Checks
-
-None. `/start` is a utility setup skill. No director agents exist yet at the
-point this skill runs.
+- [ ] 包含必需的 front matter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少包含 2 个阶段标题
+- [ ] 包含判定关键词：COMPLETE、BLOCKED
+- [ ] 针对每个配置文件包含“May I write”协作协议措辞
+- [ ] 末尾包含后续步骤交接（转到 `/setup-engine`）
 
 ---
 
-## Test Cases
+## Director 门禁检查
 
-### Case 1: Happy Path — Fresh repo, no engine, full onboarding flow
-
-**Fixture:**
-- Empty repository: no CLAUDE.md overrides, no `production/stage.txt`, no
-  `technical-preferences.md` content beyond placeholders
-- No existing design docs or source code
-
-**Input:** `/start`
-
-**Expected behavior:**
-1. Skill detects no existing configuration and begins fresh onboarding
-2. Skill asks for project name
-3. Skill presents 3 engine options: Godot 4, Unity, Unreal Engine 5
-4. User selects an engine
-5. Skill asks "May I write the initial directory structure?"
-6. Skill creates all directories defined in `directory-structure.md`
-7. Skill asks "May I write CLAUDE.md stub?" and writes it on approval
-8. Skill routes to `/setup-engine [chosen-engine]` to complete technical config
-
-**Assertions:**
-- [ ] Project name is captured before any file is written
-- [ ] Exactly 3 engine options are presented
-- [ ] "May I write" is asked for each config file individually
-- [ ] No file is written without explicit user approval
-- [ ] Handoff to `/setup-engine` occurs at the end with the chosen engine argument
-- [ ] Verdict is COMPLETE after all files are written and handoff is issued
+无。`/start` 是工具设置技能；该技能运行时还不存在 director 代理。
 
 ---
 
-### Case 2: Already Configured — Detects existing config, offers to skip or reconfigure
+## 测试用例
 
-**Fixture:**
-- `technical-preferences.md` has engine already set (not placeholder)
-- `production/stage.txt` exists with `Concept`
+### 用例 1：成功路径——全新仓库、没有引擎、完整入门流程
 
-**Input:** `/start`
+**测试夹具：**
+- 空仓库：没有 CLAUDE.md 覆盖项，没有 `production/stage.txt`，`technical-preferences.md` 除占位符外没有内容
+- 没有现有设计文档或源代码
 
-**Expected behavior:**
-1. Skill reads `technical-preferences.md` and detects configured engine
-2. Skill reports: "This project is already configured with [engine]"
-3. Skill presents options: skip (exit), reconfigure engine, or reconfigure specific sections
-4. If user selects skip: skill exits cleanly with a summary of current config
-5. If user selects reconfigure: skill proceeds to the engine-selection step
+**输入：** `/start`
 
-**Assertions:**
-- [ ] Skill does NOT overwrite existing config without user choosing reconfigure
-- [ ] Detected engine name is shown to the user in the status message
-- [ ] User is offered at least 2 options (skip or reconfigure)
-- [ ] Verdict is COMPLETE whether user skips or reconfigures
+**预期行为：**
+1. 技能检测不到现有配置，开始全新入门
+2. 技能询问项目名称
+3. 技能提供 3 个引擎选项：Godot 4、Unity、Unreal Engine 5
+4. 用户选择一个引擎
+5. 技能询问“可以写入初始目录结构吗？”
+6. 技能创建 `directory-structure.md` 定义的所有目录
+7. 技能询问“可以写入 CLAUDE.md 存根吗？”，获得批准后写入
+8. 技能转到 `/setup-engine [chosen-engine]` 完成技术配置
 
----
-
-### Case 3: Engine Choice — User picks Godot 4, routes to /setup-engine godot
-
-**Fixture:**
-- Fresh repo — no existing configuration
-
-**Input:** `/start`
-
-**Expected behavior:**
-1. Skill presents engine options and user selects Godot 4
-2. Skill writes initial stubs (directory structure, CLAUDE.md) after approval
-3. Skill explicitly routes to `/setup-engine godot` as the next step
-4. Handoff message clearly names the engine and the next skill invocation
-
-**Assertions:**
-- [ ] Handoff command is `/setup-engine godot` (not generic `/setup-engine`)
-- [ ] Handoff is issued after all initial stubs are written, not before
-- [ ] Engine choice is echoed back to user before writing begins
+**断言：**
+- [ ] 在写入任何文件前获取项目名称
+- [ ] 恰好提供 3 个引擎选项
+- [ ] 针对每个配置文件单独询问写入许可（`May I write`）
+- [ ] 没有任何文件在未经用户明确批准时写入
+- [ ] 末尾使用所选引擎参数交接到 `/setup-engine`
+- [ ] 所有文件写入并完成交接后判定为 COMPLETE
 
 ---
 
-### Case 4: Interrupted Setup — Partial config detected, offers resume or restart
+### 用例 2：已配置——检测现有配置，提供跳过或重新配置选项
 
-**Fixture:**
-- Directory structure exists (was created) but `technical-preferences.md` is
-  still all placeholders (engine was never chosen — setup was interrupted)
-- No `production/stage.txt`
+**测试夹具：**
+- `technical-preferences.md` 已设置引擎（不是占位符）
+- `production/stage.txt` 存在且内容为 `Concept`
 
-**Input:** `/start`
+**输入：** `/start`
 
-**Expected behavior:**
-1. Skill detects partial state: directories exist but engine is unconfigured
-2. Skill reports: "A partial setup was detected — directories exist but engine is not configured"
-3. Skill offers: resume from engine selection, or restart from scratch
-4. If resume: skill skips directory creation, proceeds to engine choice
-5. If restart: skill asks "May I overwrite existing structure?" before proceeding
+**预期行为：**
+1. 技能读取 `technical-preferences.md` 并检测已配置的引擎
+2. 技能报告：“此项目已配置 [engine]”
+3. 技能提供选项：跳过（退出）、重新配置引擎，或重新配置特定章节
+4. 用户选择跳过时，技能以当前配置摘要干净退出
+5. 用户选择重新配置时，技能继续到引擎选择步骤
 
-**Assertions:**
-- [ ] Partial state is correctly identified (directories present, engine absent)
-- [ ] User is offered resume vs. restart choice — not forced into one path
-- [ ] Resume path skips re-creating directories (no redundant "May I write" for structure)
-- [ ] Restart path asks for permission to overwrite before touching any files
-
----
-
-### Case 5: Director Gate Check — No gate; start is a utility setup skill
-
-**Fixture:**
-- Any fixture
-
-**Input:** `/start`
-
-**Expected behavior:**
-1. Skill completes full onboarding flow
-2. No director agents are spawned at any point
-3. No gate IDs (CD-*, TD-*, AD-*, PR-*) appear in the output
-
-**Assertions:**
-- [ ] No director gate is invoked during the skill execution
-- [ ] No gate skip messages appear (gates are absent, not suppressed)
-- [ ] Skill reaches COMPLETE without any gate verdict
+**断言：**
+- [ ] 用户未选择重新配置时，技能不会覆盖现有配置
+- [ ] 状态消息向用户显示检测到的引擎名称
+- [ ] 至少向用户提供 2 个选项（跳过或重新配置）
+- [ ] 无论用户跳过还是重新配置，判定均为 COMPLETE
 
 ---
 
-## Protocol Compliance
+### 用例 3：引擎选择——用户选择 Godot 4，转到 /setup-engine godot
 
-- [ ] Asks for project name before any file is written
-- [ ] Presents engine options as a structured choice (not free text)
-- [ ] Asks "May I write" separately for directory structure and for CLAUDE.md stub
-- [ ] Ends with a handoff to `/setup-engine` with the engine name as argument
-- [ ] Verdict is clearly stated (COMPLETE or BLOCKED) at end of output
+**测试夹具：**
+- 全新仓库，没有现有配置
+
+**输入：** `/start`
+
+**预期行为：**
+1. 技能提供引擎选项，用户选择 Godot 4
+2. 获得批准后，技能写入初始存根（目录结构、CLAUDE.md）
+3. 技能明确将 `/setup-engine godot` 作为下一步
+4. 交接消息清楚说明引擎和下一次技能调用
+
+**断言：**
+- [ ] 交接命令为 `/setup-engine godot`，而不是通用的 `/setup-engine`
+- [ ] 交接在所有初始存根写入后发出，而不是之前
+- [ ] 开始写入前向用户复述引擎选择
 
 ---
 
-## Coverage Notes
+### 用例 4：设置中断——检测到部分配置，提供继续或重新开始选项
 
-- The case where the user rejects all engine options and provides a custom
-  engine name is not tested — the skill is designed for the three supported
-  engines only.
-- Git initialization (if any) is not tested here; that is an infrastructure
-  concern outside the skill boundary.
-- Solo vs. lean mode behavior is not applicable — this skill has no gates and
-  mode selection is irrelevant.
+**测试夹具：**
+- 目录结构存在（已创建），但 `technical-preferences.md` 仍全部为占位符（从未选择引擎，设置被中断）
+- 没有 `production/stage.txt`
+
+**输入：** `/start`
+
+**预期行为：**
+1. 技能检测到部分状态：目录存在但引擎未配置
+2. 技能报告：“检测到部分设置：目录已存在，但尚未配置引擎”
+3. 技能提供：从引擎选择继续，或从头重新开始
+4. 选择继续时，技能跳过目录创建并进入引擎选择
+5. 选择重新开始时，技能在继续前询问“可以覆盖现有结构吗？”
+
+**断言：**
+- [ ] 正确识别部分状态（目录存在、引擎不存在）
+- [ ] 向用户提供继续或重新开始的选择，而不是强制一条路径
+- [ ] 继续路径跳过重新创建目录（不重复询问结构的“May I write”）
+- [ ] 重新开始路径在接触任何文件前询问覆盖权限
+
+---
+
+### 用例 5：Director 门禁检查——无门禁；start 是工具设置技能
+
+**测试夹具：**
+- 任意测试夹具
+
+**输入：** `/start`
+
+**预期行为：**
+1. 技能完成完整入门流程
+2. 全程不生成任何 director 代理
+3. 输出中不出现门禁 ID（CD-*、TD-*、AD-*、PR-*）
+
+**断言：**
+- [ ] 技能执行期间不调用 director 门禁
+- [ ] 不出现跳过门禁的消息（门禁不存在，而不是被抑制）
+- [ ] 技能不经过任何门禁判定并达到 COMPLETE
+
+---
+
+## 协议合规性
+
+- [ ] 在写入任何文件前询问项目名称
+- [ ] 以结构化选项提供引擎，而不是自由文本
+- [ ] 分别针对目录结构和 CLAUDE.md 存根询问写入许可（`May I write`）
+- [ ] 以引擎名称为参数交接到 `/setup-engine`
+- [ ] 在输出末尾明确说明判定（COMPLETE 或 BLOCKED）
+
+---
+
+## 覆盖说明
+
+- 用户拒绝所有引擎选项并提供自定义引擎名称的情况没有测试；该技能只针对三个受支持的引擎设计。
+- Git 初始化（如果有）不在这里测试；这是技能范围之外的基础设施问题。
+- Solo 与 lean 模式行为不适用；该技能没有门禁，模式选择无关。

@@ -1,176 +1,160 @@
-# Skill Test Spec: /ux-design
+# 技能测试规范：/ux-design
 
-## Skill Summary
+## 技能摘要
 
-`/ux-design` is a guided, section-by-section UX spec authoring skill. It produces
-user flow diagrams (described textually), interaction state definitions, wireframe
-descriptions, and accessibility notes for a specified screen or HUD element. The
-skill follows the skeleton-first pattern: it creates the file with all section
-headers immediately, then fills each section through discussion and writes each
-section to disk after user approval.
+`/ux-design` 是一种按章节引导编写 UX 规格的技能。它为指定界面或 HUD 元素生成用户流程图（以文字描述）、交互状态定义、线框图说明和无障碍说明。该技能采用先建骨架模式：立即创建包含所有章节标题的文件，再通过讨论填写每个章节，并在用户批准后将各章节写入磁盘。
 
-The skill has no inline director gates — `/ux-review` is the separate review step.
-Each section requires a "May I write section [N] to [filepath]?" ask. If a UX spec
-already exists for the named screen, the skill offers to retrofit individual sections
-rather than replace. Verdict is COMPLETE when all sections are written.
+该技能没有内嵌主管门禁，`/ux-review` 是独立的审查步骤。每个章节都必须询问 "May I write section [N] to [filepath]?"。如果指定界面的 UX 规格已存在，技能会提供改造单个章节的选项，而非替换整个文件。所有章节写入后，结论为 COMPLETE。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" language per section
-- [ ] Has a next-step handoff (e.g., `/ux-review` to validate the completed spec)
-
----
-
-## Director Gate Checks
-
-None. `/ux-design` has no inline director gates. `/ux-review` is the separate
-review skill invoked after this skill completes.
+- [ ] 包含必需的 frontmatter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 包含至少 2 个阶段标题
+- [ ] 包含结论关键字：COMPLETE
+- [ ] 每个章节包含 "May I write" 措辞
+- [ ] 包含下一步移交（例如使用 `/ux-review` 验证已完成的规格）
 
 ---
 
-## Test Cases
+## 主管门禁检查
 
-### Case 1: Happy Path — New HUD spec, all sections authored and written
-
-**Fixture:**
-- No existing HUD UX spec in `design/ux/`
-- Engine and rendering preferences configured
-
-**Input:** `/ux-design hud`
-
-**Expected behavior:**
-1. Skill creates a skeleton file `design/ux/hud.md` with all section headers
-2. Skill discusses and drafts each section: User Flows, Interaction States
-   (normal/hover/focus/disabled), Wireframe Description, Accessibility Notes
-3. After each section is drafted and user confirms, skill asks "May I write
-   section [N] to `design/ux/hud.md`?"
-4. Each section is written in sequence after approval
-5. After all sections are written, verdict is COMPLETE
-6. Skill suggests running `/ux-review` as the next step
-
-**Assertions:**
-- [ ] Skeleton file is created first (with empty section bodies)
-- [ ] "May I write section [N]" is asked per section (not once at the end)
-- [ ] All required sections are present: User Flows, Interaction States,
-     Wireframe Description, Accessibility Notes
-- [ ] Handoff to `/ux-review` is at the end
-- [ ] Verdict is COMPLETE
+无。`/ux-design` 没有内嵌主管门禁。该技能完成后，另行调用 `/ux-review` 审查技能。
 
 ---
 
-### Case 2: Existing UX Spec — Retrofit: user picks section to update
+## 测试用例
 
-**Fixture:**
-- `design/ux/hud.md` already exists with all sections populated
-- User wants to update only the Accessibility Notes section
+### 用例 1：正常路径，新建 HUD 规格并编写、写入所有章节
 
-**Input:** `/ux-design hud`
+**夹具：**
+- `design/ux/` 中没有现有 HUD UX 规格
+- 已配置引擎和渲染偏好
 
-**Expected behavior:**
-1. Skill reads existing `design/ux/hud.md` and detects all sections are populated
-2. Skill reports: "UX spec already exists for HUD — offering to retrofit"
-3. Skill lists all sections and asks which to update
-4. User selects Accessibility Notes
-5. Skill drafts updated accessibility content and asks "May I write section
-   Accessibility Notes to `design/ux/hud.md`?"
-6. Only that section is updated; other sections are preserved; verdict is COMPLETE
+**输入：** `/ux-design hud`
 
-**Assertions:**
-- [ ] Existing spec is detected and retrofit is offered
-- [ ] User selects which section(s) to update
-- [ ] Only the selected section is updated — other sections unchanged
-- [ ] "May I write" is asked for the updated section
-- [ ] Verdict is COMPLETE
+**预期行为：**
+1. 技能创建骨架文件 `design/ux/hud.md`，包含所有章节标题
+2. 技能讨论并起草每个章节：用户流程、交互状态（正常/悬停/聚焦/禁用）、线框图说明、无障碍说明
+3. 每个章节起草且用户确认后，技能询问 "May I write section [N] to `design/ux/hud.md`?"
+4. 获批后依次写入各章节
+5. 所有章节写入后，结论为 COMPLETE
+6. 技能建议下一步运行 `/ux-review`
 
----
-
-### Case 3: Dependency Gap — Spec references a system with no design doc
-
-**Fixture:**
-- User is authoring a UX spec for the inventory screen
-- `design/gdd/inventory.md` does not exist
-
-**Input:** `/ux-design inventory-screen`
-
-**Expected behavior:**
-1. Skill begins authoring the inventory screen UX spec
-2. During the User Flows section, skill attempts to reference inventory system rules
-3. Skill detects: "No GDD found for inventory system — UX spec has a DEPENDENCY GAP"
-4. The dependency gap is flagged in the spec (noted inline: "DEPENDENCY GAP: inventory GDD")
-5. Skill continues authoring with placeholder notes for the missing rules
-6. Verdict is COMPLETE with advisory note about the dependency gap
-
-**Assertions:**
-- [ ] DEPENDENCY GAP label appears in the spec for the missing system doc
-- [ ] Skill does NOT block on the missing GDD — it continues with placeholders
-- [ ] Dependency gap is also noted in the skill output (not just in the file)
-- [ ] Handoff suggests both `/ux-review` and writing the missing GDD
+**断言：**
+- [ ] 首先创建骨架文件（章节正文为空）
+- [ ] 每个章节都询问 "May I write section [N]"（而非最后只询问一次）
+- [ ] 包含所有必需章节：用户流程、交互状态、线框图说明、无障碍说明
+- [ ] 最后移交给 `/ux-review`
+- [ ] 结论为 COMPLETE
 
 ---
 
-### Case 4: No Argument Provided — Usage error
+### 用例 2：现有 UX 规格，改造用户选择的章节
 
-**Fixture:**
-- No argument provided with the skill invocation
+**夹具：**
+- `design/ux/hud.md` 已存在，且所有章节均已填写
+- 用户只想更新无障碍说明章节
 
-**Input:** `/ux-design`
+**输入：** `/ux-design hud`
 
-**Expected behavior:**
-1. Skill detects no screen name or argument provided
-2. Skill outputs a usage error: "Screen name required. Usage: `/ux-design [screen-name]`"
-3. Skill provides examples: `/ux-design hud`, `/ux-design main-menu`, `/ux-design inventory`
-4. No file is created; no "May I write" is asked
+**预期行为：**
+1. 技能读取现有 `design/ux/hud.md`，并发现所有章节均已填写
+2. 技能报告："HUD 的 UX 规格已存在，将提供改造选项"
+3. 技能列出所有章节并询问要更新哪一章
+4. 用户选择无障碍说明
+5. 技能起草更新后的无障碍内容，并询问 "May I write section Accessibility Notes to `design/ux/hud.md`?"
+6. 只更新该章节，保留其他章节；结论为 COMPLETE
 
-**Assertions:**
-- [ ] Usage error is clearly stated
-- [ ] Example invocations are provided
-- [ ] No file is created
-- [ ] Skill does not attempt to proceed without an argument
-
----
-
-### Case 5: Director Gate Check — No gate; ux-review is the separate review skill
-
-**Fixture:**
-- New screen spec with argument provided
-
-**Input:** `/ux-design settings-menu`
-
-**Expected behavior:**
-1. Skill authors all sections of the settings menu UX spec
-2. No director agents are spawned
-3. No gate IDs appear in output during authoring
-
-**Assertions:**
-- [ ] No director gate is invoked during ux-design
-- [ ] No gate skip messages appear
-- [ ] Verdict is COMPLETE without any gate check
+**断言：**
+- [ ] 检测到现有规格并提供改造选项
+- [ ] 由用户选择要更新的章节
+- [ ] 只更新所选章节，其他章节不变
+- [ ] 更新章节前询问 "May I write"
+- [ ] 结论为 COMPLETE
 
 ---
 
-## Protocol Compliance
+### 用例 3：依赖缺口，规格引用了没有设计文档的系统
 
-- [ ] Creates skeleton file with all section headers before discussing content
-- [ ] Discusses and drafts one section at a time
-- [ ] Asks "May I write section [N]" after each section is approved
-- [ ] Detects existing spec and offers retrofit path
-- [ ] Ends with handoff to `/ux-review`
-- [ ] Verdict is COMPLETE when all sections are written
+**夹具：**
+- 用户正在编写物品栏界面的 UX 规格
+- `design/gdd/inventory.md` 不存在
+
+**输入：** `/ux-design inventory-screen`
+
+**预期行为：**
+1. 技能开始编写物品栏界面 UX 规格
+2. 在用户流程章节中，技能尝试引用物品栏系统规则
+3. 技能发现："未找到物品栏系统的 GDD，UX 规格存在 DEPENDENCY GAP"
+4. 在规格中标记依赖缺口（行内注明："DEPENDENCY GAP: inventory GDD"）
+5. 技能使用缺失规则的占位说明继续编写
+6. 结论为 COMPLETE，并附带依赖缺口提示
+
+**断言：**
+- [ ] 规格中针对缺失系统文档出现 DEPENDENCY GAP 标签
+- [ ] 技能不会因缺少 GDD 而阻塞，会使用占位符继续
+- [ ] 技能输出中也会注明依赖缺口（而非只写入文件）
+- [ ] 移交同时建议运行 `/ux-review` 和编写缺失的 GDD
 
 ---
 
-## Coverage Notes
+### 用例 4：未提供参数，使用方式错误
 
-- Interaction state enumeration (normal/hover/focus/disabled/error) is a core
-  requirement of each spec; the `/ux-review` skill checks for completeness.
-- Wireframe descriptions are text-only (no images); image references may be
-  added manually by a designer after the fact.
-- Responsive layout concerns (different screen sizes) are noted as optional
-  content and not assertion-tested here.
+**夹具：**
+- 调用技能时未提供参数
+
+**输入：** `/ux-design`
+
+**预期行为：**
+1. 技能检测到未提供界面名称或参数
+2. 技能输出使用方式错误："必须提供界面名称。用法：`/ux-design [screen-name]`"
+3. 技能提供示例：`/ux-design hud`、`/ux-design main-menu`、`/ux-design inventory`
+4. 不创建文件，也不询问 "May I write"
+
+**断言：**
+- [ ] 明确说明使用方式错误
+- [ ] 提供调用示例
+- [ ] 不创建文件
+- [ ] 技能不会在没有参数时尝试继续
+
+---
+
+### 用例 5：主管门禁检查，无门禁；ux-review 是独立审查技能
+
+**夹具：**
+- 提供了参数的新界面规格
+
+**输入：** `/ux-design settings-menu`
+
+**预期行为：**
+1. 技能编写设置菜单 UX 规格的所有章节
+2. 不生成主管代理
+3. 编写期间输出中不出现门禁 ID
+
+**断言：**
+- [ ] ux-design 期间不调用主管门禁
+- [ ] 不出现门禁跳过消息
+- [ ] 不经过任何门禁检查，结论为 COMPLETE
+
+---
+
+## 协议合规性
+
+- [ ] 讨论内容前，创建包含所有章节标题的骨架文件
+- [ ] 每次讨论并起草一个章节
+- [ ] 每个章节获批后询问 "May I write section [N]"
+- [ ] 检测现有规格并提供改造路径
+- [ ] 最后移交给 `/ux-review`
+- [ ] 所有章节写入后，结论为 COMPLETE
+
+---
+
+## 覆盖说明
+
+- 交互状态枚举（正常/悬停/聚焦/禁用/错误）是每份规格的核心要求；`/ux-review` 技能会检查其完整性。
+- 线框图说明只使用文本（不含图片）；设计师之后可以手动添加图片引用。
+- 响应式布局问题（不同屏幕尺寸）作为可选内容注明，此处不测试相关断言。

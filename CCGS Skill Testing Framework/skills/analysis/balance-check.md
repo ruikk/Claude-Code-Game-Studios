@@ -1,172 +1,169 @@
-# Skill Test Spec: /balance-check
+# 技能测试规范：/balance-check
 
-## Skill Summary
+## 技能摘要
 
-`/balance-check` reads balance data files (JSON or YAML in `assets/data/`) and
-checks each value against the design formulas defined in GDDs under `design/gdd/`.
-It produces a findings table with columns: Value → Formula → Deviation → Severity.
-No director gates are invoked (read-only analysis). The skill may optionally write
-a balance report but asks "May I write" before doing so. Verdicts: BALANCED,
-CONCERNS, or OUT OF BALANCE.
+`/balance-check` 读取平衡性数据文件（`assets/data/` 中的 JSON 或 YAML），并依据
+`design/gdd/` 下 GDD 中定义的设计公式检查每个值。它生成包含“值 → 公式 → 偏差 →
+严重程度”列的发现表。不调用总监门禁（只读分析）。技能可以选择写入平衡性报告，
+但写入前会询问 "May I write"。结论为：BALANCED、CONCERNS 或 OUT OF BALANCE。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: BALANCED, CONCERNS, OUT OF BALANCE
-- [ ] Contains "May I write" language (optional report write)
-- [ ] Has a next-step handoff (what to do after findings are reviewed)
-
----
-
-## Director Gate Checks
-
-None. Balance check is a read-only analysis skill; no gates are invoked.
+- [ ] 包含必需的 front matter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少包含 2 个阶段标题
+- [ ] 包含结论关键字：BALANCED、CONCERNS、OUT OF BALANCE
+- [ ] 包含 "May I write" 措辞（可选报告写入）
+- [ ] 包含下一步交接（审查发现后要做什么）
 
 ---
 
-## Test Cases
+## 总监门禁检查
 
-### Case 1: Happy Path — All balance values within formula tolerances
-
-**Fixture:**
-- `assets/data/combat-balance.json` exists with 6 stat values
-- `design/gdd/combat-system.md` contains formulas for all 6 stats with ±10% tolerance
-- All 6 values fall within tolerance
-
-**Input:** `/balance-check`
-
-**Expected behavior:**
-1. Skill reads all balance data files in `assets/data/`
-2. Skill reads GDD formulas from `design/gdd/`
-3. Skill computes deviation for each value against its formula
-4. All deviations are within ±10% tolerance
-5. Skill outputs findings table with all rows showing PASS
-6. Verdict is BALANCED
-
-**Assertions:**
-- [ ] Findings table is shown for all checked values
-- [ ] Each row shows: stat name, formula target, actual value, deviation percentage
-- [ ] All rows show PASS or equivalent when within tolerance
-- [ ] Verdict is BALANCED
-- [ ] No files are written without user approval
+无。平衡性检查是只读分析技能，不调用任何门禁。
 
 ---
 
-### Case 2: Out of Balance — Player damage 40% above formula target
+## 测试用例
 
-**Fixture:**
-- `assets/data/combat-balance.json` has `player_damage_base: 140`
-- `design/gdd/combat-system.md` formula specifies `player_damage_base = 100` (±10%)
-- All other stats are within tolerance
+### 用例 1：正常路径——所有平衡值均在公式容差内
 
-**Input:** `/balance-check`
+**测试夹具：**
+- `assets/data/combat-balance.json` 存在，包含 6 个属性值
+- `design/gdd/combat-system.md` 包含全部 6 个属性的公式，容差为 ±10%
+- 全部 6 个值均在容差内
 
-**Expected behavior:**
-1. Skill reads combat-balance.json and computes deviation for `player_damage_base`
-2. Deviation is +40% — far outside ±10% tolerance
-3. Skill flags this row as severity HIGH in the findings table
-4. Verdict is OUT OF BALANCE
-5. Skill surfaces the HIGH severity item prominently before the table
+**输入：** `/balance-check`
 
-**Assertions:**
-- [ ] `player_damage_base` row shows deviation of +40%
-- [ ] Severity is HIGH for deviations exceeding tolerance by more than 2×
-- [ ] Verdict is OUT OF BALANCE when any stat has HIGH severity deviation
-- [ ] The HIGH severity item is called out explicitly, not buried in table rows
+**预期行为：**
+1. 技能读取 `assets/data/` 中的所有平衡性数据文件
+2. 技能从 `design/gdd/` 读取 GDD 公式
+3. 技能计算每个值相对于其公式的偏差
+4. 所有偏差均在 ±10% 容差内
+5. 技能输出发现表，所有行均显示 PASS
+6. 结论为 BALANCED
 
----
-
-### Case 3: No GDD Formulas — Cannot validate, guidance given
-
-**Fixture:**
-- `assets/data/economy-balance.yaml` exists with 10 stat values
-- No GDD in `design/gdd/` contains formula definitions for economy stats
-
-**Input:** `/balance-check`
-
-**Expected behavior:**
-1. Skill reads balance data files
-2. Skill searches GDDs for formula definitions — finds none for economy stats
-3. Skill outputs: "Cannot validate economy stats — no formulas defined. Run /design-system first."
-4. No findings table is generated for the economy stats
-5. Verdict is CONCERNS (data exists but cannot be validated)
-
-**Assertions:**
-- [ ] Skill does not fabricate formula targets when none exist in GDDs
-- [ ] Output explicitly names the missing formula source
-- [ ] Output recommends running `/design-system` to define formulas
-- [ ] Verdict is CONCERNS (not BALANCED, since validation was impossible)
+**断言：**
+- [ ] 发现表涵盖所有已检查值
+- [ ] 每行显示：属性名、公式目标值、实际值、偏差百分比
+- [ ] 在容差内时，所有行均显示 PASS 或同等结果
+- [ ] 结论为 BALANCED
+- [ ] 未经用户批准不写入任何文件
 
 ---
 
-### Case 4: Orphan Reference — Balance file references an undefined stat
+### 用例 2：失衡——玩家伤害比公式目标高 40%
 
-**Fixture:**
-- `assets/data/combat-balance.json` contains a stat `legacy_armor_mult: 1.5`
-- `design/gdd/combat-system.md` has no formula for `legacy_armor_mult`
-- All other stats have formula definitions and pass validation
+**测试夹具：**
+- `assets/data/combat-balance.json` 中有 `player_damage_base: 140`
+- `design/gdd/combat-system.md` 的公式指定 `player_damage_base = 100`（±10%）
+- 其他所有属性均在容差内
 
-**Input:** `/balance-check`
+**输入：** `/balance-check`
 
-**Expected behavior:**
-1. Skill reads all stats from combat-balance.json
-2. Skill cannot find a formula for `legacy_armor_mult` in any GDD
-3. Skill flags `legacy_armor_mult` as ORPHAN REFERENCE in the findings table
-4. Other stats are evaluated normally; those within tolerance show PASS
-5. Verdict is CONCERNS (orphan reference prevents full validation)
+**预期行为：**
+1. 技能读取 `combat-balance.json` 并计算 `player_damage_base` 的偏差
+2. 偏差为 +40%，远超 ±10% 容差
+3. 技能在发现表中将此行严重程度标记为 HIGH
+4. 结论为 OUT OF BALANCE
+5. 技能在表格前醒目展示 HIGH 严重程度项
 
-**Assertions:**
-- [ ] `legacy_armor_mult` appears in findings table with status ORPHAN REFERENCE
-- [ ] Orphan references are distinguished from formula deviations in the table
-- [ ] Verdict is CONCERNS when any orphan references are found
-- [ ] Skill does not skip orphan stats silently
-
----
-
-### Case 5: Gate Compliance — Read-only; no gate; optional report requires approval
-
-**Fixture:**
-- Balance data and GDD formulas exist; 1 stat has CONCERNS-level deviation (15% above target)
-- `review-mode.txt` contains `full`
-
-**Input:** `/balance-check`
-
-**Expected behavior:**
-1. Skill reads data and GDDs; generates findings table
-2. Verdict is CONCERNS (one stat slightly out of range)
-3. No director gate is invoked
-4. Skill presents findings table to user
-5. Skill offers to write an optional balance report
-6. If user says yes: skill asks "May I write to `production/qa/balance-report-[date].md`?"
-7. If user says no: skill ends without writing
-
-**Assertions:**
-- [ ] No director gate is invoked in any review mode
-- [ ] Findings table is presented without writing anything automatically
-- [ ] Optional report write is offered but not forced
-- [ ] "May I write" prompt appears only if user opts in to the report
+**断言：**
+- [ ] `player_damage_base` 行显示 +40% 偏差
+- [ ] 偏差超出容差 2 倍以上时，严重程度为 HIGH
+- [ ] 任一属性存在 HIGH 严重程度偏差时，结论为 OUT OF BALANCE
+- [ ] 明确指出 HIGH 严重程度项，不将其埋在表格行中
 
 ---
 
-## Protocol Compliance
+### 用例 3：无 GDD 公式——无法验证并给出指引
 
-- [ ] Reads both balance data files and GDD formulas before analysis
-- [ ] Findings table shows Value, Formula, Deviation, and Severity columns
-- [ ] Does not write any files without explicit user approval
-- [ ] No director gates are invoked
-- [ ] Verdict is one of: BALANCED, CONCERNS, OUT OF BALANCE
+**测试夹具：**
+- `assets/data/economy-balance.yaml` 存在，包含 10 个属性值
+- `design/gdd/` 中没有 GDD 包含经济属性的公式定义
+
+**输入：** `/balance-check`
+
+**预期行为：**
+1. 技能读取平衡性数据文件
+2. 技能在 GDD 中搜索公式定义，未找到经济属性的公式
+3. 技能输出：“无法验证经济属性：未定义公式。请先运行 `/design-system`。”
+4. 不为经济属性生成发现表
+5. 结论为 CONCERNS（数据存在但无法验证）
+
+**断言：**
+- [ ] GDD 中不存在公式目标时，技能不捏造目标
+- [ ] 输出明确指出缺失的公式来源
+- [ ] 输出建议运行 `/design-system` 定义公式
+- [ ] 结论为 CONCERNS（不能验证，因此不是 BALANCED）
 
 ---
 
-## Coverage Notes
+### 用例 4：孤立引用——平衡性文件引用未定义属性
 
-- The case where `assets/data/` is entirely empty is not tested; behavior
-  follows the CONCERNS pattern with a message that no data files were found.
-- Tolerance thresholds (±10%, ±20%) are implementation details of the skill;
-  the tests verify that deviations are detected and classified, not the
-  exact threshold values.
+**测试夹具：**
+- `assets/data/combat-balance.json` 包含属性 `legacy_armor_mult: 1.5`
+- `design/gdd/combat-system.md` 没有 `legacy_armor_mult` 的公式
+- 其他所有属性均有公式定义并通过验证
+
+**输入：** `/balance-check`
+
+**预期行为：**
+1. 技能读取 `combat-balance.json` 中的所有属性
+2. 技能在任何 GDD 中均找不到 `legacy_armor_mult` 的公式
+3. 技能在发现表中将 `legacy_armor_mult` 标记为 ORPHAN REFERENCE
+4. 正常评估其他属性；容差内的属性显示 PASS
+5. 结论为 CONCERNS（孤立引用导致无法完整验证）
+
+**断言：**
+- [ ] `legacy_armor_mult` 在发现表中显示为 ORPHAN REFERENCE 状态
+- [ ] 表中将孤立引用与公式偏差区分开
+- [ ] 发现任何孤立引用时，结论为 CONCERNS
+- [ ] 技能不会静默跳过孤立属性
+
+---
+
+### 用例 5：门禁合规——只读；不调用门禁；可选报告需要批准
+
+**测试夹具：**
+- 平衡性数据和 GDD 公式均存在；1 个属性存在 CONCERNS 级偏差（高于目标 15%）
+- `review-mode.txt` 包含 `full`
+
+**输入：** `/balance-check`
+
+**预期行为：**
+1. 技能读取数据和 GDD，并生成发现表
+2. 结论为 CONCERNS（一个属性略微超出范围）
+3. 不调用总监门禁
+4. 技能向用户展示发现表
+5. 技能询问是否写入可选平衡性报告
+6. 如果用户同意，技能询问："May I write to `production/qa/balance-report-[date].md`?"
+7. 如果用户拒绝，技能结束且不写入
+
+**断言：**
+- [ ] 任何审查模式下均不调用总监门禁
+- [ ] 展示发现表，但不自动写入任何内容
+- [ ] 提供但不强制写入可选报告
+- [ ] 仅当用户选择写入报告时才显示 "May I write" 提示
+
+---
+
+## 协议合规性
+
+- [ ] 分析前同时读取平衡性数据文件和 GDD 公式
+- [ ] 发现表显示“值”“公式”“偏差”和“严重程度”列
+- [ ] 未经用户明确批准不写入任何文件
+- [ ] 不调用总监门禁
+- [ ] 结论为 BALANCED、CONCERNS、OUT OF BALANCE 之一
+
+---
+
+## 覆盖说明
+
+- 此处未测试 `assets/data/` 完全为空的情况；其行为遵循 CONCERNS 模式，
+  并提示未找到数据文件。
+- 容差阈值（±10%、±20%）是技能实现细节；测试验证能否检测并分类偏差，
+  而非验证确切阈值。

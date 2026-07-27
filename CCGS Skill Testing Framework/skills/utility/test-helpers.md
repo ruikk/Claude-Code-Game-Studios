@@ -1,175 +1,162 @@
-# Skill Test Spec: /test-helpers
+# 技能测试规范：/test-helpers
 
-## Skill Summary
+## 技能摘要
 
-`/test-helpers` generates engine-specific test helper utilities for the project's
-test suite. Helpers include factory functions (for creating test entities with
-known state), fixture loaders, assertion helpers, and mock stubs for external
-dependencies. Generated helpers follow the naming and structure conventions in
-`coding-standards.md` and are written to `tests/helpers/`.
+`/test-helpers` 为项目测试套件生成引擎专用的测试辅助工具。辅助工具包括工厂函数（用于创建具有已知状态的测试实体）、测试夹具加载器、断言辅助函数以及外部依赖的模拟存根。生成的辅助工具遵循 `coding-standards.md` 中的命名和结构约定，并写入 `tests/helpers/`。
 
-Each helper file is gated behind a "May I write" ask. If a helper file already
-exists, the skill offers to extend it rather than replace. No director gates
-apply. The verdict is COMPLETE when helper files are written.
+每个辅助工具文件都必须先询问“May I write”。如果辅助工具文件已存在，技能会提供扩展而不是替换的选项。不适用任何 director 门禁。辅助工具文件写入后，判定为 COMPLETE。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" collaborative protocol language before writing helpers
-- [ ] Has a next-step handoff (e.g., write a test using the generated helper)
-
----
-
-## Director Gate Checks
-
-None. `/test-helpers` is a scaffolding utility. No director gates apply.
+- [ ] 包含必需的 front matter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少包含 2 个阶段标题
+- [ ] 包含判定关键词：COMPLETE
+- [ ] 在写入辅助工具前包含“May I write”协作协议措辞
+- [ ] 包含后续步骤交接（例如使用生成的辅助工具编写测试）
 
 ---
 
-## Test Cases
+## Director 门禁检查
 
-### Case 1: Happy Path — Player factory helper generated for Godot/GDScript
-
-**Fixture:**
-- `technical-preferences.md` has engine Godot 4, language GDScript
-- `tests/` directory exists (test-setup has been run)
-- `design/gdd/player.md` exists with defined player properties
-- No existing helpers in `tests/helpers/`
-
-**Input:** `/test-helpers player-factory`
-
-**Expected behavior:**
-1. Skill reads engine (Godot 4 / GDScript) and player GDD for property context
-2. Skill generates a deterministic `PlayerFactory` helper in GDScript:
-   - `create_player(health: int = 100, speed: float = 200.0)` function
-   - Returns a player node pre-configured to a known state
-   - Uses dependency injection (no singletons)
-3. Skill asks "May I write to `tests/helpers/player_factory.gd`?"
-4. File is written on approval; verdict is COMPLETE
-
-**Assertions:**
-- [ ] Generated helper is in GDScript (not C# or Blueprint)
-- [ ] Factory function parameters use defaults matching GDD values
-- [ ] Helper uses dependency injection (no Autoload/singleton references)
-- [ ] Filename follows snake_case convention for GDScript
-- [ ] Verdict is COMPLETE
+无。`/test-helpers` 是脚手架工具，不适用任何 director 门禁。
 
 ---
 
-### Case 2: No Test Setup Exists — Redirects to /test-setup
+## 测试用例
 
-**Fixture:**
-- `tests/` directory does not exist
+### 用例 1：成功路径——为 Godot/GDScript 生成玩家工厂辅助工具
 
-**Input:** `/test-helpers player-factory`
+**测试夹具：**
+- `technical-preferences.md` 中的引擎为 Godot 4，语言为 GDScript
+- `tests/` 目录存在（已运行 test-setup）
+- `design/gdd/player.md` 存在并定义了玩家属性
+- `tests/helpers/` 中没有现有辅助工具
 
-**Expected behavior:**
-1. Skill checks for `tests/` directory — not found
-2. Skill reports: "Test directory not found — test framework must be set up first"
-3. Skill suggests running `/test-setup` before generating helpers
-4. No helper file is created
+**输入：** `/test-helpers player-factory`
 
-**Assertions:**
-- [ ] Error message identifies the missing tests/ directory
-- [ ] `/test-setup` is suggested as the prerequisite step
-- [ ] No write tool is called
-- [ ] Verdict is not COMPLETE (blocked state)
+**预期行为：**
+1. 技能读取引擎（Godot 4 / GDScript）和玩家 GDD，获取属性上下文
+2. 技能用 GDScript 生成确定性的 `PlayerFactory` 辅助工具：
+   - `create_player(health: int = 100, speed: float = 200.0)` 函数
+   - 返回预先配置为已知状态的玩家节点
+   - 使用依赖注入（不使用单例）
+3. 技能询问“可以写入 `tests/helpers/player_factory.gd` 吗？”
+4. 获得批准后写入文件，判定为 COMPLETE
 
----
-
-### Case 3: Helper Already Exists — Offers to extend rather than replace
-
-**Fixture:**
-- `tests/helpers/player_factory.gd` already exists with a `create_player()` function
-- User requests a new `create_enemy()` function be added to the factory
-
-**Input:** `/test-helpers enemy-factory`
-
-**Expected behavior:**
-1. Skill finds an existing `player_factory.gd` and checks if it's the right file
-   to extend (or if a separate `enemy_factory.gd` should be created)
-2. Skill presents options: add `create_enemy()` to existing factory or create
-   `tests/helpers/enemy_factory.gd`
-3. User selects extend; skill drafts the `create_enemy()` function
-4. Skill asks "May I extend `tests/helpers/player_factory.gd`?"
-5. Function is added on approval; verdict is COMPLETE
-
-**Assertions:**
-- [ ] Existing helper is detected and surfaced
-- [ ] User is given extend vs. new file choice
-- [ ] "May I extend" language is used (not "May I write" for replacement)
-- [ ] Existing `create_player()` is preserved in the extended file
-- [ ] Verdict is COMPLETE
+**断言：**
+- [ ] 生成的辅助工具使用 GDScript（不是 C# 或 Blueprint）
+- [ ] 工厂函数参数使用与 GDD 值匹配的默认值
+- [ ] 辅助工具使用依赖注入（不引用 Autoload/单例）
+- [ ] 文件名遵循 GDScript 的 snake_case 约定
+- [ ] 判定为 COMPLETE
 
 ---
 
-### Case 4: System Has No GDD — Notes missing design context in helper
+### 用例 2：不存在测试设置——转到 /test-setup
 
-**Fixture:**
-- `technical-preferences.md` has Godot 4 / GDScript
-- `tests/` exists
-- User requests a helper for the "inventory system" but no `design/gdd/inventory.md` exists
+**测试夹具：**
+- `tests/` 目录不存在
 
-**Input:** `/test-helpers inventory-factory`
+**输入：** `/test-helpers player-factory`
 
-**Expected behavior:**
-1. Skill looks for `design/gdd/inventory.md` — not found
-2. Skill notes: "No GDD found for inventory — generating helper with placeholder defaults"
-3. Skill generates an `inventory_factory.gd` with generic placeholder values
-   (item_count = 0, max_capacity = 20) and a comment: "# TODO: align defaults
-   with inventory GDD when written"
-4. Skill asks "May I write to `tests/helpers/inventory_factory.gd`?"
-5. File is written; verdict is COMPLETE with advisory note
+**预期行为：**
+1. 技能检查 `tests/` 目录，未找到
+2. 技能报告：“未找到测试目录，必须先设置测试框架”
+3. 技能建议在生成辅助工具前运行 `/test-setup`
+4. 不创建辅助工具文件
 
-**Assertions:**
-- [ ] Skill proceeds without GDD (does not block)
-- [ ] Generated helper has placeholder defaults with TODO comment
-- [ ] Missing GDD is noted in the output (advisory warning)
-- [ ] Verdict is COMPLETE
+**断言：**
+- [ ] 错误消息指出缺失的 tests/ 目录
+- [ ] 建议 `/test-setup` 作为前置步骤
+- [ ] 不调用写入工具
+- [ ] 判定不是 COMPLETE（阻塞状态）
 
 ---
 
-### Case 5: Director Gate Check — No gate; test-helpers is a scaffolding utility
+### 用例 3：辅助工具已存在——提供扩展而不是替换选项
 
-**Fixture:**
-- Engine configured, tests/ exists
+**测试夹具：**
+- `tests/helpers/player_factory.gd` 已存在并包含 `create_player()` 函数
+- 用户请求向工厂添加新的 `create_enemy()` 函数
 
-**Input:** `/test-helpers player-factory`
+**输入：** `/test-helpers enemy-factory`
 
-**Expected behavior:**
-1. Skill generates and writes the helper file
-2. No director agents are spawned
-3. No gate IDs appear in output
+**预期行为：**
+1. 技能找到现有的 `player_factory.gd`，检查它是否适合扩展（或是否应创建单独的 `enemy_factory.gd`）
+2. 技能提供选项：向现有工厂添加 `create_enemy()`，或创建 `tests/helpers/enemy_factory.gd`
+3. 用户选择扩展，技能起草 `create_enemy()` 函数
+4. 技能询问“可以扩展 `tests/helpers/player_factory.gd` 吗？”
+5. 获得批准后添加函数，判定为 COMPLETE
 
-**Assertions:**
-- [ ] No director gate is invoked
-- [ ] No gate skip messages appear
-- [ ] Verdict is COMPLETE without any gate check
-
----
-
-## Protocol Compliance
-
-- [ ] Reads engine before generating any helper (helpers are engine-specific)
-- [ ] Reads GDD for default values when available
-- [ ] Notes missing GDD context rather than blocking
-- [ ] Detects existing helper files and offers extend rather than replace
-- [ ] Asks "May I write" (or "May I extend") before any file operation
-- [ ] Verdict is COMPLETE when helper is written
+**断言：**
+- [ ] 检测并显示现有辅助工具
+- [ ] 向用户提供扩展或新建文件的选择
+- [ ] 使用扩展许可措辞（`May I extend`），而不是针对替换使用写入许可措辞（`May I write`）
+- [ ] 扩展后的文件保留现有的 `create_player()`
+- [ ] 判定为 COMPLETE
 
 ---
 
-## Coverage Notes
+### 用例 4：系统没有 GDD——在辅助工具中记录缺失的设计上下文
 
-- Mock/stub helper generation (for dependencies like save systems or audio buses)
-  follows the same pattern as factory helpers and is not separately tested.
-- Unity C# helper generation (using NSubstitute or custom mocks) follows the
-  same logic as Case 1 with language-appropriate output.
-- The case where the requested helper type is not recognized is not tested;
-  the skill would ask the user to clarify the helper type.
+**测试夹具：**
+- `technical-preferences.md` 中为 Godot 4 / GDScript
+- `tests/` 存在
+- 用户请求“库存系统”的辅助工具，但不存在 `design/gdd/inventory.md`
+
+**输入：** `/test-helpers inventory-factory`
+
+**预期行为：**
+1. 技能查找 `design/gdd/inventory.md`，未找到
+2. 技能记录：“未找到库存系统的 GDD，将使用占位默认值生成辅助工具”
+3. 技能使用通用占位值生成 `inventory_factory.gd`（item_count = 0、max_capacity = 20），并添加注释：“# TODO: 编写库存 GDD 后使默认值保持一致”
+4. 技能询问“可以写入 `tests/helpers/inventory_factory.gd` 吗？”
+5. 写入文件，判定为 COMPLETE，并附带提示
+
+**断言：**
+- [ ] 没有 GDD 时技能继续执行，而不是阻塞
+- [ ] 生成的辅助工具包含带 TODO 注释的占位默认值
+- [ ] 输出中记录缺失的 GDD（提示性警告）
+- [ ] 判定为 COMPLETE
+
+---
+
+### 用例 5：Director 门禁检查——无门禁；test-helpers 是脚手架工具
+
+**测试夹具：**
+- 引擎已配置，tests/ 存在
+
+**输入：** `/test-helpers player-factory`
+
+**预期行为：**
+1. 技能生成并写入辅助工具文件
+2. 不生成任何 director 代理
+3. 输出中不出现门禁 ID
+
+**断言：**
+- [ ] 不调用 director 门禁
+- [ ] 不出现跳过门禁的消息
+- [ ] 不经过任何门禁检查并判定为 COMPLETE
+
+---
+
+## 协议合规性
+
+- [ ] 生成任何辅助工具前读取引擎（辅助工具与引擎相关）
+- [ ] 有 GDD 时读取其中的默认值
+- [ ] 记录缺失的 GDD 上下文，而不是阻塞
+- [ ] 检测现有辅助工具文件，并提供扩展而不是替换选项
+- [ ] 进行任何文件操作前询问写入许可（`May I write`）或扩展许可（`May I extend`）
+- [ ] 辅助工具写入后判定为 COMPLETE
+
+---
+
+## 覆盖说明
+
+- 模拟/存根辅助工具生成（用于存档系统或音频总线等依赖）遵循与工厂辅助工具相同的模式，这里没有单独测试。
+- Unity C# 辅助工具生成（使用 NSubstitute 或自定义模拟）遵循用例 1 的相同逻辑，并输出适合该语言的内容。
+- 请求的辅助工具类型无法识别的情况没有测试；技能会要求用户澄清辅助工具类型。

@@ -1,192 +1,188 @@
-# Skill Test Spec: /architecture-review
+# 技能测试规范：/architecture-review
 
-## Skill Summary
+## 技能摘要
 
-`/architecture-review` is an Opus-tier skill that validates a technical architecture
-document against the project's 8 required architecture sections and checks that it
-is internally consistent, non-contradictory with existing ADRs, and correctly
-targeting the pinned engine version. It produces a verdict of APPROVED /
-NEEDS REVISION / MAJOR REVISION NEEDED.
+`/architecture-review` 是 Opus 级技能，用于依据项目要求的八个架构章节验证技术架构文档，
+并检查文档内部是否一致、是否与现有 ADR 冲突，以及目标引擎版本是否正确。
+它给出 APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED 结论。
 
-In `full` review mode, the skill spawns two director gate agents in parallel:
-TD-ARCHITECTURE (technical-director) and LP-FEASIBILITY (lead-programmer). In
-`lean` or `solo` mode, both gates are skipped and noted. The skill is read-only —
-no files are written.
+在 `full` 评审模式下，该技能并行生成两个主管门禁代理：
+TD-ARCHITECTURE（technical-director）和 LP-FEASIBILITY（lead-programmer）。
+在 `lean` 或 `solo` 模式下，两个门禁均会跳过并予以注明。该技能为只读技能，不写入文件。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: APPROVED, NEEDS REVISION, MAJOR REVISION NEEDED
-- [ ] Does NOT require "May I write" language (read-only skill)
-- [ ] Has a next-step handoff at the end
-- [ ] Documents gate behavior: TD-ARCHITECTURE + LP-FEASIBILITY in full mode; skipped in lean/solo
-
----
-
-## Director Gate Checks
-
-In `full` mode: TD-ARCHITECTURE (technical-director) and LP-FEASIBILITY
-(lead-programmer) are spawned in parallel after the skill reads the architecture doc.
-
-In `lean` mode: both gates are skipped. Output notes:
-"TD-ARCHITECTURE skipped — lean mode" and "LP-FEASIBILITY skipped — lean mode".
-
-In `solo` mode: both gates are skipped with equivalent notes.
+- [ ] 包含必需的前置元数据字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少有 2 个阶段标题
+- [ ] 包含结论关键字：APPROVED、NEEDS REVISION、MAJOR REVISION NEEDED
+- [ ] 不要求使用 "May I write" 措辞（只读技能）
+- [ ] 末尾包含下一步交接
+- [ ] 说明门禁行为：`full` 模式下运行 TD-ARCHITECTURE + LP-FEASIBILITY；`lean`/`solo` 模式下跳过
 
 ---
 
-## Test Cases
+## 主管门禁检查
 
-### Case 1: Happy Path — Complete architecture doc in full mode
+在 `full` 模式下：技能读取架构文档后，并行生成 TD-ARCHITECTURE（technical-director）
+和 LP-FEASIBILITY（lead-programmer）。
 
-**Fixture:**
-- `docs/architecture/architecture.md` exists with all 8 required sections populated
-- All sections reference the correct engine version from `docs/engine-reference/`
-- No contradictions with existing Accepted ADRs in `docs/architecture/`
-- `production/session-state/review-mode.txt` contains `full`
+在 `lean` 模式下：跳过两个门禁。输出注明：
+"TD-ARCHITECTURE skipped — lean mode" 和 "LP-FEASIBILITY skipped — lean mode"。
 
-**Input:** `/architecture-review docs/architecture/architecture.md`
-
-**Expected behavior:**
-1. Skill reads the architecture document
-2. Skill reads existing ADRs for cross-reference
-3. Skill reads engine version reference
-4. TD-ARCHITECTURE and LP-FEASIBILITY gate agents spawn in parallel
-5. Both gates return APPROVED
-6. Skill outputs section-by-section completeness check (8/8 sections present)
-7. Verdict: APPROVED
-
-**Assertions:**
-- [ ] All 8 required sections are checked and reported
-- [ ] TD-ARCHITECTURE and LP-FEASIBILITY spawn in parallel (not sequentially)
-- [ ] Verdict is APPROVED when all sections are present and no conflicts exist
-- [ ] Skill does NOT write any files
-- [ ] Next-step handoff to `/create-control-manifest` or `/create-epics` is present
+在 `solo` 模式下：跳过两个门禁，并输出对应说明。
 
 ---
 
-### Case 2: Failure Path — Missing required sections
+## 测试用例
 
-**Fixture:**
-- `docs/architecture/architecture.md` exists but is missing at least 2 required sections
-  (e.g., no data model section, no error handling section)
-- `production/session-state/review-mode.txt` contains `full`
+### 用例 1：正常路径 - `full` 模式下的完整架构文档
 
-**Input:** `/architecture-review docs/architecture/architecture.md`
+**测试夹具：**
+- `docs/architecture/architecture.md` 存在，且八个必需章节均有内容
+- 所有章节均引用 `docs/engine-reference/` 中正确的引擎版本
+- 与 `docs/architecture/` 中状态为 Accepted 的现有 ADR 没有冲突
+- `production/session-state/review-mode.txt` 包含 `full`
 
-**Expected behavior:**
-1. Skill reads the document and identifies missing sections
-2. Section completeness shows fewer than 8/8 sections present
-3. Missing sections are listed by name with specific remediation guidance
-4. Verdict: MAJOR REVISION NEEDED (≥2 missing sections)
+**输入：** `/architecture-review docs/architecture/architecture.md`
 
-**Assertions:**
-- [ ] Verdict is MAJOR REVISION NEEDED (not APPROVED or NEEDS REVISION) for ≥2 missing sections
-- [ ] Each missing section is named explicitly in the output
-- [ ] Remediation guidance is specific (what to add, not just "add missing sections")
-- [ ] Skill does NOT pass a document missing required sections
+**预期行为：**
+1. 技能读取架构文档
+2. 技能读取现有 ADR 以进行交叉核对
+3. 技能读取引擎版本参考资料
+4. 并行生成 TD-ARCHITECTURE 和 LP-FEASIBILITY 门禁代理
+5. 两个门禁均返回 APPROVED
+6. 技能按章节输出完整性检查（已有 8/8 个章节）
+7. 结论：APPROVED
 
----
-
-### Case 3: Partial Path — Architecture contradicts an existing ADR
-
-**Fixture:**
-- `docs/architecture/architecture.md` exists with all 8 sections present
-- One Accepted ADR in `docs/architecture/` establishes a constraint that the architecture doc contradicts
-  (e.g., ADR-001 mandates ECS pattern; architecture.md describes a different pattern for the same system)
-
-**Input:** `/architecture-review docs/architecture/architecture.md`
-
-**Expected behavior:**
-1. Skill reads the architecture doc and all existing ADRs
-2. Conflict is detected between the architecture doc and the named ADR
-3. Conflict entry names: the ADR number/title, the contradicting sections, and impact
-4. Verdict: NEEDS REVISION (conflict exists but structure is otherwise sound)
-
-**Assertions:**
-- [ ] Verdict is NEEDS REVISION (not MAJOR REVISION NEEDED for a single contradiction)
-- [ ] The specific ADR number and title are named in the conflict entry
-- [ ] The contradicting sections in both documents are identified
-- [ ] Skill does NOT auto-resolve the contradiction
+**断言：**
+- [ ] 检查并报告全部八个必需章节
+- [ ] 并行生成 TD-ARCHITECTURE 和 LP-FEASIBILITY（而非依次生成）
+- [ ] 所有章节齐全且不存在冲突时，结论为 APPROVED
+- [ ] 技能不写入任何文件
+- [ ] 包含交接到 `/create-control-manifest` 或 `/create-epics` 的下一步
 
 ---
 
-### Case 4: Edge Case — File not found
+### 用例 2：失败路径 - 缺少必需章节
 
-**Fixture:**
-- The path provided does not exist in the project
+**测试夹具：**
+- `docs/architecture/architecture.md` 存在，但至少缺少 2 个必需章节
+  （例如没有数据模型章节、没有错误处理章节）
+- `production/session-state/review-mode.txt` 包含 `full`
 
-**Input:** `/architecture-review docs/architecture/nonexistent.md`
+**输入：** `/architecture-review docs/architecture/architecture.md`
 
-**Expected behavior:**
-1. Skill attempts to read the file
-2. File not found
-3. Skill outputs a clear error naming the missing file
-4. Skill suggests checking `docs/architecture/` or running `/create-architecture`
-5. Skill does NOT produce a verdict
+**预期行为：**
+1. 技能读取文档并识别缺失章节
+2. 章节完整性显示已有章节少于 8/8 个
+3. 按名称列出缺失章节，并提供明确的补救指导
+4. 结论：MAJOR REVISION NEEDED（缺少不少于 2 个章节）
 
-**Assertions:**
-- [ ] Skill outputs a clear error when the file is not found
-- [ ] No verdict is produced (APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED)
-- [ ] Skill suggests a corrective action
-- [ ] Skill does NOT crash or produce a partial report
-
----
-
-### Case 5: Director Gate — Full mode spawns both gates; solo mode skips both
-
-**Fixture (full mode):**
-- `docs/architecture/architecture.md` exists with all 8 sections
-- `production/session-state/review-mode.txt` contains `full`
-
-**Full mode expected behavior:**
-1. TD-ARCHITECTURE gate spawns
-2. LP-FEASIBILITY gate spawns in parallel with TD-ARCHITECTURE
-3. Both gates complete before verdict is issued
-
-**Assertions (full mode):**
-- [ ] TD-ARCHITECTURE and LP-FEASIBILITY both appear in the output as completed gates
-- [ ] Both gates spawn in parallel (not one after the other)
-- [ ] Verdict reflects gate feedback
-
-**Fixture (solo mode):**
-- Same architecture doc
-- `production/session-state/review-mode.txt` contains `solo`
-
-**Solo mode expected behavior:**
-1. Skill reads the architecture doc
-2. Gates are NOT spawned
-3. Output notes: "TD-ARCHITECTURE skipped — solo mode" and "LP-FEASIBILITY skipped — solo mode"
-4. Verdict is based on structural checks only
-
-**Assertions (solo mode):**
-- [ ] Neither TD-ARCHITECTURE nor LP-FEASIBILITY appears as an active gate
-- [ ] Both skipped gates are noted in the output
-- [ ] Verdict is still produced based on the structural check alone
+**断言：**
+- [ ] 缺少不少于 2 个章节时，结论为 MAJOR REVISION NEEDED（而非 APPROVED 或 NEEDS REVISION）
+- [ ] 输出明确指出每个缺失章节的名称
+- [ ] 补救指导具体明确（说明要添加什么，而非仅称“添加缺失章节”）
+- [ ] 技能不会让缺少必需章节的文档通过
 
 ---
 
-## Protocol Compliance
+### 用例 3：部分路径 - 架构与现有 ADR 冲突
 
-- [ ] Does NOT write any files (read-only skill)
-- [ ] Presents section completeness check before issuing verdict
-- [ ] TD-ARCHITECTURE and LP-FEASIBILITY spawn in parallel in full mode
-- [ ] Skipped gates are noted by name and mode in lean/solo output
-- [ ] Verdict is one of exactly: APPROVED, NEEDS REVISION, MAJOR REVISION NEEDED
-- [ ] Ends with next-step handoff appropriate to verdict
+**测试夹具：**
+- `docs/architecture/architecture.md` 存在且八个章节齐全
+- `docs/architecture/` 中一个状态为 Accepted 的 ADR 规定了一项约束，而架构文档与之冲突
+  （例如 ADR-001 要求采用 ECS 模式；architecture.md 却为同一系统描述了另一种模式）
+
+**输入：** `/architecture-review docs/architecture/architecture.md`
+
+**预期行为：**
+1. 技能读取架构文档和所有现有 ADR
+2. 检测出架构文档与指定 ADR 之间的冲突
+3. 冲突条目指出 ADR 编号/标题、相互冲突的章节和影响
+4. 结论：NEEDS REVISION（存在冲突，但结构在其他方面完好）
+
+**断言：**
+- [ ] 单个冲突的结论为 NEEDS REVISION（而非 MAJOR REVISION NEEDED）
+- [ ] 冲突条目中指出具体 ADR 编号和标题
+- [ ] 识别出两份文档中相互冲突的章节
+- [ ] 技能不自动解决冲突
 
 ---
 
-## Coverage Notes
+### 用例 4：边界情况 - 找不到文件
 
-- The 8 required architecture sections are project-specific; tests use the
-  section list defined in the skill body — not re-enumerated here.
-- Engine version compatibility checking (cross-referencing `docs/engine-reference/`)
-  is part of Case 1's happy path but not independently fixture-tested.
-- RTM (requirement traceability matrix) mode is a separate concern covered by
-  the `/architecture-review` skill's own `rtm` argument mode, not tested here.
+**测试夹具：**
+- 提供的路径在项目中不存在
+
+**输入：** `/architecture-review docs/architecture/nonexistent.md`
+
+**预期行为：**
+1. 技能尝试读取文件
+2. 找不到文件
+3. 技能输出清晰的错误消息，并指出缺失的文件
+4. 技能建议检查 `docs/architecture/` 或运行 `/create-architecture`
+5. 技能不产生结论
+
+**断言：**
+- [ ] 找不到文件时，技能输出清晰的错误消息
+- [ ] 不产生结论（APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED）
+- [ ] 技能建议纠正措施
+- [ ] 技能不会崩溃或产生不完整报告
+
+---
+
+### 用例 5：主管门禁 - `full` 模式生成两个门禁；`solo` 模式跳过两个门禁
+
+**测试夹具（`full` 模式）：**
+- `docs/architecture/architecture.md` 存在且八个章节齐全
+- `production/session-state/review-mode.txt` 包含 `full`
+
+**`full` 模式预期行为：**
+1. 生成 TD-ARCHITECTURE 门禁
+2. LP-FEASIBILITY 门禁与 TD-ARCHITECTURE 并行生成
+3. 两个门禁均在给出结论前完成
+
+**断言（`full` 模式）：**
+- [ ] TD-ARCHITECTURE 和 LP-FEASIBILITY 均作为已完成门禁出现在输出中
+- [ ] 两个门禁并行生成（而非一前一后）
+- [ ] 结论反映门禁反馈
+
+**测试夹具（`solo` 模式）：**
+- 使用同一架构文档
+- `production/session-state/review-mode.txt` 包含 `solo`
+
+**`solo` 模式预期行为：**
+1. 技能读取架构文档
+2. 不生成门禁
+3. 输出注明："TD-ARCHITECTURE skipped — solo mode" 和 "LP-FEASIBILITY skipped — solo mode"
+4. 结论仅基于结构检查
+
+**断言（`solo` 模式）：**
+- [ ] TD-ARCHITECTURE 和 LP-FEASIBILITY 均不作为活动门禁出现
+- [ ] 输出注明两个被跳过的门禁
+- [ ] 仍根据单独的结构检查产生结论
+
+---
+
+## 协议合规性
+
+- [ ] 不写入任何文件（只读技能）
+- [ ] 给出结论前呈现章节完整性检查
+- [ ] 在 `full` 模式下并行生成 TD-ARCHITECTURE 和 LP-FEASIBILITY
+- [ ] 在 `lean`/`solo` 输出中按名称和模式注明被跳过的门禁
+- [ ] 结论必须是以下三项之一：APPROVED、NEEDS REVISION、MAJOR REVISION NEEDED
+- [ ] 以适合该结论的下一步交接结束
+
+---
+
+## 覆盖说明
+
+- 八个必需架构章节由项目决定；测试采用技能正文中定义的章节列表，此处不再重复列举。
+- 引擎版本兼容性检查（与 `docs/engine-reference/` 交叉核对）属于用例 1 的正常路径，
+  但没有使用独立测试夹具进行测试。
+- RTM（需求可追溯性矩阵）模式属于另一事项，由 `/architecture-review` 技能自身的 `rtm`
+  参数模式覆盖，此处不测试。

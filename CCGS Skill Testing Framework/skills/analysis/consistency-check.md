@@ -1,176 +1,170 @@
-# Skill Test Spec: /consistency-check
+# 技能测试规范：/consistency-check
 
-## Skill Summary
+## 技能摘要
 
-`/consistency-check` scans all GDDs in `design/gdd/` and checks for internal
-conflicts across documents. It produces a structured findings table with columns:
-System A vs System B, Conflict Type, Severity (HIGH / MEDIUM / LOW). Conflict
-types include: formula mismatch, competing ownership, stale reference, and
-dependency gap.
+`/consistency-check` 扫描 `design/gdd/` 中的所有 GDD，检查文档间的内部冲突。
+它生成结构化发现表，列为：系统 A 与系统 B、冲突类型、严重程度（HIGH / MEDIUM / LOW）。
+冲突类型包括：公式不匹配、所有权冲突、过时引用和依赖缺口。
 
-The skill is read-only during analysis. It has no director gates. An optional
-consistency report can be written to `design/consistency-report-[date].md` if the
-user requests it, but the skill asks "May I write" before doing so.
+技能在分析期间只读，不设总监门禁。如果用户请求，可将可选一致性报告写入
+`design/consistency-report-[date].md`，但写入前技能会询问 "May I write"。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: CONSISTENT, CONFLICTS FOUND, DEPENDENCY GAP
-- [ ] Does NOT require "May I write" language during analysis (read-only scan)
-- [ ] Has a next-step handoff at the end
-- [ ] Documents that report writing is optional and requires approval
-
----
-
-## Director Gate Checks
-
-No director gates — this skill spawns no director gate agents. Consistency
-checking is a mechanical scan; no creative or technical director review is
-required as part of the scan itself.
+- [ ] 包含必需的 front matter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少包含 2 个阶段标题
+- [ ] 包含结论关键字：CONSISTENT、CONFLICTS FOUND、DEPENDENCY GAP
+- [ ] 分析期间不要求使用 "May I write" 措辞（只读扫描）
+- [ ] 末尾包含下一步交接
+- [ ] 说明报告写入是可选操作且需要批准
 
 ---
 
-## Test Cases
+## 总监门禁检查
 
-### Case 1: Happy Path — 4 GDDs with no conflicts
-
-**Fixture:**
-- `design/gdd/` contains exactly 4 system GDDs
-- All GDDs have consistent formulas (no overlapping variables with different values)
-- No two GDDs claim ownership of the same game entity or mechanic
-- All dependency references point to GDDs that exist
-
-**Input:** `/consistency-check`
-
-**Expected behavior:**
-1. Skill reads all 4 GDDs in `design/gdd/`
-2. Runs cross-GDD consistency checks (formulas, ownership, references)
-3. No conflicts found
-4. Outputs structured findings table showing 0 issues
-5. Verdict: CONSISTENT
-
-**Assertions:**
-- [ ] All 4 GDDs are read before producing output
-- [ ] Findings table is present (even if empty — shows "No conflicts found")
-- [ ] Verdict is CONSISTENT when no conflicts exist
-- [ ] Skill does NOT write any files without user approval
-- [ ] Next-step handoff is present
+不调用总监门禁，此技能不会生成总监门禁代理。一致性检查是机械扫描，
+扫描本身不需要创意总监或技术总监审查。
 
 ---
 
-### Case 2: Failure Path — Two GDDs with conflicting damage formulas
+## 测试用例
 
-**Fixture:**
-- GDD-A defines damage formula: `damage = attack * 1.5`
-- GDD-B defines damage formula: `damage = attack * 2.0` for the same entity type
-- Both GDDs refer to the same "attack" variable
+### 用例 1：正常路径——4 个 GDD 无冲突
 
-**Input:** `/consistency-check`
+**测试夹具：**
+- `design/gdd/` 恰好包含 4 个系统 GDD
+- 所有 GDD 的公式一致（不存在值不同的重叠变量）
+- 没有两个 GDD 声称拥有同一游戏实体或机制
+- 所有依赖引用均指向现有 GDD
 
-**Expected behavior:**
-1. Skill reads all GDDs and detects the formula mismatch
-2. Findings table includes an entry: GDD-A vs GDD-B | Formula Mismatch | HIGH
-3. Specific conflicting formulas are shown (not just "formula conflict exists")
-4. Verdict: CONFLICTS FOUND
+**输入：** `/consistency-check`
 
-**Assertions:**
-- [ ] Verdict is CONFLICTS FOUND (not CONSISTENT)
-- [ ] Conflict entry names both GDD filenames
-- [ ] Conflict type is "Formula Mismatch"
-- [ ] Severity is HIGH for a direct formula contradiction
-- [ ] Both conflicting formulas are shown in the findings table
-- [ ] Skill does NOT auto-resolve the conflict
+**预期行为：**
+1. 技能读取 `design/gdd/` 中全部 4 个 GDD
+2. 执行跨 GDD 一致性检查（公式、所有权、引用）
+3. 未发现冲突
+4. 输出结构化发现表，显示 0 个问题
+5. 结论：CONSISTENT
 
----
-
-### Case 3: Partial Path — GDD references a system with no GDD
-
-**Fixture:**
-- GDD-A's Dependencies section lists "system-B" as a dependency
-- No GDD for system-B exists in `design/gdd/`
-- All other GDDs are consistent
-
-**Input:** `/consistency-check`
-
-**Expected behavior:**
-1. Skill reads all GDDs and checks dependency references
-2. GDD-A's reference to "system-B" cannot be resolved — no GDD exists for it
-3. Findings table includes: GDD-A vs (missing) | Dependency Gap | MEDIUM
-4. Verdict: DEPENDENCY GAP (not CONSISTENT, not CONFLICTS FOUND)
-
-**Assertions:**
-- [ ] Verdict is DEPENDENCY GAP (distinct from CONSISTENT and CONFLICTS FOUND)
-- [ ] Findings entry names GDD-A and the missing system-B
-- [ ] Severity is MEDIUM for an unresolved dependency reference
-- [ ] Skill suggests running `/design-system system-B` to create the missing GDD
+**断言：**
+- [ ] 生成输出前读取全部 4 个 GDD
+- [ ] 存在发现表（即使为空，也显示“未发现冲突”）
+- [ ] 不存在冲突时，结论为 CONSISTENT
+- [ ] 未经用户批准，技能不写入任何文件
+- [ ] 包含下一步交接
 
 ---
 
-### Case 4: Edge Case — No GDDs found
+### 用例 2：失败路径——两个 GDD 的伤害公式冲突
 
-**Fixture:**
-- `design/gdd/` directory is empty or does not exist
+**测试夹具：**
+- GDD-A 定义伤害公式：`damage = attack * 1.5`
+- GDD-B 为同一实体类型定义伤害公式：`damage = attack * 2.0`
+- 两个 GDD 均引用同一 `attack` 变量
 
-**Input:** `/consistency-check`
+**输入：** `/consistency-check`
 
-**Expected behavior:**
-1. Skill attempts to read files in `design/gdd/`
-2. No GDD files found
-3. Skill outputs an error: "No GDDs found in `design/gdd/`. Run `/design-system` to create GDDs first."
-4. No findings table is produced
-5. No verdict is issued
+**预期行为：**
+1. 技能读取所有 GDD 并检测到公式不匹配
+2. 发现表包含一项：GDD-A vs GDD-B | Formula Mismatch | HIGH
+3. 显示发生冲突的具体公式（而非仅说明“存在公式冲突”）
+4. 结论：CONFLICTS FOUND
 
-**Assertions:**
-- [ ] Skill outputs a clear error message when no GDDs are found
-- [ ] No verdict is produced (CONSISTENT / CONFLICTS FOUND / DEPENDENCY GAP)
-- [ ] Skill recommends the correct next action (`/design-system`)
-- [ ] Skill does NOT crash or produce a partial report
-
----
-
-### Case 5: Director Gate — No gate spawned; no review-mode.txt read
-
-**Fixture:**
-- `design/gdd/` contains ≥2 GDDs
-- `production/session-state/review-mode.txt` exists with `full`
-
-**Input:** `/consistency-check`
-
-**Expected behavior:**
-1. Skill reads all GDDs and runs the consistency scan
-2. Skill does NOT read `production/session-state/review-mode.txt`
-3. No director gate agents are spawned at any point
-4. Findings table and verdict are produced normally
-
-**Assertions:**
-- [ ] No director gate agents are spawned (no CD-, TD-, PR-, AD- prefixed gates)
-- [ ] Skill does NOT read `production/session-state/review-mode.txt`
-- [ ] Output contains no "Gate: [GATE-ID]" or gate-skipped entries
-- [ ] Review mode has no effect on this skill's behavior
+**断言：**
+- [ ] 结论为 CONFLICTS FOUND（而非 CONSISTENT）
+- [ ] 冲突项指出两个 GDD 文件名
+- [ ] 冲突类型为 "Formula Mismatch"
+- [ ] 直接公式矛盾的严重程度为 HIGH
+- [ ] 发现表显示两个冲突公式
+- [ ] 技能不自动解决冲突
 
 ---
 
-## Protocol Compliance
+### 用例 3：部分路径——GDD 引用了没有 GDD 的系统
 
-- [ ] Reads all GDDs before producing the findings table
-- [ ] Findings table shown in full before any write ask (if report is requested)
-- [ ] Verdict is one of exactly: CONSISTENT, CONFLICTS FOUND, DEPENDENCY GAP
-- [ ] No director gates — no review-mode.txt read
-- [ ] Report writing (if requested) gated by "May I write" approval
-- [ ] Ends with next-step handoff appropriate to verdict
+**测试夹具：**
+- GDD-A 的 Dependencies 章节将 `system-B` 列为依赖
+- `design/gdd/` 中不存在 system-B 的 GDD
+- 其他所有 GDD 均一致
+
+**输入：** `/consistency-check`
+
+**预期行为：**
+1. 技能读取所有 GDD 并检查依赖引用
+2. GDD-A 对 `system-B` 的引用无法解析，因为不存在对应 GDD
+3. 发现表包含：GDD-A vs (missing) | Dependency Gap | MEDIUM
+4. 结论：DEPENDENCY GAP（不是 CONSISTENT，也不是 CONFLICTS FOUND）
+
+**断言：**
+- [ ] 结论为 DEPENDENCY GAP（区别于 CONSISTENT 和 CONFLICTS FOUND）
+- [ ] 发现项指出 GDD-A 和缺失的 system-B
+- [ ] 无法解析的依赖引用严重程度为 MEDIUM
+- [ ] 技能建议运行 `/design-system system-B` 创建缺失的 GDD
 
 ---
 
-## Coverage Notes
+### 用例 4：边界情况——未找到 GDD
 
-- This skill checks for structural consistency between GDDs. Deep design theory
-  analysis (pillar drift, dominant strategies) is handled by `/review-all-gdds`.
-- Formula conflict detection relies on consistent formula notation across GDDs —
-  informal descriptions of the same mechanic may not be detected.
-- The conflict severity rubric (HIGH / MEDIUM / LOW) is defined in the skill body
-  and not re-enumerated here.
+**测试夹具：**
+- `design/gdd/` 目录为空或不存在
+
+**输入：** `/consistency-check`
+
+**预期行为：**
+1. 技能尝试读取 `design/gdd/` 中的文件
+2. 未找到 GDD 文件
+3. 技能输出错误：“在 `design/gdd/` 中未找到 GDD。请先运行 `/design-system` 创建 GDD。”
+4. 不生成发现表
+5. 不给出结论
+
+**断言：**
+- [ ] 未找到 GDD 时，技能输出清晰的错误消息
+- [ ] 不输出结论（CONSISTENT / CONFLICTS FOUND / DEPENDENCY GAP）
+- [ ] 技能建议正确的下一步操作（`/design-system`）
+- [ ] 技能不会崩溃或生成不完整报告
+
+---
+
+### 用例 5：总监门禁——不生成门禁；不读取 review-mode.txt
+
+**测试夹具：**
+- `design/gdd/` 包含至少 2 个 GDD
+- `production/session-state/review-mode.txt` 存在且内容为 `full`
+
+**输入：** `/consistency-check`
+
+**预期行为：**
+1. 技能读取所有 GDD 并执行一致性扫描
+2. 技能不读取 `production/session-state/review-mode.txt`
+3. 任何时候都不生成总监门禁代理
+4. 正常生成发现表和结论
+
+**断言：**
+- [ ] 不生成总监门禁代理（没有以 CD-、TD-、PR-、AD- 为前缀的门禁）
+- [ ] 技能不读取 `production/session-state/review-mode.txt`
+- [ ] 输出不包含 "Gate: [GATE-ID]" 或门禁跳过项
+- [ ] 审查模式不影响此技能的行为
+
+---
+
+## 协议合规性
+
+- [ ] 生成发现表前读取所有 GDD
+- [ ] 如请求报告，在任何写入询问前完整显示发现表
+- [ ] 结论严格为 CONSISTENT、CONFLICTS FOUND、DEPENDENCY GAP 之一
+- [ ] 不调用总监门禁，也不读取 review-mode.txt
+- [ ] 如请求写入报告，须经 "May I write" 批准
+- [ ] 以适合当前结论的下一步交接结束
+
+---
+
+## 覆盖说明
+
+- 此技能检查 GDD 间的结构一致性。深层设计理论分析（支柱偏移、支配策略）由
+  `/review-all-gdds` 处理。
+- 公式冲突检测依赖 GDD 间一致的公式记法；可能无法检测同一机制的非正式描述。
+- 冲突严重程度评判标准（HIGH / MEDIUM / LOW）在技能正文中定义，此处不再列举。

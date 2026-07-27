@@ -1,188 +1,174 @@
-# Skill Test Spec: /skill-test
+# 技能测试规范：/skill-test
 
-## Skill Summary
+## 技能摘要
 
-`/skill-test` validates skill files for structural correctness, behavioral
-compliance, and category-rubric scoring. It operates in three modes:
+`/skill-test` 用于验证技能文件的结构正确性、行为合规性以及类别评分标准得分。它支持三种模式：
 
-- **static**: Checks a single skill file for structural requirements
-  (frontmatter fields, phase headings, verdict keywords, "May I write" language,
-  next-step handoff) without needing a fixture. Produces a per-check PASS/FAIL
-  table.
-- **spec**: Reads a test spec file from `tests/skills/` and evaluates the skill
-  against each test case assertion, producing a case-by-case verdict.
-- **audit**: Produces a coverage table of all skills in `.claude/skills/` and
-  all agents in `.claude/agents/`, showing which have spec files and which do not.
+- **static**：无需测试夹具，检查单个技能文件是否满足结构要求（front matter 字段、阶段标题、判定关键词、“May I write”措辞和后续步骤交接），并生成逐项 PASS/FAIL 表。
+- **spec**：读取 `tests/skills/` 中的测试规范文件，根据每个测试用例的断言评估技能，并逐用例生成判定结果。
+- **audit**：生成 `.claude/skills/` 中所有技能和 `.claude/agents/` 中所有代理的覆盖表，显示哪些具有规范文件、哪些没有。
 
-An additional **category** mode reads the quality rubric for a skill category
-(e.g., gate skills) and scores the skill against rubric criteria. The verdict
-system differs by mode.
+另外，**category** 模式会读取技能类别的质量评分标准（例如 gate 技能），并根据评分标准评估技能。不同模式使用不同的判定系统。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdicts: COMPLIANT, NON-COMPLIANT, WARNINGS (static mode); PASS, FAIL, PARTIAL (spec mode); COMPLETE (audit mode)
-- [ ] Does NOT contain "May I write" language (skill is read-only in all modes)
-- [ ] Has a next-step handoff (e.g., `/skill-improve` to fix issues found)
-
----
-
-## Director Gate Checks
-
-None. `/skill-test` is a meta-utility skill. No director gates apply.
+- [ ] 包含必需的 front matter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少包含 2 个阶段标题
+- [ ] 包含判定词：COMPLIANT、NON-COMPLIANT、WARNINGS（static 模式）；PASS、FAIL、PARTIAL（spec 模式）；COMPLETE（audit 模式）
+- [ ] 不包含“May I write”措辞（所有模式下技能均为只读）
+- [ ] 包含后续步骤交接（例如使用 `/skill-improve` 修复发现的问题）
 
 ---
 
-## Test Cases
+## Director 门禁检查
 
-### Case 1: Static Mode — Well-formed skill, all 7 checks pass, COMPLIANT
-
-**Fixture:**
-- `.claude/skills/brainstorm/SKILL.md` exists and is well-formed:
-  - Has all required frontmatter fields
-  - Has ≥2 phase headings
-  - Has verdict keywords
-  - Has "May I write" language
-  - Has a next-step handoff
-  - Documents director gates
-  - Documents gate mode behavior (lean/solo skips)
-
-**Input:** `/skill-test static brainstorm`
-
-**Expected behavior:**
-1. Skill reads `.claude/skills/brainstorm/SKILL.md`
-2. Skill runs all 7 structural checks
-3. All 7 checks pass
-4. Skill outputs a PASS/FAIL table with all 7 checks marked PASS
-5. Verdict is COMPLIANT
-
-**Assertions:**
-- [ ] Exactly 7 structural checks are reported
-- [ ] All 7 are marked PASS
-- [ ] Verdict is COMPLIANT
-- [ ] No files are written
+无。`/skill-test` 是元工具技能，不适用任何 director 门禁。
 
 ---
 
-### Case 2: Static Mode — Skill Missing "May I Write" Despite Write Tool in allowed-tools
+## 测试用例
 
-**Fixture:**
-- `.claude/skills/some-skill/SKILL.md` has `Write` in `allowed-tools` frontmatter
-- The skill body has no "May I write" or "May I update" language
+### 用例 1：Static 模式——格式正确的技能，7 项检查全部通过，COMPLIANT
 
-**Input:** `/skill-test static some-skill`
+**测试夹具：**
+- `.claude/skills/brainstorm/SKILL.md` 存在且格式正确：
+  - 包含所有必需的 front matter 字段
+  - 至少包含 2 个阶段标题
+  - 包含判定关键词
+  - 包含 `May I write` 协议措辞
+  - 包含后续步骤交接
+  - 记录 Director 门禁
+  - 记录门禁模式行为（lean/solo 跳过）
 
-**Expected behavior:**
-1. Skill reads `some-skill/SKILL.md`
-2. Check 4 (collaborative write protocol) fails: `Write` in allowed-tools but no
-   "May I write" language found
-3. All other checks may pass
-4. Verdict is NON-COMPLIANT with Check 4 as the failing assertion
-5. Output lists Check 4 as FAIL with explanation
+**输入：** `/skill-test static brainstorm`
 
-**Assertions:**
-- [ ] Check 4 is marked FAIL
-- [ ] Explanation identifies the specific mismatch (Write tool without "May I write" language)
-- [ ] Verdict is NON-COMPLIANT
-- [ ] Other passing checks are shown (not only the failure)
+**预期行为：**
+1. 技能读取 `.claude/skills/brainstorm/SKILL.md`
+2. 技能执行全部 7 项结构检查
+3. 7 项检查全部通过
+4. 技能输出 PASS/FAIL 表，并将 7 项检查全部标记为 PASS
+5. 判定为 COMPLIANT
 
----
-
-### Case 3: Spec Mode — gate-check Skill Evaluated Against Spec
-
-**Fixture:**
-- `tests/skills/gate-check.md` exists with 5 test cases
-- `.claude/skills/gate-check/SKILL.md` exists
-
-**Input:** `/skill-test spec gate-check`
-
-**Expected behavior:**
-1. Skill reads both the skill file and the spec file
-2. Skill evaluates each of the 5 test case assertions against the skill's behavior
-3. For each case: PASS if skill behavior matches spec assertions, FAIL if not
-4. Skill produces a case-by-case result table
-5. Overall verdict: PASS (all 5), PARTIAL (some), or FAIL (majority failing)
-
-**Assertions:**
-- [ ] All 5 test cases from the spec are evaluated
-- [ ] Each case has an individual PASS/FAIL result
-- [ ] Overall verdict is PASS, PARTIAL, or FAIL based on case results
-- [ ] No files are written
+**断言：**
+- [ ] 恰好报告 7 项结构检查
+- [ ] 7 项全部标记为 PASS
+- [ ] 判定为 COMPLIANT
+- [ ] 不写入任何文件
 
 ---
 
-### Case 4: Audit Mode — Coverage Table of All Skills and Agents
+### 用例 2：Static 模式——`allowed-tools` 中有 Write 工具，但技能缺少 `May I write` 协议措辞
 
-**Fixture:**
-- `.claude/skills/` contains 72+ skill directories
-- `.claude/agents/` contains 49+ agent files
-- `tests/skills/` contains spec files for a subset of skills
+**测试夹具：**
+- `.claude/skills/some-skill/SKILL.md` 的 `allowed-tools` front matter 中包含 `Write`
+- 技能正文没有“May I write”或“May I update”措辞
 
-**Input:** `/skill-test audit`
+**输入：** `/skill-test static some-skill`
 
-**Expected behavior:**
-1. Skill enumerates all skills in `.claude/skills/` and all agents in `.claude/agents/`
-2. Skill checks `tests/skills/` for a corresponding spec file for each
-3. Skill produces a coverage table:
-   - Each skill/agent listed
-   - "Has Spec" column: YES or NO
-   - Summary: "X of Y skills have specs; A of B agents have specs"
-4. Verdict is COMPLETE
+**预期行为：**
+1. 技能读取 `some-skill/SKILL.md`
+2. 检查 4（协作写入协议）失败：`allowed-tools` 中有 `Write`，但未找到“May I write”措辞
+3. 其他检查可以通过
+4. 判定为 NON-COMPLIANT，失败断言为检查 4
+5. 输出将检查 4 列为 FAIL，并给出解释
 
-**Assertions:**
-- [ ] All skill directories are enumerated (not just a sample)
-- [ ] "Has Spec" column is accurate for each entry
-- [ ] Summary counts are correct
-- [ ] Verdict is COMPLETE
+**断言：**
+- [ ] 检查 4 标记为 FAIL
+- [ ] 解释指出具体不匹配（有 Write 工具但没有“May I write”措辞）
+- [ ] 判定为 NON-COMPLIANT
+- [ ] 显示其他通过的检查，而不只是失败项
 
 ---
 
-### Case 5: Category Mode — Gate Skill Evaluated Against Quality Rubric
+### 用例 3：Spec 模式——根据规范评估 gate-check 技能
 
-**Fixture:**
-- `tests/skills/quality-rubric.md` exists with a "Gate Skills" section defining
-  criteria G1-G5 (e.g., G1: has mode guard, G2: has verdict table, etc.)
-- `.claude/skills/gate-check/SKILL.md` is a gate skill
+**测试夹具：**
+- `tests/skills/gate-check.md` 存在且包含 5 个测试用例
+- `.claude/skills/gate-check/SKILL.md` 存在
 
-**Input:** `/skill-test category gate-check`
+**输入：** `/skill-test spec gate-check`
 
-**Expected behavior:**
-1. Skill reads `quality-rubric.md` and identifies the Gate Skills section
-2. Skill evaluates `gate-check/SKILL.md` against criteria G1-G5
-3. Each criterion is scored: PASS, PARTIAL, or FAIL
-4. Overall category score is computed (e.g., 4/5 criteria pass)
-5. Verdict is COMPLIANT (all pass), WARNINGS (some partial), or NON-COMPLIANT (failures)
+**预期行为：**
+1. 技能同时读取技能文件和规范文件
+2. 技能根据技能行为评估 5 个测试用例的每项断言
+3. 每个用例：技能行为符合规范断言时为 PASS，否则为 FAIL
+4. 技能生成逐用例结果表
+5. 总体判定：全部 5 个通过时为 PASS，部分通过时为 PARTIAL，多数失败时为 FAIL
 
-**Assertions:**
-- [ ] All gate criteria (G1-G5) from quality-rubric.md are evaluated
-- [ ] Each criterion has an individual score
-- [ ] Overall verdict reflects the score distribution
-- [ ] No files are written
-
----
-
-## Protocol Compliance
-
-- [ ] Static mode checks exactly 7 structural assertions
-- [ ] Spec mode evaluates each test case from the spec file individually
-- [ ] Audit mode covers all skills AND agents (not just one category)
-- [ ] Category mode reads quality-rubric.md to get criteria (not hardcoded)
-- [ ] Does not write any files in any mode
-- [ ] Suggests `/skill-improve` as the next step when issues are found
+**断言：**
+- [ ] 评估规范中的全部 5 个测试用例
+- [ ] 每个用例都有独立的 PASS/FAIL 结果
+- [ ] 总体判定根据用例结果为 PASS、PARTIAL 或 FAIL
+- [ ] 不写入任何文件
 
 ---
 
-## Coverage Notes
+### 用例 4：Audit 模式——所有技能和代理的覆盖表
 
-- The skill-test skill is self-referential (it can test itself). The static
-  mode case for skill-test's own SKILL.md is not separately fixture-tested to
-  avoid infinite recursion in test design.
-- The specific 7 structural checks are defined in the skill body; only Check 4
-  (May I write) is individually tested here because it has the most nuanced logic.
-- Audit mode counts are approximate — the exact number of skills and agents will
-  change as the system grows; assertions use "all" rather than fixed counts.
+**测试夹具：**
+- `.claude/skills/` 包含 72 个以上技能目录
+- `.claude/agents/` 包含 49 个以上代理文件
+- `tests/skills/` 包含部分技能的规范文件
+
+**输入：** `/skill-test audit`
+
+**预期行为：**
+1. 技能枚举 `.claude/skills/` 中的所有技能和 `.claude/agents/` 中的所有代理
+2. 技能在 `tests/skills/` 中检查每个条目对应的规范文件
+3. 技能生成覆盖表：
+   - 列出每个技能/代理
+   - “有规范”列：YES 或 NO
+   - 摘要：“Y 个技能中有 X 个具备规范；B 个代理中有 A 个具备规范”
+4. 判定为 COMPLETE
+
+**断言：**
+- [ ] 枚举所有技能目录，而不只是抽样
+- [ ] 每个条目的“有规范”列准确
+- [ ] 摘要计数正确
+- [ ] 判定为 COMPLETE
+
+---
+
+### 用例 5：Category 模式——根据质量评分标准评估 Gate 技能
+
+**测试夹具：**
+- `tests/skills/quality-rubric.md` 存在，其中的“Gate 技能”章节定义 G1-G5 标准（例如 G1：包含模式守卫，G2：包含判定表等）
+- `.claude/skills/gate-check/SKILL.md` 是 gate 技能
+
+**输入：** `/skill-test category gate-check`
+
+**预期行为：**
+1. 技能读取 `quality-rubric.md` 并识别 Gate 技能章节
+2. 技能根据 G1-G5 标准评估 `gate-check/SKILL.md`
+3. 每项标准评分为 PASS、PARTIAL 或 FAIL
+4. 计算类别总分（例如 5 项标准中 4 项通过）
+5. 判定为 COMPLIANT（全部通过）、WARNINGS（部分为 PARTIAL）或 NON-COMPLIANT（存在失败）
+
+**断言：**
+- [ ] 评估 quality-rubric.md 中的所有门禁标准（G1-G5）
+- [ ] 每项标准都有独立评分
+- [ ] 总体判定反映评分分布
+- [ ] 不写入任何文件
+
+---
+
+## 协议合规性
+
+- [ ] Static 模式恰好检查 7 项结构断言
+- [ ] Spec 模式逐项评估规范文件中的每个测试用例
+- [ ] Audit 模式覆盖所有技能和代理，而不只是一个类别
+- [ ] Category 模式读取 quality-rubric.md 获取标准，而不是硬编码
+- [ ] 任何模式都不写入文件
+- [ ] 发现问题时建议将 `/skill-improve` 作为下一步
+
+---
+
+## 覆盖说明
+
+- skill-test 技能是自引用的（可以测试自身）。为避免测试设计中的无限递归，没有为 skill-test 自身 SKILL.md 的 static 模式用例单独设置测试夹具。
+- 具体的 7 项结构检查定义在技能正文中；这里只单独测试检查 4（May I write），因为它的逻辑最复杂。
+- Audit 模式的数量是近似值：随着系统增长，技能和代理的确切数量会变化；断言使用“全部”而不是固定数量。

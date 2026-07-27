@@ -1,185 +1,171 @@
-# Skill Test Spec: /art-bible
+# 技能测试规范：/art-bible
 
-## Skill Summary
+## 技能摘要
 
-`/art-bible` is a guided, section-by-section art bible authoring skill. It
-produces a comprehensive visual direction document covering: Visual Style overview,
-Color Palette, Typography, Character Design Rules, Environment Style, and UI
-Visual Language. The skill follows the skeleton-first pattern: creates the file
-with all section headers immediately, then fills each section through discussion
-and writes each to disk after user approval.
+`/art-bible` 是按章节引导编写美术圣经的技能。它生成完整的视觉方向文档，涵盖视觉风格概述、调色板、字体排印、角色设计规则、环境风格和 UI 视觉语言。该技能采用先建骨架模式：立即创建包含所有章节标题的文件，再通过讨论填写各章节，并在用户批准后逐章写入磁盘。
 
-In `full` review mode, the AD-ART-BIBLE director gate (art director) runs after
-the draft is complete and before any section is written. In `lean` and `solo`
-modes, AD-ART-BIBLE is skipped and only user approval is required. The verdict
-is COMPLETE when all sections are written.
+在 `full` 审查模式下，草稿完成后、写入任何章节前运行 AD-ART-BIBLE 主管门禁（art-director）。在 `lean` 和 `solo` 模式下跳过 AD-ART-BIBLE，只需用户批准。所有章节写入后，结论为 COMPLETE。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" language per section
-- [ ] Documents the AD-ART-BIBLE director gate and its mode behavior
-- [ ] Has a next-step handoff (e.g., `/asset-spec` or `/design-system`)
-
----
-
-## Director Gate Checks
-
-| Gate ID      | Trigger condition              | Mode guard            |
-|--------------|--------------------------------|-----------------------|
-| AD-ART-BIBLE | After draft is complete        | full only (not lean/solo) |
+- [ ] 包含必需的 frontmatter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 包含至少 2 个阶段标题
+- [ ] 包含结论关键字：COMPLETE
+- [ ] 每个章节包含 "May I write" 措辞
+- [ ] 记录 AD-ART-BIBLE 主管门禁及其模式行为
+- [ ] 包含下一步移交（例如 `/asset-spec` 或 `/design-system`）
 
 ---
 
-## Test Cases
+## 主管门禁检查
 
-### Case 1: Happy Path — Full mode, art bible drafted, AD-ART-BIBLE approves
-
-**Fixture:**
-- No existing `design/art-bible.md`
-- `production/session-state/review-mode.txt` contains `full`
-- `design/gdd/game-concept.md` exists with visual tone described
-
-**Input:** `/art-bible`
-
-**Expected behavior:**
-1. Skill creates skeleton `design/art-bible.md` with all section headers
-2. Skill discusses and drafts each section with user collaboration
-3. After all sections are drafted, AD-ART-BIBLE gate is invoked (art director review)
-4. AD-ART-BIBLE returns APPROVED
-5. Skill asks "May I write section [N] to `design/art-bible.md`?" per section
-6. All sections written after approval; verdict is COMPLETE
-
-**Assertions:**
-- [ ] Skeleton file is created first (before any section content is written)
-- [ ] AD-ART-BIBLE gate is invoked in full mode after draft is complete
-- [ ] Gate approval precedes the "May I write" section asks
-- [ ] All sections are present in the final file
-- [ ] Verdict is COMPLETE
+| 门禁 ID | 触发条件 | 模式限制 |
+|---------|----------|----------|
+| AD-ART-BIBLE | 草稿完成后 | 仅 full（不适用于 lean/solo） |
 
 ---
 
-### Case 2: AD-ART-BIBLE Returns CONCERNS — Section revised before writing
+## 测试用例
 
-**Fixture:**
-- Art bible draft complete
-- `production/session-state/review-mode.txt` contains `full`
-- AD-ART-BIBLE gate returns CONCERNS: "Color palette clashes with the dark
-  atmospheric tone described in the game concept"
+### 用例 1：正常路径，full 模式，美术圣经草稿完成，AD-ART-BIBLE 批准
 
-**Input:** `/art-bible`
+**夹具：**
+- `design/art-bible.md` 不存在
+- `production/session-state/review-mode.txt` 包含 `full`
+- `design/gdd/game-concept.md` 存在并描述了视觉基调
 
-**Expected behavior:**
-1. AD-ART-BIBLE gate returns CONCERNS with specific feedback about palette
-2. Skill surfaces feedback to user: "Art director has concerns about the color palette"
-3. Skill returns to the Color Palette section for revision
-4. User and skill revise the palette to align with game concept tone
-5. AD-ART-BIBLE is not re-invoked (user decides to proceed after revision)
-6. Revised section is written after "May I write" approval; verdict is COMPLETE
+**输入：** `/art-bible`
 
-**Assertions:**
-- [ ] CONCERNS are shown to user before any section is written
-- [ ] Skill returns to the affected section for revision (not all sections)
-- [ ] Revised content (not original) is written to file
-- [ ] Verdict is COMPLETE after revision and approval
+**预期行为：**
+1. 技能创建骨架 `design/art-bible.md`，包含所有章节标题
+2. 技能与用户协作讨论并起草每个章节
+3. 所有章节起草完成后，调用 AD-ART-BIBLE 门禁（art-director 审查）
+4. AD-ART-BIBLE 返回 APPROVED
+5. 技能逐章询问 "May I write section [N] to `design/art-bible.md`?"
+6. 获批后写入所有章节；结论为 COMPLETE
 
----
-
-### Case 3: Lean Mode — AD-ART-BIBLE Skipped, Written With User Approval Only
-
-**Fixture:**
-- No existing art bible
-- `production/session-state/review-mode.txt` contains `lean`
-
-**Input:** `/art-bible`
-
-**Expected behavior:**
-1. Skill reads review mode — determines `lean`
-2. Skill drafts all sections with user collaboration
-3. AD-ART-BIBLE gate is skipped: output notes "[AD-ART-BIBLE] skipped — lean mode"
-4. Skill asks user for direct approval of each section
-5. Sections are written after user confirmation; verdict is COMPLETE
-
-**Assertions:**
-- [ ] AD-ART-BIBLE gate is NOT invoked in lean mode
-- [ ] Skip is explicitly noted: "[AD-ART-BIBLE] skipped — lean mode"
-- [ ] User approval is still required per section (gate skip ≠ approval skip)
-- [ ] Verdict is COMPLETE
+**断言：**
+- [ ] 首先创建骨架文件（早于写入任何章节内容）
+- [ ] 草稿完成后，在 full 模式下调用 AD-ART-BIBLE 门禁
+- [ ] 门禁批准早于 "May I write" 章节询问
+- [ ] 最终文件中包含所有章节
+- [ ] 结论为 COMPLETE
 
 ---
 
-### Case 4: Existing Art Bible — Retrofit Mode
+### 用例 2：AD-ART-BIBLE 返回 CONCERNS，写入前修订章节
 
-**Fixture:**
-- `design/art-bible.md` already exists with all sections populated
-- User wants to update the Character Design Rules section
+**夹具：**
+- 美术圣经草稿已完成
+- `production/session-state/review-mode.txt` 包含 `full`
+- AD-ART-BIBLE 门禁返回 CONCERNS："调色板与游戏概念中描述的黑暗氛围基调冲突"
 
-**Input:** `/art-bible`
+**输入：** `/art-bible`
 
-**Expected behavior:**
-1. Skill reads existing art bible and detects all sections populated
-2. Skill offers retrofit: "Art bible exists — which section would you like to update?"
-3. User selects Character Design Rules
-4. Skill drafts updated content; in full mode, AD-ART-BIBLE is invoked for the
-   revised section before writing
-5. Skill asks "May I write Character Design Rules to `design/art-bible.md`?"
-6. Only that section is updated; other sections preserved; verdict is COMPLETE
+**预期行为：**
+1. AD-ART-BIBLE 门禁返回 CONCERNS 和关于调色板的具体反馈
+2. 技能向用户展示反馈："美术主管对调色板有疑虑"
+3. 技能返回调色板章节进行修订
+4. 用户和技能修订调色板，使其与游戏概念基调一致
+5. 不再次调用 AD-ART-BIBLE（修订后由用户决定是否继续）
+6. 询问 "May I write" 并获批后写入修订章节；结论为 COMPLETE
 
-**Assertions:**
-- [ ] Existing art bible is detected and retrofit is offered
-- [ ] Only the selected section is updated
-- [ ] In full mode: AD-ART-BIBLE gate runs even for single-section retrofit
-- [ ] Other sections are preserved
-- [ ] Verdict is COMPLETE
-
----
-
-### Case 5: Solo Mode — AD-ART-BIBLE Skipped, Noted in Output
-
-**Fixture:**
-- No existing art bible
-- `production/session-state/review-mode.txt` contains `solo`
-
-**Input:** `/art-bible`
-
-**Expected behavior:**
-1. Skill reads review mode — determines `solo`
-2. Art bible is drafted and written with only user approval
-3. AD-ART-BIBLE gate is skipped: output notes "[AD-ART-BIBLE] skipped — solo mode"
-4. No director agents are spawned
-5. Verdict is COMPLETE
-
-**Assertions:**
-- [ ] AD-ART-BIBLE gate is NOT invoked in solo mode
-- [ ] Skip is explicitly noted with "solo mode" label
-- [ ] No director agents of any kind are spawned
-- [ ] Verdict is COMPLETE
+**断言：**
+- [ ] 写入任何章节前向用户展示 CONCERNS
+- [ ] 技能返回受影响的章节进行修订（而非所有章节）
+- [ ] 将修订后的内容（而非原内容）写入文件
+- [ ] 修订并获批后，结论为 COMPLETE
 
 ---
 
-## Protocol Compliance
+### 用例 3：Lean 模式，跳过 AD-ART-BIBLE，仅凭用户批准写入
 
-- [ ] Creates skeleton file immediately with all section headers
-- [ ] Discusses and drafts one section at a time
-- [ ] AD-ART-BIBLE gate runs in full mode after all sections are drafted
-- [ ] AD-ART-BIBLE is skipped in lean and solo modes — noted by name
-- [ ] Asks "May I write section [N]" per section
-- [ ] Verdict is COMPLETE when all sections are written
+**夹具：**
+- 没有现有美术圣经
+- `production/session-state/review-mode.txt` 包含 `lean`
+
+**输入：** `/art-bible`
+
+**预期行为：**
+1. 技能读取审查模式，并确定为 `lean`
+2. 技能与用户协作起草所有章节
+3. 跳过 AD-ART-BIBLE 门禁：输出注明 "[AD-ART-BIBLE] skipped — lean mode"
+4. 技能请求用户直接批准每个章节
+5. 用户确认后写入章节；结论为 COMPLETE
+
+**断言：**
+- [ ] lean 模式下不调用 AD-ART-BIBLE 门禁
+- [ ] 明确注明跳过："[AD-ART-BIBLE] skipped — lean mode"
+- [ ] 每个章节仍需要用户批准（跳过门禁不等于跳过批准）
+- [ ] 结论为 COMPLETE
 
 ---
 
-## Coverage Notes
+### 用例 4：现有美术圣经，改造模式
 
-- The case where AD-ART-BIBLE returns REJECT (not just CONCERNS) is not
-  separately tested; the skill would block writing and ask the user how to
-  proceed (revise or override).
-- The Typography section is listed as a required art bible section but its
-  specific content requirements are not assertion-tested here.
-- The art bible feeds into `/asset-spec` — this relationship is noted in the
-  handoff but not tested as part of this skill's spec.
+**夹具：**
+- `design/art-bible.md` 已存在，且所有章节均已填写
+- 用户想更新角色设计规则章节
+
+**输入：** `/art-bible`
+
+**预期行为：**
+1. 技能读取现有美术圣经，并检测到所有章节均已填写
+2. 技能提供改造选项："美术圣经已存在，要更新哪个章节？"
+3. 用户选择角色设计规则
+4. 技能起草更新内容；在 full 模式下，写入前针对修订章节调用 AD-ART-BIBLE
+5. 技能询问 "May I write Character Design Rules to `design/art-bible.md`?"
+6. 只更新该章节，保留其他章节；结论为 COMPLETE
+
+**断言：**
+- [ ] 检测到现有美术圣经并提供改造选项
+- [ ] 只更新所选章节
+- [ ] 在 full 模式下，即使只改造单个章节也运行 AD-ART-BIBLE 门禁
+- [ ] 保留其他章节
+- [ ] 结论为 COMPLETE
+
+---
+
+### 用例 5：Solo 模式，跳过 AD-ART-BIBLE 并在输出中注明
+
+**夹具：**
+- 没有现有美术圣经
+- `production/session-state/review-mode.txt` 包含 `solo`
+
+**输入：** `/art-bible`
+
+**预期行为：**
+1. 技能读取审查模式，并确定为 `solo`
+2. 仅凭用户批准起草并写入美术圣经
+3. 跳过 AD-ART-BIBLE 门禁：输出注明 "[AD-ART-BIBLE] skipped — solo mode"
+4. 不生成主管代理
+5. 结论为 COMPLETE
+
+**断言：**
+- [ ] solo 模式下不调用 AD-ART-BIBLE 门禁
+- [ ] 使用 "solo mode" 标签明确注明跳过
+- [ ] 不生成任何主管代理
+- [ ] 结论为 COMPLETE
+
+---
+
+## 协议合规性
+
+- [ ] 立即创建包含所有章节标题的骨架文件
+- [ ] 每次讨论并起草一个章节
+- [ ] 所有章节起草完成后，在 full 模式下运行 AD-ART-BIBLE 门禁
+- [ ] 在 lean 和 solo 模式下跳过 AD-ART-BIBLE，并按名称注明
+- [ ] 每个章节询问 "May I write section [N]"
+- [ ] 所有章节写入后，结论为 COMPLETE
+
+---
+
+## 覆盖说明
+
+- 未单独测试 AD-ART-BIBLE 返回 REJECT（而不只是 CONCERNS）的情况；技能会阻止写入，并询问用户如何继续（修订或覆盖）。
+- 字体排印章节被列为美术圣经的必需章节，但此处不测试其具体内容要求。
+- 美术圣经会作为 `/asset-spec` 的输入；移交中注明了该关系，但不作为此技能规格的一部分进行测试。

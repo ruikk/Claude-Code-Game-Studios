@@ -1,182 +1,165 @@
-# Skill Test Spec: /setup-engine
+# 技能测试规范：/setup-engine
 
-## Skill Summary
+## 技能摘要
 
-`/setup-engine` configures the project's engine, language, rendering backend,
-physics engine, specialist agent assignments, and naming conventions by
-populating `technical-preferences.md`. It accepts an optional engine argument
-(e.g., `/setup-engine godot`) to skip the engine-selection step. For each
-section of `technical-preferences.md`, the skill presents a draft and asks
-"May I write to `technical-preferences.md`?" before updating.
+`/setup-engine` 通过填充 `technical-preferences.md` 配置项目的引擎、语言、渲染后端、物理引擎、专家代理分配和命名约定。它接受可选的引擎参数（例如 `/setup-engine godot`）以跳过引擎选择步骤。对于 `technical-preferences.md` 的每个章节，技能都会展示草稿并询问
+更新前询问“May I write to `technical-preferences.md`?”。
 
-The skill also populates the specialist routing table (file extension → agent
-mappings) based on the chosen engine. It has no director gates — configuration
-is a technical utility task. The verdict is always COMPLETE when the file is
-fully written.
+技能还会根据所选引擎填充专家路由表（文件扩展名 → 代理映射）。它没有主管门禁，因为配置属于技术工具任务。文件完整写入后，判定结果始终为 COMPLETE。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keyword: COMPLETE
-- [ ] Contains "May I write" collaborative protocol language before updating technical-preferences.md
-- [ ] Has a next-step handoff (e.g., `/brainstorm` or `/start` depending on flow)
-
----
-
-## Director Gate Checks
-
-None. `/setup-engine` is a technical configuration skill. No director gates apply.
+- [ ] 包含必需的 frontmatter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少包含 2 个阶段标题
+- [ ] 包含判定关键词：COMPLETE
+- [ ] 更新 technical-preferences.md 前包含“May I write”协作协议措辞
+- [ ] 包含下一步交接说明（根据流程使用 `/brainstorm` 或 `/start`）
 
 ---
 
-## Test Cases
+## 主管门禁检查
 
-### Case 1: Godot 4 + GDScript — Full engine configuration
-
-**Fixture:**
-- `technical-preferences.md` contains only placeholders
-- Engine argument provided: `godot`
-
-**Input:** `/setup-engine godot`
-
-**Expected behavior:**
-1. Skill skips engine-selection step (argument provided)
-2. Skill presents language options for Godot: GDScript or C#
-3. User selects GDScript
-4. Skill drafts all engine sections: engine/language/rendering/physics fields,
-   naming conventions (snake_case for GDScript), specialist assignments
-   (godot-specialist, gdscript-specialist, godot-shader-specialist, etc.)
-5. Skill populates the routing table: `.gd` → gdscript-specialist, `.gdshader` →
-   godot-shader-specialist, `.tscn` → godot-specialist
-6. Skill asks "May I write to `technical-preferences.md`?"
-7. File is written after approval; verdict is COMPLETE
-
-**Assertions:**
-- [ ] Engine field is set to Godot 4 (not a placeholder)
-- [ ] Language field is set to GDScript
-- [ ] Naming conventions are GDScript-appropriate (snake_case)
-- [ ] Routing table includes `.gd`, `.gdshader`, and `.tscn` entries
-- [ ] Specialists are assigned (not placeholders)
-- [ ] "May I write" is asked before writing
-- [ ] Verdict is COMPLETE
+无。`/setup-engine` 是技术配置技能，不适用主管门禁。
 
 ---
 
-### Case 2: Unity + C# — Unity-specific configuration
+## 测试用例
 
-**Fixture:**
-- `technical-preferences.md` contains only placeholders
-- Engine argument provided: `unity`
+### 用例 1：Godot 4 + GDScript：完整引擎配置
 
-**Input:** `/setup-engine unity`
+**测试夹具：**
+- `technical-preferences.md` 仅包含占位符
+- 已提供引擎参数：`godot`
 
-**Expected behavior:**
-1. Skill sets engine to Unity, language to C#
-2. Naming conventions are C#-appropriate (PascalCase for classes, camelCase for fields)
-3. Specialist assignments reference unity-specialist, csharp-specialist
-4. Routing table: `.cs` → csharp-specialist, `.asmdef` → unity-specialist,
-   `.unity` (scene) → unity-specialist
-5. Skill asks "May I write to `technical-preferences.md`?" and writes on approval
+**输入：** `/setup-engine godot`
 
-**Assertions:**
-- [ ] Engine field is set to Unity (not Godot or Unreal)
-- [ ] Language field is set to C#
-- [ ] Naming conventions reflect C# conventions
-- [ ] Routing table includes `.cs` and `.unity` entries
-- [ ] Verdict is COMPLETE
+**预期行为：**
+1. 技能跳过引擎选择步骤（已提供参数）
+2. 技能展示 Godot 的语言选项：GDScript 或 C#
+3. 用户选择 GDScript
+4. 技能起草所有引擎章节：引擎/语言/渲染/物理字段、命名约定（GDScript 使用 snake_case）和专家分配（godot-specialist、gdscript-specialist、godot-shader-specialist 等）
+5. 技能填充路由表：`.gd` → gdscript-specialist，`.gdshader` → godot-shader-specialist，`.tscn` → godot-specialist
+6. 技能询问“May I write to `technical-preferences.md`?”
+7. 获得批准后写入文件；判定结果为 COMPLETE
 
----
-
-### Case 3: Unreal + Blueprint — Unreal-specific configuration
-
-**Fixture:**
-- `technical-preferences.md` contains only placeholders
-- Engine argument provided: `unreal`
-
-**Input:** `/setup-engine unreal`
-
-**Expected behavior:**
-1. Skill sets engine to Unreal Engine 5, primary language to Blueprint (Visual Scripting)
-2. Specialist assignments reference unreal-specialist, blueprint-specialist
-3. Routing table: `.uasset` → blueprint-specialist or unreal-specialist,
-   `.umap` → unreal-specialist
-4. Performance budgets are pre-set with Unreal defaults (e.g., higher draw call budget)
-5. Skill asks "May I write" and writes on approval; verdict is COMPLETE
-
-**Assertions:**
-- [ ] Engine field is set to Unreal Engine 5
-- [ ] Routing table includes `.uasset` and `.umap` entries
-- [ ] Blueprint specialist is assigned
-- [ ] Verdict is COMPLETE
+**断言：**
+- [ ] 引擎字段设置为 Godot 4（不是占位符）
+- [ ] 语言字段设置为 GDScript
+- [ ] 命名约定符合 GDScript（snake_case）
+- [ ] 路由表包含 `.gd`、`.gdshader` 和 `.tscn` 条目
+- [ ] 已分配专家（不是占位符）
+- [ ] 写入前询问“May I write”
+- [ ] 判定结果为 COMPLETE
 
 ---
 
-### Case 4: Engine Already Configured — Offers to reconfigure specific sections
+### 用例 2：Unity + C#：Unity 专用配置
 
-**Fixture:**
-- `technical-preferences.md` has engine set to Godot 4 with all fields populated
-- No engine argument provided
+**测试夹具：**
+- `technical-preferences.md` 仅包含占位符
+- 已提供引擎参数：`unity`
 
-**Input:** `/setup-engine`
+**输入：** `/setup-engine unity`
 
-**Expected behavior:**
-1. Skill reads `technical-preferences.md` and detects fully configured engine (Godot 4)
-2. Skill reports: "Engine already configured as Godot 4 + GDScript"
-3. Skill presents options: reconfigure all, reconfigure specific section only
-   (Engine/Language, Naming Conventions, Specialists, Performance Budgets)
-4. User selects "Reconfigure Performance Budgets only"
-5. Only the performance budget section is updated; all other fields unchanged
-6. Skill asks "May I write to `technical-preferences.md`?" and writes on approval
+**预期行为：**
+1. 技能将引擎设置为 Unity，语言设置为 C#
+2. 命名约定符合 C#（类使用 PascalCase，字段使用 camelCase）
+3. 专家分配引用 unity-specialist、csharp-specialist
+4. 路由表：`.cs` → csharp-specialist，`.asmdef` → unity-specialist，`.unity`（场景）→ unity-specialist
+5. 技能询问“May I write to `technical-preferences.md`?”并在获得批准后写入
 
-**Assertions:**
-- [ ] Skill does NOT overwrite all fields when only a section update was requested
-- [ ] User is offered section-specific reconfiguration
-- [ ] Only the selected section is modified in the written file
-- [ ] Verdict is COMPLETE
-
----
-
-### Case 5: Director Gate Check — No gate; setup-engine is a utility skill
-
-**Fixture:**
-- Fresh project with no engine configured
-
-**Input:** `/setup-engine godot`
-
-**Expected behavior:**
-1. Skill completes full engine configuration
-2. No director agents are spawned at any point
-3. No gate IDs appear in output
-
-**Assertions:**
-- [ ] No director gate is invoked
-- [ ] No gate skip messages appear
-- [ ] Verdict is COMPLETE without any gate check
+**断言：**
+- [ ] 引擎字段设置为 Unity（不是 Godot 或 Unreal）
+- [ ] 语言字段设置为 C#
+- [ ] 命名约定体现 C# 规范
+- [ ] 路由表包含 `.cs` 和 `.unity` 条目
+- [ ] 判定结果为 COMPLETE
 
 ---
 
-## Protocol Compliance
+### 用例 3：Unreal + Blueprint：Unreal 专用配置
 
-- [ ] Presents draft configuration before asking to write
-- [ ] Asks "May I write to `technical-preferences.md`?" before writing
-- [ ] Respects engine argument when provided (skips selection step)
-- [ ] Detects existing config and offers partial reconfigure
-- [ ] Routing table is populated for all key file types for the chosen engine
-- [ ] Verdict is COMPLETE after file is written
+**测试夹具：**
+- `technical-preferences.md` 仅包含占位符
+- 已提供引擎参数：`unreal`
+
+**输入：** `/setup-engine unreal`
+
+**预期行为：**
+1. 技能将引擎设置为 Unreal Engine 5，主要语言设置为 Blueprint（可视化脚本）
+2. 专家分配引用 unreal-specialist、blueprint-specialist
+3. 路由表：`.uasset` → blueprint-specialist 或 unreal-specialist，`.umap` → unreal-specialist
+4. 性能预算预设为 Unreal 默认值（例如更高的 draw call 预算）
+5. 技能询问“May I write”，并在获得批准后写入；判定结果为 COMPLETE
+
+**断言：**
+- [ ] 引擎字段设置为 Unreal Engine 5
+- [ ] 路由表包含 `.uasset` 和 `.umap` 条目
+- [ ] 已分配 Blueprint specialist
+- [ ] 判定结果为 COMPLETE
 
 ---
 
-## Coverage Notes
+### 用例 4：引擎已配置：提供特定章节的重新配置选项
 
-- Godot 4 + C# (instead of GDScript) follows the same flow as Case 1 with
-  different naming conventions and the godot-csharp-specialist assignment.
-  This variant is not separately tested.
-- The engine-version-specific guidance (e.g., Godot 4.6 knowledge gap warning
-  from VERSION.md) is surfaced by the skill but not assertion-tested here.
-- Performance budget defaults per engine are noted as engine-specific but
-  exact default values are not assertion-tested.
+**测试夹具：**
+- `technical-preferences.md` 已将引擎设置为 Godot 4，且所有字段均已填充
+- 未提供引擎参数
+
+**输入：** `/setup-engine`
+
+**预期行为：**
+1. 技能读取 `technical-preferences.md`，检测到引擎已完整配置（Godot 4）
+2. 技能报告：“引擎已配置为 Godot 4 + GDScript”
+3. 技能提供选项：全部重新配置，或仅重新配置特定章节（引擎/语言、命名约定、专家代理、性能预算）
+4. 用户选择“仅重新配置性能预算”
+5. 只更新性能预算章节，其他字段保持不变
+6. 技能询问“May I write to `technical-preferences.md`?”并在获得批准后写入
+
+**断言：**
+- [ ] 仅请求更新一个章节时，技能不会覆盖所有字段
+- [ ] 向用户提供按章节重新配置的选项
+- [ ] 写入文件中只有选定章节被修改
+- [ ] 判定结果为 COMPLETE
+
+---
+
+### 用例 5：主管门禁检查：无门禁，setup-engine 是工具技能
+
+**测试夹具：**
+- 尚未配置引擎的新项目
+
+**输入：** `/setup-engine godot`
+
+**预期行为：**
+1. 技能完成完整引擎配置
+2. 全程不启动任何主管代理
+3. 输出中不出现门禁 ID
+
+**断言：**
+- [ ] 不调用主管门禁
+- [ ] 不出现跳过门禁的消息
+- [ ] 不经过门禁检查也能得到 COMPLETE 判定
+
+---
+
+## 协议合规性
+
+- [ ] 询问写入前展示配置草稿
+- [ ] 写入前询问“May I write to `technical-preferences.md`?”
+- [ ] 提供引擎参数时遵守该参数（跳过选择步骤）
+- [ ] 检测现有配置并提供局部重新配置选项
+- [ ] 为所选引擎的所有关键文件类型填充路由表
+- [ ] 文件写入后判定结果为 COMPLETE
+
+---
+
+## 覆盖说明
+
+- Godot 4 + C#（而不是 GDScript）遵循与用例 1 相同的流程，但使用不同的命名约定并分配 godot-csharp-specialist。此变体未单独测试。
+- 技能会呈现特定引擎版本的指导（例如 VERSION.md 中关于 Godot 4.6 知识缺口的警告），但此处不对其进行断言测试。
+- 各引擎的性能预算默认值标记为引擎专用，但不对具体默认值进行断言测试。

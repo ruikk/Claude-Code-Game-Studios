@@ -1,171 +1,161 @@
-# Skill Test Spec: /tech-debt
+# 技能测试规范：/tech-debt
 
-## Skill Summary
+## 技能摘要
 
-`/tech-debt` tracks, categorizes, and prioritizes technical debt across the
-codebase. It reads `docs/tech-debt-register.md` for the existing debt register
-and scans source files in `src/` for inline `TODO` and `FIXME` comments. It
-merges and sorts items by severity. No director gates are invoked. The skill
-asks "May I write to `docs/tech-debt-register.md`?" before updating. Verdicts:
-REGISTER UPDATED or NO NEW DEBT FOUND.
+`/tech-debt` 跟踪、分类并排序代码库中的技术债务。读取 `docs/tech-debt-register.md`，扫描 `src/` 中的 `TODO` 和 `FIXME`，合并后按严重程度排序。不调用总监门禁。更新前询问 "May I write to `docs/tech-debt-register.md`?"。结论：REGISTER UPDATED 或 NO NEW DEBT FOUND。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-Verified automatically by `/skill-test static` — no fixture needed.
+由 `/skill-test static` 自动验证，无需测试夹具。
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings
-- [ ] Contains verdict keywords: REGISTER UPDATED, NO NEW DEBT FOUND
-- [ ] Contains "May I write" language (skill writes to debt register)
-- [ ] Has a next-step handoff (what to do after register is updated)
-
----
-
-## Director Gate Checks
-
-None. Tech debt tracking is an internal codebase analysis skill; no gates are
-invoked.
+- [ ] 包含必需的 front matter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少包含 2 个阶段标题
+- [ ] 包含结论关键字：REGISTER UPDATED、NO NEW DEBT FOUND
+- [ ] 包含 "May I write"
+- [ ] 包含下一步交接
 
 ---
 
-## Test Cases
+## 总监门禁检查
 
-### Case 1: Happy Path — Inline TODOs plus existing register items merged
-
-**Fixture:**
-- `docs/tech-debt-register.md` exists with 2 items (LOW and MEDIUM severity)
-- `src/gameplay/combat.gd` has 2 `# TODO` comments and 1 `# FIXME` comment
-- `src/ui/hud.gd` has 0 inline debt comments
-
-**Input:** `/tech-debt`
-
-**Expected behavior:**
-1. Skill reads `docs/tech-debt-register.md` — finds 2 existing items
-2. Skill scans `src/` — finds 3 inline comments (2 TODOs, 1 FIXME)
-3. Skill checks whether inline comments already exist in the register (deduplication)
-4. Skill presents combined list sorted by severity (FIXME before TODO by default)
-5. Skill asks "May I write to `docs/tech-debt-register.md`?"
-6. User approves; register updated; verdict REGISTER UPDATED
-
-**Assertions:**
-- [ ] Inline comments are found by scanning `src/` recursively
-- [ ] Existing register items are not duplicated
-- [ ] Combined list is sorted by severity
-- [ ] "May I write" prompt appears before any write
-- [ ] Verdict is REGISTER UPDATED
+无。技术债务跟踪是内部代码库分析技能，不调用门禁。
 
 ---
 
-### Case 2: Register Doesn't Exist — Offered to create it
+## 测试用例
 
-**Fixture:**
-- `docs/tech-debt-register.md` does NOT exist
-- `src/` contains 4 inline TODO/FIXME comments
+### 用例 1：正常路径——合并内联 TODO 与现有登记项
 
-**Input:** `/tech-debt`
+**测试夹具：** 
+- `docs/tech-debt-register.md` 有 2 项（LOW、MEDIUM）；
+- `src/gameplay/combat.gd` 有 2 个 `# TODO` 和 1 个 `# FIXME`；
+- `src/ui/hud.gd` 没有内联债务注释。
 
-**Expected behavior:**
-1. Skill attempts to read `docs/tech-debt-register.md` — not found
-2. Skill informs user: "No tech-debt-register.md found"
-3. Skill offers to create the register with the inline items it found
-4. Skill asks "May I write to `docs/tech-debt-register.md`?" (create)
-5. User approves; register created with 4 items; verdict REGISTER UPDATED
+**输入：** `/tech-debt`
 
-**Assertions:**
-- [ ] Skill does not crash when register file is absent
-- [ ] User is offered register creation (not silently skipping)
-- [ ] "May I write" prompt reflects file creation (not update)
-- [ ] Verdict is REGISTER UPDATED after creation
+**预期行为：**
+1. Skill 读取 `docs/tech-debt-register.md` —— 找到 2 个已有条目
+2. Skill 扫描 `src/` —— 找到 3 条内联注释（2 个 TODO，1 个 FIXME）
+3. Skill 检查内联注释是否已经存在于登记表中（去重）
+4. Skill 展示按严重性排序的合并列表（默认情况下 FIXME 在 TODO 之前）
+5. Skill 提问“我可以写入 `docs/tech-debt-register.md` 吗？”
+6. 用户批准；登记表更新；结果 REGISTER UPDATED
 
----
-
-### Case 3: Resolved Item Detected — Marked resolved in register
-
-**Fixture:**
-- `docs/tech-debt-register.md` has 3 items; one references `src/gameplay/legacy_input.gd`
-- `src/gameplay/legacy_input.gd` has been deleted (refactored away)
-- The referenced TODO comment no longer exists in source
-
-**Input:** `/tech-debt`
-
-**Expected behavior:**
-1. Skill reads register — finds 3 items
-2. Skill scans `src/` — does not find the source location referenced by item 2
-3. Skill flags item 2 as RESOLVED (source is gone)
-4. Skill presents the resolved item to user for confirmation
-5. On approval, register is updated with item 2 marked `Status: Resolved`
-
-**Assertions:**
-- [ ] Skill checks whether each register item's source reference still exists
-- [ ] Missing source locations result in items being flagged as RESOLVED
-- [ ] User confirms before resolved items are written
-- [ ] RESOLVED items are kept in the register (not deleted) for audit history
+**断言：**
+- [ ] 通过递归扫描 `src/` 找到内联注释
+- [ ] 不重复已有的登记表条目
+- [ ] 合并列表按严重性排序
+- [ ] 写入前会出现“我可以写吗”提示
+- [ ] 结果为 REGISTER UPDATED
 
 ---
 
-### Case 4: Edge Case — CRITICAL debt item surfaces prominently
+### 用例 2：登记表不存在——提供创建选项
 
-**Fixture:**
-- `src/core/network_sync.gd` has a comment: `# FIXME(CRITICAL): race condition in sync buffer — can corrupt save data`
-- `docs/tech-debt-register.md` exists with 5 lower-severity items
+**测试夹具：** 
+- `docs/tech-debt-register.md` 不存在；
+- `src/` 有 4 个 TODO/FIXME。
 
-**Input:** `/tech-debt`
+**输入：** `/tech-debt`
 
-**Expected behavior:**
-1. Skill scans source and finds the CRITICAL-tagged FIXME
-2. Skill presents the CRITICAL item at the top of the output — before the full table
-3. Skill asks user to acknowledge the critical item before proceeding
-4. After acknowledgment, skill presents full debt table and asks to write
-5. Register is updated with CRITICAL item at top; verdict REGISTER UPDATED
+**预期行为：**
+1. 技能尝试读取 `docs/tech-debt-register.md` — 未找到
+2. 技能通知用户：“未找到 tech-debt-register.md”
+3. 技能提供使用它找到的内联条目创建该登记表
+4. 技能询问“我可以写入 `docs/tech-debt-register.md` 吗？”（创建）
+5. 用户同意；登记表创建，包含 4 个条目；结果为 REGISTER UPDATED
 
-**Assertions:**
-- [ ] CRITICAL items appear at the top of the output, not buried in the table
-- [ ] Skill surfaces CRITICAL items before asking to write
-- [ ] User acknowledgment of the CRITICAL item is requested
-- [ ] CRITICAL severity is preserved in the written register entry
-
----
-
-### Case 5: Gate Compliance — No gate; register updated only with approval
-
-**Fixture:**
-- Inline scan finds 2 new TODOs; register has 3 existing items
-- `review-mode.txt` contains `full`
-
-**Input:** `/tech-debt`
-
-**Expected behavior:**
-1. Skill scans source and reads register; compiles combined debt list
-2. No director gate is invoked regardless of review mode
-3. Skill presents sorted debt table to user
-4. Skill asks "May I write to `docs/tech-debt-register.md`?"
-5. User approves; register updated; verdict REGISTER UPDATED
-
-**Assertions:**
-- [ ] No director gate is invoked in any review mode
-- [ ] Debt table is presented before any write prompt
-- [ ] "May I write" prompt appears before file update
-- [ ] Write only occurs with explicit user approval
+**断言：**
+- [ ] 当登记表文件缺失时，技能不会崩溃
+- [ ] 用户会被提供创建登记表的选项（不会悄悄跳过）
+- [ ] “我可以写入”提示反映文件创建（而非更新）
+- [ ] 创建后结果为 REGISTER UPDATED
 
 ---
 
-## Protocol Compliance
+### 用例 3：检测已解决项——在登记表中标记
 
-- [ ] Reads `docs/tech-debt-register.md` and scans `src/` before compiling
-- [ ] Deduplicates inline comments against existing register items
-- [ ] Sorts combined list by severity
-- [ ] Always asks "May I write" before updating register
-- [ ] No director gates are invoked
-- [ ] Verdict is REGISTER UPDATED or NO NEW DEBT FOUND
+**测试夹具：** 
+- `docs/tech-debt-register.md` 有 3 个条目；其中一个引用了 `src/gameplay/legacy_input.gd`
+- `src/gameplay/legacy_input.gd` 已被删除（已重构）
+- 所引用的 TODO 注释在源码中已不存在
+
+**输入：** `/tech-debt`
+
+**预期行为：**
+1. 技能读取登记表 — 找到 3 个条目
+2. 技能扫描 `src/` — 没有找到条目 2 引用的源码位置
+3. 技能将条目 2 标记为已解决（源码已消失）
+4. 技能向用户展示已解决的条目以确认
+5. 经用户批准后，登记表更新，条目 2 标记为 `状态: 已解决`
+
+**断言：**
+- [ ] 技能检查每个登记表条目的源码引用是否仍然存在
+- [ ] 源码位置缺失会导致条目被标记为已解决
+- [ ] 在写入已解决条目前需用户确认
+- [ ] 已解决的条目保留在登记表中（不删除），用于审计历史记录
 
 ---
 
-## Coverage Notes
+### 用例 4：边界情况——CRITICAL 债务醒目显示
 
-- The case where `src/` is empty or absent is not tested; behavior follows
-  the NO NEW DEBT FOUND path for the inline scan, but register items would
-  still be read and presented.
-- TODO comments without severity tags are treated as LOW severity by default;
-  this classification detail is an implementation concern, not tested here.
+**测试夹具：** 
+- `src/core/network_sync.gd` 有 `# FIXME(CRITICAL): race condition in sync buffer — can corrupt save data`；
+- `docs/tech-debt-register.md` 有 5 个低严重度项。
+
+**输入：** `/tech-debt`
+
+**预期行为：**
+1. 技能扫描源文件并找到标记为 CRITICAL 的 FIXME
+2. 技能将 CRITICAL 项目显示在输出顶部——在完整表格之前
+3. 技能在继续之前要求用户确认该关键项目
+4. 确认之后，技能展示完整的债务表并请求写入
+5. 注册表会更新，CRITICAL 项目置于顶部；状态显示 REGISTER UPDATED
+
+**断言：**
+- [ ] CRITICAL 项目出现在输出顶部，而不是被埋在表格里
+- [ ] 技能在请求写入之前显示 CRITICAL 项目
+- [ ] 请求用户确认 CRITICAL 项目
+- [ ] 写入注册表时保留 CRITICAL 严重性
+
+---
+
+### 用例 5：门禁合规——不调用门禁；仅经批准更新
+
+**测试夹具：** 
+- 找到 2 个新 TODO，登记表有 3 项；
+- `review-mode.txt` 包含 `full`。
+
+**输入：** `/tech-debt`
+
+**预期行为:**
+1. 技能扫描源代码并读取登记册；编译合并的债务清单
+2. 无论审核模式如何，都不会触发主管权限
+3. 技能向用户展示排序后的债务表
+4. 技能询问“我可以写入 `docs/tech-debt-register.md` 吗？”
+5. 用户批准；登记册更新；结果 REGISTER UPDATED
+
+**断言:**
+- [ ] 在任何审核模式下都不会触发主管权限
+- [ ] 债务表在任何写入提示之前显示
+- [ ] “我可以写入”提示在文件更新之前出现
+- [ ] 仅在用户明确批准的情况下才会写入
+---
+
+## 协议合规性
+
+- [ ] 编译前读取登记表并扫描 `src/`
+- [ ] 将内联注释与现有登记项去重
+- [ ] 按严重程度排序
+- [ ] 更新前总是询问 "May I write"
+- [ ] 不调用总监门禁
+- [ ] 结论为 REGISTER UPDATED 或 NO NEW DEBT FOUND
+
+---
+
+## 覆盖说明
+
+- `src/` 为空或不存在的情况未测试；内联扫描遵循 NO NEW DEBT FOUND，但仍读取登记项。
+- 没有严重程度标签的 TODO 默认按 LOW 处理，此实现细节未测试。

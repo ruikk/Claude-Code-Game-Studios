@@ -1,201 +1,188 @@
-# Skill Test Spec: /team-ui
+# 技能测试规范：/team-ui
 
-## Skill Summary
+## 技能摘要
 
-Orchestrates the UI team through the full UX pipeline for a single UI feature.
-Coordinates ux-designer, ui-programmer, art-director, the engine UI specialist,
-and accessibility-specialist through five structured phases: Context Gathering +
-UX Spec (Phase 1a/1b) → UX Review Gate (Phase 1c) → Visual Design (Phase 2) →
-Implementation (Phase 3) → Review in parallel (Phase 4) → Polish (Phase 5).
-Uses `AskUserQuestion` at each phase transition. Delegates all file writes to
-sub-agents and sub-skills (`/ux-design`, `ui-programmer`). Produces a summary report
-with verdict COMPLETE / BLOCKED and handoffs to `/ux-review`, `/code-review`,
-`/team-polish`.
+为单个 UI 功能编排完整 UX 流水线。协调 ux-designer、ui-programmer、art-director、引擎 UI 专家和 accessibility-specialist，执行五个结构化阶段：上下文收集与 UX 规范（阶段 1a/1b）→ UX 审查门（阶段 1c）→ 视觉设计（阶段 2）→ 实现（阶段 3）→ 并行审查（阶段 4）→ 打磨（阶段 5）。每次阶段转换使用 `AskUserQuestion`。所有写入委托给子代理和子技能（`/ux-design`、`ui-programmer`）。生成 COMPLETE / BLOCKED 摘要并交接到 `/ux-review`、`/code-review`、`/team-polish`。
 
 ---
 
-## Static Assertions (Structural)
+## 静态断言（结构）
 
-- [ ] Has required frontmatter fields: `name`, `description`, `argument-hint`, `user-invocable`, `allowed-tools`
-- [ ] Has ≥2 phase headings (Phase 1a through Phase 5 are all present)
-- [ ] Contains verdict keywords: COMPLETE, BLOCKED
-- [ ] Contains "May I write" or "File Write Protocol" — writes delegated to sub-agents and sub-skills, orchestrator does not write files directly
-- [ ] Has a next-step handoff at the end (references `/ux-review`, `/code-review`, `/team-polish`)
-- [ ] Error Recovery Protocol section is present with all four recovery steps
-- [ ] Uses `AskUserQuestion` at phase transitions for user approval before proceeding
-- [ ] Phase 4 is explicitly marked as parallel (ux-designer, art-director, accessibility-specialist)
-- [ ] UX Review Gate (Phase 1c) is defined as a blocking gate — skill must not proceed to Phase 2 without APPROVED verdict
-- [ ] Team Composition lists all five roles (ux-designer, ui-programmer, art-director, engine UI specialist, accessibility-specialist)
-- [ ] References the interaction pattern library (`design/ux/interaction-patterns.md`) — ui-programmer must use existing patterns
-- [ ] Phase 1a reads `design/accessibility-requirements.md` before design begins
-
----
-
-## Test Cases
-
-### Case 1: Happy Path — Full pipeline from UX spec through polish succeeds
-
-**Fixture:**
-- `design/gdd/game-concept.md` exists with platform targets and intended audience
-- `design/player-journey.md` exists
-- `design/ux/interaction-patterns.md` exists with relevant patterns
-- `design/accessibility-requirements.md` exists with committed tier (e.g., Enhanced)
-- Engine UI specialist configured in `.claude/docs/technical-preferences.md`
-
-**Input:** `/team-ui inventory screen`
-
-**Expected behavior:**
-1. Phase 1a — orchestrator reads game-concept.md, player-journey.md, relevant GDD UI sections, interaction-patterns.md, accessibility-requirements.md; summarizes a brief for the ux-designer
-2. Phase 1b — `/ux-design inventory-screen` invoked (or ux-designer spawned directly); produces `design/ux/inventory-screen.md` using `ux-spec.md` template; `AskUserQuestion` confirms spec before review
-3. Phase 1c — `/ux-review design/ux/inventory-screen.md` invoked; returns APPROVED; gate passed, proceed to Phase 2
-4. Phase 2 — art-director spawned; reviews full UX spec (not only wireframes); applies visual treatment; verifies color contrast; produces visual design spec with asset manifest; `AskUserQuestion` confirms before Phase 3
-5. Phase 3 — engine UI specialist spawned first (read from technical-preferences.md); produces implementation notes for ui-programmer; ui-programmer spawned with UX spec + visual spec + engine notes; implementation produced; interaction-patterns.md updated if new patterns introduced
-6. Phase 4 — ux-designer, art-director, accessibility-specialist spawned in parallel; all three return results before Phase 5
-7. Phase 5 — review feedback addressed; animations verified skippable; UI sounds confirmed through audio event system; interaction-patterns.md final check; verdict: COMPLETE
-8. Summary report: UX spec APPROVED, visual design COMPLETE, implementation COMPLETE, accessibility COMPLIANT, all input methods supported, pattern library updated, verdict: COMPLETE
-
-**Assertions:**
-- [ ] Phase 1a reads all five sources before briefing ux-designer
-- [ ] UX Review Gate checked before Phase 2 — Phase 2 does NOT begin until APPROVED
-- [ ] Art-director in Phase 2 reviews full spec, not just wireframe images
-- [ ] Engine UI specialist spawned before ui-programmer in Phase 3
-- [ ] Phase 4 agents launched simultaneously (ux-designer, art-director, accessibility-specialist)
-- [ ] All file writes delegated to sub-agents and sub-skills
-- [ ] Verdict COMPLETE in final summary report
-- [ ] Next steps include `/ux-review`, `/code-review`, `/team-polish`
+- [ ] 包含必需的 frontmatter 字段：`name`、`description`、`argument-hint`、`user-invocable`、`allowed-tools`
+- [ ] 至少有 2 个阶段标题（阶段 1a 至阶段 5 均存在）
+- [ ] 包含结论关键词：COMPLETE、BLOCKED
+- [ ] 包含“May I write”或“文件写入协议”，写入委托给子代理和子技能，编排器不直接写文件
+- [ ] 末尾有下一步交接（引用 `/ux-review`、`/code-review`、`/team-polish`）
+- [ ] 存在“错误恢复协议”章节，且包含全部四个恢复步骤
+- [ ] 阶段转换时使用 `AskUserQuestion`，在继续前取得用户批准
+- [ ] 阶段 4 明确标记为并行（ux-designer、art-director、accessibility-specialist）
+- [ ] UX 审查门（阶段 1c）定义为阻塞门；没有 APPROVED 结论不得进入阶段 2
+- [ ] 团队组成列出全部五个角色（ux-designer、ui-programmer、art-director、引擎 UI 专家、accessibility-specialist）
+- [ ] 引用交互模式库（`design/ux/interaction-patterns.md`），ui-programmer 必须使用现有模式
+- [ ] 阶段 1a 在设计开始前读取 `design/accessibility-requirements.md`
 
 ---
 
-### Case 2: UX Review Gate — Spec fails review; skill halts before implementation
+## 测试用例
 
-**Fixture:**
-- `design/ux/inventory-screen.md` produced by Phase 1b
-- `/ux-review` returns verdict NEEDS REVISION with specific concerns flagged (e.g., gamepad navigation flow incomplete, contrast ratio below minimum)
+### 用例 1：成功路径——从 UX 规范到打磨的完整流水线成功
 
-**Input:** `/team-ui inventory screen`
+**夹具：**
+- `design/gdd/game-concept.md` 存在且包含平台目标和目标受众
+- `design/player-journey.md` 存在
+- `design/ux/interaction-patterns.md` 存在且包含相关模式
+- `design/accessibility-requirements.md` 存在且有已确定的等级（例如 Enhanced）
+- `.claude/docs/technical-preferences.md` 已配置引擎 UI 专家
 
-**Expected behavior:**
-1. Phase 1a + 1b complete — UX spec produced
-2. Phase 1c — `/ux-review design/ux/inventory-screen.md` returns NEEDS REVISION
-3. Skill does NOT advance to Phase 2
-4. `AskUserQuestion` presented with the specific flagged concerns and options:
-   - (a) Return to ux-designer to address the issues and re-review
-   - (b) Accept the risk and proceed to Phase 2 anyway (conscious decision)
-5. If user chooses (a): ux-designer revises spec, `/ux-review` re-run; loop continues until APPROVED or user overrides
-6. If user chooses (b): skill proceeds with an explicit NEEDS REVISION note in the final report
-7. Skill does NOT silently proceed past the gate
+**输入：** `/team-ui inventory screen`
 
-**Assertions:**
-- [ ] Phase 2 does NOT begin while UX review verdict is NEEDS REVISION
-- [ ] `AskUserQuestion` presents the specific flagged concerns before offering options
-- [ ] User must make a conscious choice to override — skill does not assume override
-- [ ] If user accepts risk, NEEDS REVISION concern is documented in the final report
-- [ ] Revision-and-re-review loop is offered (not just a one-shot failure)
-- [ ] Skill does NOT discard the produced UX spec on review failure
+**预期行为：**
+1. 阶段 1a：编排器读取 game-concept.md、player-journey.md、相关 GDD UI 章节、interaction-patterns.md 和 accessibility-requirements.md；为 ux-designer 汇总简报
+2. 阶段 1b：调用 `/ux-design inventory-screen`（或直接启动 ux-designer）；使用 `ux-spec.md` 模板生成 `design/ux/inventory-screen.md`；用 `AskUserQuestion` 在审查前确认规范
+3. 阶段 1c：调用 `/ux-review design/ux/inventory-screen.md`；返回 APPROVED；通过门禁后进入阶段 2
+4. 阶段 2：启动 art-director；审查完整 UX 规范（不只是线框图）；应用视觉处理；验证颜色对比度；生成含资产清单的视觉设计规范；用 `AskUserQuestion` 确认后进入阶段 3
+5. 阶段 3：先启动引擎 UI 专家（从 technical-preferences.md 读取）；为 ui-programmer 生成实现说明；将 UX 规范、视觉规范和引擎说明传给 ui-programmer；生成实现；若引入新模式则更新 interaction-patterns.md
+6. 阶段 4：并行启动 ux-designer、art-director、accessibility-specialist；三者均返回结果后才进入阶段 5
+7. 阶段 5：处理审查反馈；验证动画可跳过；通过音频事件系统确认 UI 音效；完成 interaction-patterns.md 最终检查；结论为 COMPLETE
+8. 汇总报告：UX 规范 APPROVED、视觉设计 COMPLETE、实现 COMPLETE、无障碍 COMPLIANT，支持所有输入方式，模式库已更新，结论为 COMPLETE
 
----
-
-### Case 3: No Argument — Usage guidance shown
-
-**Fixture:**
-- Any project state
-
-**Input:** `/team-ui` (no argument)
-
-**Expected behavior:**
-1. Skill detects no argument provided
-2. Outputs usage message explaining the required argument (UI feature description)
-3. Provides an example invocation: `/team-ui [UI feature description]`
-4. Skill exits without spawning any subagents or reading any project files
-
-**Assertions:**
-- [ ] Skill does NOT spawn any subagents when no argument is given
-- [ ] Usage message includes the argument-hint format from frontmatter
-- [ ] At least one example of a valid invocation is shown
-- [ ] No UX spec files or GDDs read before failing
-- [ ] Verdict is NOT shown (pipeline never starts)
+**断言：**
+- [ ] 阶段 1a 在向 ux-designer 汇报前读取全部五个来源
+- [ ] 阶段 2 前检查 UX 审查门——在 APPROVED 前不得开始阶段 2
+- [ ] 阶段 2 的 art-director 审查完整规范，而不只是线框图
+- [ ] 阶段 3 在 ui-programmer 之前启动引擎 UI 专家
+- [ ] 阶段 4 代理同时启动（ux-designer、art-director、accessibility-specialist）
+- [ ] 所有文件写入均委托给子代理和子技能
+- [ ] 最终摘要报告中的结论为 COMPLETE
+- [ ] 下一步包含 `/ux-review`、`/code-review`、`/team-polish`
 
 ---
 
-### Case 4: Accessibility Parallel Review — Phase 4 runs three streams simultaneously
+### 用例 2：UX 审查门——规范审查失败，技能在实现前停止
 
-**Fixture:**
-- `design/ux/inventory-screen.md` exists (APPROVED)
-- Visual design spec complete
-- Implementation complete
-- `design/accessibility-requirements.md` committed tier: Enhanced
+**夹具：**
+- `design/ux/inventory-screen.md` 由阶段 1b 生成
+- `/ux-review` 返回 NEEDS REVISION，并标出具体问题（例如手柄导航流程不完整、对比度低于最低值）
 
-**Input:** `/team-ui inventory screen` (resuming from Phase 3 complete)
+**输入：** `/team-ui inventory screen`
 
-**Expected behavior:**
-1. Phase 4 begins after implementation is confirmed complete
-2. Three Task calls issued simultaneously: ux-designer, art-director, accessibility-specialist
-3. Each stream operates independently:
-   - ux-designer: verifies implementation matches wireframes, tests keyboard-only and gamepad-only navigation, checks accessibility features function
-   - art-director: verifies visual consistency with art bible at minimum and maximum supported resolutions
-   - accessibility-specialist: audits against the Enhanced accessibility tier in `design/accessibility-requirements.md`; any violation flagged as a blocker
-4. Skill waits for all three results before proceeding to Phase 5
-5. `AskUserQuestion` presents all three review results before Phase 5 begins
+**预期行为：**
+1. 阶段 1a + 1b 完成，生成 UX 规范
+2. 阶段 1c：`/ux-review design/ux/inventory-screen.md` 返回 NEEDS REVISION
+3. 技能不得进入阶段 2
+4. `AskUserQuestion` 展示具体问题和选项：
+   - (a) 返回 ux-designer 修复问题并重新审查
+   - (b) 接受风险并继续进入阶段 2（明确的有意识决策）
+5. 用户选择 (a) 时：ux-designer 修订规范，重新运行 `/ux-review`；循环持续到 APPROVED 或用户覆盖
+6. 用户选择 (b) 时：技能继续，但在最终报告中明确记录 NEEDS REVISION
+7. 技能不得静默越过门禁
 
-**Assertions:**
-- [ ] All three Task calls issued before any result is awaited (parallel, not sequential)
-- [ ] Phase 5 does NOT begin until all three Phase 4 agents have returned
-- [ ] Accessibility-specialist explicitly reads `design/accessibility-requirements.md` for the committed tier
-- [ ] Accessibility violations flagged as BLOCKING (not merely advisory)
-- [ ] `AskUserQuestion` shows all three review streams' results together before Phase 5 approval
-- [ ] No Phase 4 agent's output is used as input for another Phase 4 agent
-
----
-
-### Case 5: Missing Interaction Pattern Library — Skill notes the gap rather than inventing patterns
-
-**Fixture:**
-- `design/ux/interaction-patterns.md` does NOT exist
-- All other required files present
-
-**Input:** `/team-ui settings menu`
-
-**Expected behavior:**
-1. Phase 1a — orchestrator attempts to read `design/ux/interaction-patterns.md`; file not found
-2. Skill surfaces the gap: "interaction-patterns.md does not exist — no existing patterns to reuse"
-3. `AskUserQuestion` presented with options:
-   - (a) Run `/ux-design patterns` first to establish the pattern library, then continue
-   - (b) Proceed without the pattern library — ux-designer will document new patterns as they are created
-4. Skill does NOT invent or assume patterns from other sources
-5. If user chooses (b): ui-programmer is explicitly instructed to treat all patterns created as new and to add each to a new `design/ux/interaction-patterns.md` at completion
-6. Final report notes that interaction-patterns.md was created (or is still absent if user skipped)
-
-**Assertions:**
-- [ ] Skill does NOT silently ignore the missing pattern library
-- [ ] Skill does NOT invent patterns by guessing from the feature name or GDD alone
-- [ ] `AskUserQuestion` offers a "create pattern library first" option (referencing `/ux-design patterns`)
-- [ ] If user proceeds without the library, ui-programmer is told to treat all patterns as new
-- [ ] Final report documents pattern library status (created / absent / updated)
-- [ ] Skill does NOT fail entirely — the gap is noted and user is given a choice
+**断言：**
+- [ ] UX 审查结论为 NEEDS REVISION 时不得开始阶段 2
+- [ ] `AskUserQuestion` 在提供选项前展示明确标记的问题
+- [ ] 用户必须有意识地选择覆盖——技能不假定用户会覆盖
+- [ ] 用户接受风险时，最终报告记录 NEEDS REVISION 问题
+- [ ] 提供修订并重新审查的循环（不只是一次性失败）
+- [ ] 审查失败时技能不丢弃已生成的 UX 规范
 
 ---
 
-## Protocol Compliance
+### 用例 3：无参数——显示用法指导
 
-- [ ] `AskUserQuestion` used at each phase transition — user approves before pipeline advances
-- [ ] UX Review Gate (Phase 1c) is blocking — Phase 2 cannot begin without APPROVED or explicit user override
-- [ ] All file writes delegated to sub-agents and sub-skills — orchestrator does not call Write or Edit directly
-- [ ] Phase 4 agents launched in parallel per skill spec
-- [ ] Error Recovery Protocol followed: surface → assess → offer options → partial report
-- [ ] Partial report always produced even when agents are BLOCKED
-- [ ] Verdict is one of COMPLETE / BLOCKED
-- [ ] Next steps present at end: `/ux-review`, `/code-review`, `/team-polish`
+**夹具：**
+- 任意项目状态
+
+**输入：** `/team-ui`（无参数）
+
+**预期行为：**
+1. 技能检测到未提供参数
+2. 输出用法消息，说明必需参数（UI 功能描述）
+3. 提供调用示例：`/team-ui [UI feature description]`
+4. 技能退出，不启动任何子代理或读取任何项目文件
+
+**断言：**
+- [ ] 未提供参数时技能不启动任何子代理
+- [ ] 用法消息包含 frontmatter 中的 argument-hint 格式
+- [ ] 至少展示一个有效调用示例
+- [ ] 失败前不读取 UX 规范文件或 GDD
+- [ ] 不展示结论（流水线从未开始）
 
 ---
 
-## Coverage Notes
+### 用例 4：并行无障碍审查——阶段 4 同时运行三条流
 
-- The HUD-specific path (`/ux-design hud` + `hud-design.md` template + visual budget check in Phase 5)
-  is not separately tested here; it shares the same phase structure but uses different templates.
-- The "Update in place" path for interaction-patterns.md (new pattern added during implementation)
-  is exercised implicitly in Case 1 Step 5 — a dedicated fixture with a known new pattern would
-  strengthen coverage.
-- Engine UI specialist unavailable (no engine configured) — skill spec states "skip if no engine
-  configured"; this path is asserted in Case 1 but not given a dedicated fixture.
-- The NEEDS REVISION acceptance-risk override (Case 2 option b) requires the override to be
-  explicitly documented in the report; this is asserted but not further tested for downstream effects.
+**夹具：**
+- `design/ux/inventory-screen.md` 存在（APPROVED）
+- 视觉设计规范已完成
+- 实现已完成
+- `design/accessibility-requirements.md` 中记录的等级：Enhanced
+
+**输入：** `/team-ui inventory screen`（从阶段 3 完成处恢复）
+
+**预期行为：**
+1. 实现确认完成后开始阶段 4
+2. 同时发出三个 Task 调用：ux-designer、art-director、accessibility-specialist
+3. 每条流独立运行：
+   - ux-designer：验证实现与线框图一致，测试仅键盘和仅手柄的导航，检查无障碍功能是否正常
+   - art-director：在支持的最低和最高分辨率下验证与美术圣经的视觉一致性
+   - accessibility-specialist：根据 `design/accessibility-requirements.md` 中的 Enhanced 无障碍等级进行审计；任何违规均标记为阻塞项
+4. 技能等待三个结果全部返回后再进入阶段 5
+5. 阶段 5 开始前，`AskUserQuestion` 展示全部三个审查结果
+
+**断言：**
+- [ ] 在等待任何结果前发出全部三个 Task 调用（并行而非顺序）
+- [ ] 三个阶段 4 代理全部返回前不得开始阶段 5
+- [ ] accessibility-specialist 明确读取 `design/accessibility-requirements.md` 中记录的等级
+- [ ] 无障碍违规标记为 BLOCKING（而非仅提供建议）
+- [ ] 阶段 5 获批前，`AskUserQuestion` 一并展示三条审查流的结果
+- [ ] 任何阶段 4 代理的输出都不作为另一个阶段 4 代理的输入
+
+---
+
+### 用例 5：缺少交互模式库——记录缺口而不是臆造模式
+
+**夹具：**
+- `design/ux/interaction-patterns.md` 不存在
+- 其他所有必需文件均存在
+
+**输入：** `/team-ui settings menu`
+
+**预期行为：**
+1. 阶段 1a——编排器尝试读取 `design/ux/interaction-patterns.md`；找不到文件
+2. 技能呈现缺口：“interaction-patterns.md 不存在——没有可复用的现有模式”
+3. `AskUserQuestion` 提供选项：
+    - (a) 先运行 `/ux-design patterns` 建立模式库，再继续
+    - (b) 不使用模式库继续——ux-designer 将记录创建的新模式
+4. 技能不从其他来源臆造或假定模式
+5. 用户选择 (b) 时：明确指示 ui-programmer 将创建的所有模式视为新模式，并在完成时将每个模式添加到新的 `design/ux/interaction-patterns.md`
+6. 最终报告注明 interaction-patterns.md 已创建（或用户跳过时仍然缺失）
+
+**断言：**
+- [ ] 技能不静默忽略缺失的模式库
+- [ ] 技能不只根据功能名称或 GDD 臆测模式
+- [ ] `AskUserQuestion` 提供“先创建模式库”选项（引用 `/ux-design patterns`）
+- [ ] 用户不使用模式库继续时，告知 ui-programmer 将所有模式视为新模式
+- [ ] 最终报告记录模式库状态（已创建 / 缺失 / 已更新）
+- [ ] 技能不完全失败——记录缺口并向用户提供选择
+
+---
+
+## 协议合规性
+
+- [ ] 每次阶段转换均使用 `AskUserQuestion`——用户批准后流水线才推进
+- [ ] UX 审查门（阶段 1c）是阻塞门——没有 APPROVED 或用户明确覆盖不得开始阶段 2
+- [ ] 所有文件写入均委托给子代理和子技能——编排器不直接调用 Write 或 Edit
+- [ ] 阶段 4 代理按技能规范并行启动
+- [ ] 遵循错误恢复协议：呈现 → 评估 → 提供选项 → 部分报告
+- [ ] 即使代理处于 BLOCKED 状态，也始终生成部分报告
+- [ ] 结论为 COMPLETE / BLOCKED 之一
+- [ ] 末尾提供下一步：`/ux-review`、`/code-review`、`/team-polish`
+
+---
+
+## 覆盖说明
+
+- HUD 专用路径（`/ux-design hud` + `hud-design.md` 模板 + 阶段 5 的视觉预算检查）未在此单独测试；它共享相同的阶段结构，但使用不同模板。
+- interaction-patterns.md 的“就地更新”路径（实现期间添加新模式）在用例 1 步骤 5 中隐式执行——增加一个包含已知新模式的专用夹具会加强覆盖。
+- 引擎 UI 专家不可用（未配置引擎）——技能规范说明“如果未配置引擎则跳过”；用例 1 断言了此路径，但没有专用夹具。
+- NEEDS REVISION 的接受风险覆盖（用例 2 选项 b）要求在报告中明确记录覆盖；此点已断言，但未进一步测试其下游影响。
