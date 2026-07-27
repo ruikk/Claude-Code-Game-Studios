@@ -1,210 +1,210 @@
-# Example Session: UX Pipeline — /ux-design → /ux-review → /team-ui
+# 会话示例：UX 流水线 — /ux-design → /ux-review → /team-ui
 
-**Context:** Solo indie dev, Pre-Production phase. The HUD and inventory screen are the first UI to design. The game has a player journey doc and GDDs for inventory and combat.
+**背景：** 独立开发者，处于前期制作阶段。HUD 和库存界面是首先要设计的 UI。游戏已有玩家旅程文档，以及库存和战斗 GDD。
 
-**Starting State:**
-- `design/gdd/inventory-system.md` — complete
-- `design/gdd/combat-system.md` — complete
-- `design/player-journey.md` — complete (6-phase arc defined)
-- No UX specs yet
-- `design/ux/` directory does not exist
+**初始状态：**
+- `design/gdd/inventory-system.md` — 已完成
+- `design/gdd/combat-system.md` — 已完成
+- `design/player-journey.md` — 已完成（已定义 6 阶段弧线）
+- 尚无 UX 规格
+- `design/ux/` 目录不存在
 
-**Session Duration:** ~90 minutes across two sessions (HUD design, then inventory screen)
-**Turns:** 16
-**Outcome:** `design/ux/hud.md` and `design/ux/screens/inventory.md` created and reviewed; team-ui handed off for visual implementation
+**会话时长：** 两次会话共约 90 分钟（先设计 HUD，再设计库存界面）
+**轮数：** 16
+**结果：** 已创建并审查 `design/ux/hud.md` 和 `design/ux/screens/inventory.md`；已移交 team-ui 进行视觉实现
 
 ---
 
-## Part 1: HUD Design with /ux-design
+## 第 1 部分：使用 /ux-design 设计 HUD
 
-### Turn 1: User Starts HUD Design
+### 第 1 轮：用户开始设计 HUD
 
-**User:**
+**用户：**
 > /ux-design hud
 
-### Turn 2: Agent Loads Context and Presents the Approach
+### 第 2 轮：代理加载背景并提出方案
 
-**Agent (ux-designer, via /ux-design):**
-> Starting HUD design. Loading context...
+**代理（ux-designer，通过 /ux-design）：**
+> 开始设计 HUD。正在加载背景……
 >
-> - `design/player-journey.md` read — key states: Calm Exploration, Tension (threat detected), Crisis (low HP/stamina), Combat
-> - `design/gdd/combat-system.md` — HUD needs: HP bar, stamina bar, active ability cooldowns (up to 3), damage numbers
-> - `design/gdd/inventory-system.md` — HUD needs: quick slots (4 slots), active item indicator
+> - 已读取 `design/player-journey.md`——关键状态：平静探索、紧张（检测到威胁）、危机（HP/耐力较低）、战斗
+> - `design/gdd/combat-system.md`——HUD 需求：HP 条、耐力条、主动技能冷却（最多 3 个）、伤害数字
+> - `design/gdd/inventory-system.md`——HUD 需求：快捷栏（4 个槽位）、当前物品指示器
 >
-> **HUD Philosophy question:** What is the player's primary attention focus during play?
+> **HUD 理念问题：** 玩家游玩时主要关注什么？
 >
-> This determines how aggressive the HUD should be:
-> - **Option A: Diegetic (low presence)** — HP shown only when damaged, stamina shown only when draining. World-first, HUD recedes unless urgent.
-> - **Option B: Persistent minimal** — HP and stamina always visible, small and unobtrusive. Quick reference without mode-switching.
-> - **Option C: Full tactical** — All info always visible (HP, stamina, cooldowns, map, inventory slots). Player always has full awareness.
+> 这决定 HUD 应该有多强的存在感：
+> - **选项 A：拟态式（低存在感）**——仅在受伤时显示 HP，仅在消耗时显示耐力。以世界为先，除非紧急，否则 HUD 退居次要位置。
+> - **选项 B：持久式极简**——HP 和耐力始终可见，小巧且不打扰视线。无需切换模式即可快速查看。
+> - **选项 C：完整战术式**——始终显示全部信息（HP、耐力、冷却、地图、库存槽位）。玩家始终拥有完整认知。
 >
-> Given your survival game and "lone survivor" fantasy, A or B is most consistent with the genre.
+> 考虑到你的生存游戏和“孤独幸存者”幻想，A 或 B 最符合这一类型。
 
-**User:**
-> B — I want it always there but minimal. The player is always managing resources.
+**用户：**
+> B——我希望它始终存在，但保持极简。玩家一直在管理资源。
 
-### Turn 3: Agent Drafts HUD Philosophy Section
+### 第 3 轮：代理起草 HUD 理念章节
 
-**Agent:**
-> **HUD Philosophy draft:**
+**代理：**
+> **HUD 理念草稿：**
 >
-> > **Approach: Persistent Minimal**
-> > The HUD is always visible but occupies minimal screen real estate. The player is a resource-managing survivor — denying HP/stamina visibility creates frustration, not tension. All critical stats are readable at a glance without interrupting exploration focus. Elements scale in visual weight when they become urgent (HP below 30% pulses, stamina at 0 flashes), then return to minimal state.
+> > **方案：持久式极简**
+> > HUD 始终可见，但只占用极少的屏幕空间。玩家是管理资源的幸存者——隐藏 HP/耐力会造成挫败，而不是紧张感。所有关键数据都能一眼读懂，不会打断探索时的注意力。元素变得紧急时提高视觉权重（HP 低于 30% 时脉冲，耐力为 0 时闪烁），随后恢复极简状态。
 >
-> May I write this to `design/ux/hud.md` as the Philosophy section?
+> 可以将这段内容作为理念章节写入 `design/ux/hud.md` 吗？
 
-**User:**
-> Yes
+**用户：**
+> 是
 
-**Agent creates `design/ux/hud.md` and writes Philosophy section.**
+**代理创建 `design/ux/hud.md` 并写入理念章节。**
 
-*(Turns 4–7 continue the section-by-section HUD authoring: Info Architecture, Zones, Element Specs, State Machine, Visual Budget, Platform Adaptation — each drafted, approved, and written to file.)*
+*（第 4-7 轮继续逐章节编写 HUD：信息架构、区域、元素规格、状态机、视觉预算、平台适配——每节都经过起草、批准并写入文件。）*
 
 ---
 
-**Final HUD structure after all sections:**
+**所有章节完成后的 HUD 结构：**
 
 ```
 design/ux/hud.md
-  - Philosophy: Persistent Minimal
-  - Info Architecture: HP (top-left), Stamina (top-left below HP), Quick Slots (bottom-center),
-    Ability Cooldowns (bottom-right), Damage Numbers (world-space)
-  - Zones: 4 defined (top-left vitals, bottom-center interaction, bottom-right abilities, world-space)
-  - Element Specs: 6 elements with dimensions, font sizes, opacity rules
-  - State Machine: Calm / Tension / Crisis / Combat (4 states, transition triggers)
-  - Visual Budget: Max 8% screen coverage, 3 simultaneous animations
-  - Platform Adaptation: Controller (aim reticle added), Mobile (out of scope v1)
+  - 理念：持久式极简
+  - 信息架构：HP（左上）、耐力（左上 HP 下方）、快捷栏（底部中央）、
+    技能冷却（右下）、伤害数字（世界空间）
+  - 区域：定义 4 个（左上生命信息、底部中央交互、右下技能、世界空间）
+  - 元素规格：6 个元素，包含尺寸、字体大小和不透明度规则
+  - 状态机：平静 / 紧张 / 危机 / 战斗（4 个状态及转换触发器）
+  - 视觉预算：最多覆盖屏幕 8%，同时播放 3 个动画
+  - 平台适配：控制器（添加瞄准准星），移动端（v1 不在范围内）
 ```
 
 ---
 
-## Part 2: Inventory Screen with /ux-design
+## 第 2 部分：使用 /ux-design 设计库存界面
 
-### Turn 8: User Starts Inventory Screen
+### 第 8 轮：用户开始设计库存界面
 
-**User:**
+**用户：**
 > /ux-design screen inventory
 
-### Turn 9: Agent Scans GDD and Player Journey
+### 第 9 轮：代理扫描 GDD 和玩家旅程
 
-**Agent:**
-> Loading context for inventory screen...
+**代理：**
+> 正在加载库存界面的上下文……
 >
-> From `design/gdd/inventory-system.md`:
-> - Grid inventory, 6×8 slots
-> - Items have weight (affects movement) and stack size
-> - Player can equip, drop, inspect, split stacks
+> 来自 `design/gdd/inventory-system.md`：
+> - 网格库存，6×8 个槽位
+> - 物品有重量（影响移动）和堆叠上限
+> - 玩家可以装备、丢弃、检查物品并拆分堆叠
 >
-> From `design/player-journey.md`:
-> - Inventory opens frequently during Calm Exploration
-> - Players should feel "organized and in control" when opening inventory
-> - Anxiety moment: "I need to decide what to drop" — should be clear, not panicked
+> 来自 `design/player-journey.md`：
+> - 在平静探索期间经常打开库存
+> - 玩家打开库存时应感到“井然有序且掌控全局”
+> - 焦虑时刻：“我需要决定丢掉什么”——界面应清晰，而不是制造恐慌
 >
-> **Player Need (from journey):** *I need to quickly assess what I'm carrying, decide what to keep or drop, and get back into the world.*
+> **玩家需求（来自旅程）：** *我需要快速评估自己携带的物品，决定保留或丢弃什么，然后回到游戏世界。*
 >
-> **Key design question:** How do players navigate to inventory actions?
-> - **Option A: Right-click context menu** — hover item → right-click → menu appears (Escape/common)
-> - **Option B: Drag-based** — drag to drop zone to drop; drag to equipment slot to equip (Stardew Valley)
-> - **Option C: Inspect panel** — click item → details panel appears on right with action buttons
+> **关键设计问题：** 玩家如何导航到库存操作？
+> - **选项 A：右键上下文菜单**——悬停在物品上 → 右键 → 菜单出现（Escape/常见方式）
+> - **选项 B：基于拖动**——拖到丢弃区域以丢弃；拖到装备槽以装备（Stardew Valley）
+> - **选项 C：检查面板**——点击物品 → 右侧出现带操作按钮的详情面板
 
-**User:**
-> B — drag-based. I want it tactile.
+**用户：**
+> B——基于拖动。我希望它有触感。
 
-*(Turns 10–12 continue section-by-section for the inventory screen spec: Player Need, Layout Zones, States, Interaction Map, Data Requirements, Events Fired, Accessibility, Localization.)*
+*（第 10-12 轮继续逐章节完成库存界面规格：玩家需求、布局区域、状态、交互地图、数据需求、触发事件、无障碍、本地化。）*
 
 ---
 
-## Part 3: /ux-review
+## 第 3 部分：/ux-review
 
-### Turn 13: User Runs Review
+### 第 13 轮：用户运行审查
 
-**User:**
+**用户：**
 > /ux-review design/ux/
 
-### Turn 14: Agent Reviews Both Documents
+### 第 14 轮：代理审查两份文档
 
-**Agent (via /ux-review):**
-> Reviewing all UX specs in `design/ux/`...
+**代理（通过 /ux-review）：**
+> 正在审查 `design/ux/` 中的全部 UX 规格……
 >
 > ---
-> **HUD Review (`hud.md`):**
+> **HUD 审查（`hud.md`）：**
 >
-> | Check | Status | Notes |
+> | 检查项 | 状态 | 备注 |
 > |-------|--------|-------|
-> | GDD alignment — all required elements present | ✅ | HP, stamina, quick slots, cooldowns all specced |
-> | State machine coverage | ✅ | All 4 gameplay states covered |
-> | Accessibility tier | ⚠️ | No colorblind mode specified for HP/stamina bars (red/yellow convention) |
-> | Visual budget | ✅ | 8% screen coverage, within budget |
-> | Platform notes | ✅ | Controller variant documented |
+> | GDD 对齐——所有必需元素均存在 | ✅ | HP、耐力、快捷栏和冷却均已规格化 |
+> | 状态机覆盖 | ✅ | 已覆盖全部 4 个游戏状态 |
+> | 无障碍等级 | ⚠️ | 未为 HP/耐力条指定色盲模式（红/黄惯例） |
+> | 视觉预算 | ✅ | 屏幕覆盖率 8%，在预算内 |
+> | 平台备注 | ✅ | 已记录控制器变体 |
 >
-> **Inventory Screen Review (`screens/inventory.md`):**
+> **库存界面审查（`screens/inventory.md`）：**
 >
-> | Check | Status | Notes |
+> | 检查项 | 状态 | 备注 |
 > |-------|--------|-------|
-> | Player Need stated | ✅ | |
-> | All GDD actions covered | ✅ | Equip, drop, inspect, split all in interaction map |
-> | Drag-drop interaction fully specified | ⚠️ | Drop target behavior when inventory is full not defined — what happens? |
-> | Accessibility: keyboard alternative for drag | ❌ | MISSING — drag-only with no keyboard path fails motor accessibility |
-> | Localization: all strings tagged | ✅ | |
-> | Data events fired | ✅ | `item_equipped`, `item_dropped`, `stack_split` all mapped |
+> | 已陈述玩家需求 | ✅ | |
+> | 已覆盖所有 GDD 操作 | ✅ | 装备、丢弃、检查、拆分均已列入交互地图 |
+> | 拖放交互已完整规格化 | ⚠️ | 未定义库存已满时丢弃目标的行为——会发生什么？ |
+> | 无障碍：拖动的键盘替代方案 | ❌ | 缺失——只有拖动且没有键盘路径，不符合运动无障碍要求 |
+> | 本地化：所有字符串已标记 | ✅ | |
+> | 数据事件已触发 | ✅ | `item_equipped`、`item_dropped`、`stack_split` 均已映射 |
 >
 > ---
-> **Verdict: NEEDS REVISION**
+> **结论：NEEDS REVISION**
 >
-> Two issues must be resolved before handoff to /team-ui:
+> 在移交给 /team-ui 前必须解决以下问题：
 >
-> 1. **BLOCKING (Accessibility):** Inventory screen has no keyboard alternative to drag-drop. Motor accessibility requires a non-drag interaction path. Add a "press X to pick up / press X again to place" toggle, or a details panel with keyboard-accessible action buttons.
+> 1. **BLOCKING（无障碍）：** 库存界面没有拖放的键盘替代方案。运动无障碍要求提供非拖动交互路径。添加“按 X 拿起 / 再按一次 X 放置”的切换操作，或添加带键盘可访问操作按钮的详情面板。
 >
-> 2. **ADVISORY (HUD):** HP/stamina bars use color alone to convey state. Add a secondary indicator (shape, icon, or pattern) for colorblind users. Can be resolved in visual pass.
-> 3. **ADVISORY (Inventory):** Full-inventory drop behavior is unspecified. Resolve in GDD before implementation, or document as out-of-scope.
+> 2. **ADVISORY（HUD）：** HP/耐力条仅使用颜色传达状态。为色盲用户添加次要指示器（形状、图标或图案）。可在视觉阶段解决。
+> 3. **ADVISORY（库存）：** 未规定库存已满时的丢弃行为。在实现前于 GDD 中解决，或记录为超出范围。
 
-### Turn 15: User Resolves Blocking Issue
+### 第 15 轮：用户解决阻塞问题
 
-**User:**
-> For keyboard: press F to pick up item at cursor, press F again on target slot to place it. Add this to the inventory spec.
+**用户：**
+> 键盘操作：按 F 拿起光标处的物品，在目标槽位再次按 F 放置。请将其添加到库存规格中。
 
-**Agent:**
-> Adding to Interaction Map under "Keyboard / Controller Path":
+**代理：**
+> 正在将以下内容添加到“键盘 / 控制器路径”的交互地图中：
 >
-> > Press F (or South button) to pick up item at cursor. Item enters "held" state with visual indicator. Press F again on target slot to place. Press Escape to cancel and return item.
+> > 按 F（或 South 按钮）拿起光标处的物品。物品进入“持有”状态并显示视觉指示器。在目标槽位再次按 F 放置。按 Escape 取消并归还物品。
 >
-> May I write this to `design/ux/screens/inventory.md` and re-run the accessibility check?
+> 可以将这些内容写入 `design/ux/screens/inventory.md` 并重新运行无障碍检查吗？
 
-**User:**
-> Yes
+**用户：**
+> 是
 
-**Agent writes update. Re-checks accessibility — now passes.**
+**代理写入更新并重新检查无障碍性，现已通过。**
 
 ---
 
-## Part 4: Handoff to /team-ui
+## 第 4 部分：移交给 /team-ui
 
-### Turn 16: User Kicks Off Team UI
+### 第 16 轮：用户启动 Team UI
 
-**User:**
+**用户：**
 > /team-ui
 
-**Agent (via /team-ui):**
-> Running UX pipeline context check...
+**代理（通过 /team-ui）：**
+> 正在运行 UX 流水线上下文检查……
 >
-> - `design/ux/hud.md` — reviewed ✅
-> - `design/ux/screens/inventory.md` — reviewed ✅
-> - `/ux-review` verdict: NEEDS REVISION was resolved — current state: APPROVED ✅
+> - `design/ux/hud.md`——已审查 ✅
+> - `design/ux/screens/inventory.md`——已审查 ✅
+> - `/ux-review` 结论：NEEDS REVISION 已解决——当前状态：APPROVED ✅
 >
-> Proceeding to **Phase 2: Visual Design**
+> 继续进入**阶段 2：视觉设计**
 >
-> Handing off to `art-director` for visual spec (color palette, typography, iconography aligned to art bible)...
+> 正在移交给 `art-director` 制定视觉规格（与美术圣经对齐的色板、字体和图标设计）……
 >
-> *(team-ui continues through visual design → layout implementation → accessibility audit → final review)*
+> *（team-ui 继续进行视觉设计 → 布局实现 → 无障碍审计 → 最终审查）*
 
 ---
 
-## What This Example Demonstrates
+## 这个示例展示的内容
 
-- **Context-driven design**: agent reads player-journey.md to ground HUD decisions in player emotional state, not just feature lists
-- **UX review is a hard gate**: `/team-ui` checks for a passing `/ux-review` before proceeding to visual design
-- **Accessibility caught early**: the missing keyboard alternative was flagged by review, not discovered by a QA tester in the final week
-- **Blocking vs. advisory**: the missing keyboard path was BLOCKING (stops handoff); the colorblind colors were ADVISORY (can be fixed in visual pass)
-- **Section-by-section UX authoring**: same incremental pattern as `/design-system` — each section written to file before moving on
-- **Separate HUD and screen files**: `design/ux/hud.md` is the whole-game HUD; per-screen specs live in `design/ux/screens/`
-- **Pattern library enforced by /team-ui**: after this session, inventory drag-drop becomes a documented pattern in `design/ux/interaction-patterns.md` for all future screens to reference
+- **上下文驱动的设计**：代理读取 player-journey.md，让 HUD 决策以玩家情绪状态为依据，而不只是功能列表
+- **UX 审查是硬门禁**：`/team-ui` 在继续视觉设计前检查 `/ux-review` 是否通过
+- **及早发现无障碍问题**：审查发现了缺少键盘替代方案，而不是由 QA 测试人员在最后一周才发现
+- **阻塞与建议**：缺少键盘路径属于 BLOCKING（阻止移交）；色盲适配颜色属于 ADVISORY（可在视觉阶段修复）
+- **逐章节编写 UX**：与 `/design-system` 相同的增量模式——每节先写入文件，再进入下一节
+- **HUD 与界面文件分离**：`design/ux/hud.md` 是全游戏 HUD；逐屏规格位于 `design/ux/screens/`
+- **由 /team-ui 强制执行模式库**：本次会话后，库存拖放将成为 `design/ux/interaction-patterns.md` 中记录的模式，供未来所有界面引用

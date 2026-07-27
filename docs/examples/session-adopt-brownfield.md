@@ -1,197 +1,197 @@
-# Example Session: /adopt — Brownfield Project Onboarding
+# 示例会话：/adopt — 棕地项目引导
 
-**Context:** Developer has been building a game for 3 months before discovering this agent system. They have code, some design docs, and rough notes — but nothing in the right format for the skills to use.
+**背景：**开发者在发现此代理系统前已经开发游戏 3 个月。他们有代码、一些设计文档和粗略笔记，但没有符合技能使用要求的格式。
 
-**Starting State:**
-- `src/gameplay/` — ~4000 lines of Godot 4.6 GDScript
-- `design/` — 3 markdown files with rough design notes (not in GDD template format)
-- No `design/gdd/` directory
-- No `docs/architecture/` directory
-- No `production/` directory
-- No `design/gdd/systems-index.md`
-- CLAUDE.md exists (engine configured: Godot 4.6)
+**起始状态：**
+- `src/gameplay/` — 约 4000 行 Godot 4.6 GDScript
+- `design/` — 3 个包含粗略设计笔记的 Markdown 文件（不是 GDD 模板格式）
+- 没有 `design/gdd/` 目录
+- 没有 `docs/architecture/` 目录
+- 没有 `production/` 目录
+- 没有 `design/gdd/systems-index.md`
+- CLAUDE.md 已存在（引擎已配置：Godot 4.6）
 
-**Session Duration:** ~30 minutes
-**Turns:** 8
-**Outcome:** Adoption plan written, most urgent gap (missing system index) fixed immediately
+**会话时长：**约 30 分钟
+**轮次：**8
+**结果：**引导计划已写入，最紧迫的缺口（缺少系统索引）已立即修复
 
 ---
 
-## Turn 1: User Invokes /adopt
+## 第 1 轮：用户调用 /adopt
 
-**User:**
+**用户：**
 > /adopt
 
-## Turn 2: Agent Detects Project State
+## 第 2 轮：代理检测项目状态
 
-**Agent (technical-director, via /adopt, context: fork):**
-> Running brownfield audit...
+**代理（technical-director，通过 /adopt，上下文：fork）：**
+> 正在运行棕地审计……
 >
-> **Phase 1: Project State Detection**
+> **阶段 1：项目状态检测**
 >
-> | Artifact Category | Found | Notes |
+> | 产物类别 | 已找到 | 备注 |
 > |------------------|-------|-------|
-> | Engine configuration | ✅ | Godot 4.6 in CLAUDE.md |
-> | Source code | ✅ | ~4000 lines in `src/gameplay/` |
-> | Design docs | ⚠️ | 3 files in `design/`, not in GDD format |
-> | Architecture docs | ❌ | `docs/architecture/` missing |
-> | Systems index | ❌ | `design/gdd/systems-index.md` missing |
-> | Production tracking | ❌ | `production/` directory missing |
-> | Sprint/story files | ❌ | None |
+> | 引擎配置 | ✅ | CLAUDE.md 中的 Godot 4.6 |
+> | 源代码 | ✅ | `src/gameplay/` 中约 4000 行 |
+> | 设计文档 | ⚠️ | `design/` 中有 3 个文件，但不是 GDD 格式 |
+> | 架构文档 | ❌ | 缺少 `docs/architecture/` |
+> | 系统索引 | ❌ | 缺少 `design/gdd/systems-index.md` |
+> | 制作跟踪 | ❌ | 缺少 `production/` 目录 |
+> | 迭代/故事文件 | ❌ | 无 |
 >
-> **Phase 2: Format Audit (existing files)**
+> **阶段 2：格式审计（现有文件）**
 >
-> Checking internal structure of the 3 design files...
+> 正在检查 3 个设计文件的内部结构……
 >
-> *`design/combat-notes.md`:*
-> - Has informal notes, no GDD template sections
-> - Contains: some rule descriptions, a damage formula, rough balance numbers
-> - Missing from GDD template: Overview, Player Fantasy, Edge Cases, Dependencies, Tuning Knobs, Acceptance Criteria (6 of 8 sections)
+> *`design/combat-notes.md`：*
+> - 有非正式笔记，没有 GDD 模板部分
+> - 包含：一些规则描述、伤害公式、粗略平衡数值
+> - GDD 模板缺少：概述、玩家幻想、边界情况、依赖项、调节项、验收标准（8 个部分中缺少 6 个）
 >
-> *`design/crafting-ideas.md`:*
-> - Brainstorm-style notes, no structure
-> - No formulas, no acceptance criteria
-> - Represents early concept thinking — useful as input for a GDD, not yet a GDD
+> *`design/crafting-ideas.md`：*
+> - 头脑风暴式笔记，没有结构
+> - 没有公式，也没有验收标准
+> - 代表早期概念思考，可作为 GDD 的输入，但还不是 GDD
 >
-> *`design/inventory.md`:*
-> - Closest to a GDD — has Overview and Rules sections
-> - Missing: Player Fantasy, Formulas, Edge Cases, Tuning Knobs, Acceptance Criteria (5 of 8 sections)
+> *`design/inventory.md`：*
+> - 最接近 GDD，已有概述和规则部分
+> - 缺少：玩家幻想、公式、边界情况、调节项、验收标准（8 个部分中缺少 5 个）
 >
-> **Phase 3: Gap Classification**
+> **阶段 3：缺口分类**
 >
-> | Gap | Severity | Reason |
+> | 缺口 | 严重程度 | 原因 |
 > |-----|----------|--------|
-> | No systems index | BLOCKING | `/design-system`, `/create-stories`, `/gate-check` all require it |
-> | GDD files not in template format | HIGH | Skills cannot reference TR-IDs from malformed GDDs |
-> | No architecture docs | HIGH | Cannot run `/architecture-review` or `/create-control-manifest` |
-> | No production tracking | MEDIUM | Sprint and story skills won't work, but not needed until production phase |
-> | `design/crafting-ideas.md` — pre-GDD content | LOW | Useful as input; needs full GDD authoring before it blocks anything |
+> | 缺少系统索引 | BLOCKING | `/design-system`、`/create-stories`、`/gate-check` 都需要它 |
+> | GDD 文件不是模板格式 | HIGH | 技能无法引用格式错误的 GDD 中的 TR-ID |
+> | 没有架构文档 | HIGH | 无法运行 `/architecture-review` 或 `/create-control-manifest` |
+> | 没有制作跟踪 | MEDIUM | 迭代和故事技能无法工作，但进入制作阶段前并不需要 |
+> | `design/crafting-ideas.md` — GDD 前置内容 | LOW | 可作为输入；在阻塞其他事项前需要完整编写 GDD |
 
-## Turn 3: Agent Presents the Migration Plan
+## 第 3 轮：代理提出迁移计划
 
-**Agent:**
-> **Phase 4: Migration Plan**
+**代理：**
+> **阶段 4：迁移计划**
 >
-> 7 ordered steps to bring your project into full alignment. NEVER overwrites your existing content — each step fills gaps only.
+> 通过 7 个有序步骤使项目完全符合规范。绝不会覆盖现有内容，每一步只填补缺口。
 >
-> | # | Step | Skill | Priority | Notes |
+> | # | 步骤 | 技能 | 优先级 | 备注 |
 > |---|------|-------|----------|-------|
-> | 1 | Create `design/gdd/systems-index.md` | `/map-systems` or `/adopt` inline | BLOCKING | Unblocks all downstream skills |
-> | 2 | Retrofit `design/inventory.md` → GDD format | `/design-system retrofit design/inventory.md` | HIGH | Adds 5 missing sections, keeps your existing content |
-> | 3 | Retrofit `design/combat-notes.md` → GDD format | `/design-system retrofit design/combat-notes.md` | HIGH | Adds 6 missing sections |
-> | 4 | Convert `design/crafting-ideas.md` → full GDD | `/design-system crafting` (new authoring, uses ideas as input) | MEDIUM | Not a retrofit — too informal to retrofit |
-> | 5 | Create architecture ADRs from existing code | `/reverse-document` + `/architecture-decision` | HIGH | Captures decisions already made in code |
-> | 6 | Create master architecture document | `/create-architecture` | HIGH | After ADRs |
-> | 7 | Set up production tracking | `/sprint-plan new` | MEDIUM | After architecture phase |
+> | 1 | 创建 `design/gdd/systems-index.md` | `/map-systems` 或 `/adopt` 内联 | BLOCKING | 解锁所有下游技能 |
+> | 2 | 将 `design/inventory.md` 改造为 GDD 格式 | `/design-system retrofit design/inventory.md` | HIGH | 增加缺少的 5 个部分，保留现有内容 |
+> | 3 | 将 `design/combat-notes.md` 改造为 GDD 格式 | `/design-system retrofit design/combat-notes.md` | HIGH | 增加缺少的 6 个部分 |
+> | 4 | 将 `design/crafting-ideas.md` 转换为完整 GDD | `/design-system crafting`（全新编写，以想法为输入） | MEDIUM | 不是改造，内容过于非正式 |
+> | 5 | 根据现有代码创建架构 ADR | `/reverse-document` + `/architecture-decision` | HIGH | 记录代码中已经做出的决策 |
+> | 6 | 创建主架构文档 | `/create-architecture` | HIGH | 在 ADR 之后 |
+> | 7 | 设置制作跟踪 | `/sprint-plan new` | MEDIUM | 在架构阶段之后 |
 >
-> **Important:** Step 1 must happen before any other step. Everything else can be done in parallel or reordered based on your priorities.
+> **重要：**第 1 步必须先于其他步骤。其余步骤可以并行执行，或根据你的优先级重新排序。
 >
-> May I write this plan to `docs/adoption-plan-2026-03-12.md`?
+> 可以将此计划写入 `docs/adoption-plan-2026-03-12.md` 吗？
 
-**User:**
-> Yes. Write it.
+**用户：**
+> 可以，写入吧。
 
-**Agent writes adoption plan.**
+**代理写入引导计划。**
 
-## Turn 4: Agent Offers to Fix the Most Urgent Gap
+## 第 4 轮：代理提出修复最紧迫的缺口
 
-**Agent:**
-> The BLOCKING gap is the missing `design/gdd/systems-index.md`.
+**代理：**
+> BLOCKING 缺口是缺少 `design/gdd/systems-index.md`。
 >
-> I can create one now by reading your existing code and design docs to infer what systems you've built. This is faster than running `/map-systems` from scratch — I'll populate it based on what already exists, then you confirm or adjust.
+> 我现在可以通过阅读现有代码和设计文档来推断你已经构建的系统，并创建该文件。这比从头运行 `/map-systems` 更快：我会根据已有内容填充，然后由你确认或调整。
 >
-> Would you like me to do that now?
+> 你希望我现在这样做吗？
 
-**User:**
-> Yes, do it.
+**用户：**
+> 可以，做吧。
 
-## Turn 5: Agent Reads Codebase and Drafts Systems Index
+## 第 5 轮：代理读取代码库并起草系统索引
 
-**Agent:**
-> Reading `src/gameplay/` to infer systems...
+**代理：**
+> 正在读取 `src/gameplay/` 以推断系统……
 >
-> Found these system boundaries in the code:
+> 在代码中发现以下系统边界：
 >
-> - `src/gameplay/combat/` — damage calculation, hit detection, status effects
-> - `src/gameplay/inventory/` — item management, weight, stacks
-> - `src/gameplay/crafting/` — recipe lookup, result generation (references inventory)
-> - `src/gameplay/movement/` — CharacterBody2D, terrain modifiers (referenced by combat for positioning)
-> - `src/gameplay/ui/` — HUD, inventory screen, dialogue box
-> - `src/gameplay/world/` — tile map, terrain types, chunk loading
+> - `src/gameplay/combat/` — 伤害计算、命中检测、状态效果
+> - `src/gameplay/inventory/` — 物品管理、重量、堆叠
+> - `src/gameplay/crafting/` — 配方查找、结果生成（引用库存）
+> - `src/gameplay/movement/` — CharacterBody2D、地形修正（战斗引用它来处理站位）
+> - `src/gameplay/ui/` — HUD、库存界面、对话框
+> - `src/gameplay/world/` — TileMap、地形类型、区块加载
 >
-> **Draft systems index:**
+> **系统索引草稿：**
 >
-> | System | Category | Priority | Dependencies | GDD Status |
+> | 系统 | 类别 | 优先级 | 依赖项 | GDD 状态 |
 > |--------|----------|----------|--------------|------------|
-> | Movement | Foundation | MVP | None | ❌ Missing |
-> | World/Terrain | Foundation | MVP | Movement | ❌ Missing |
-> | Combat | Core | MVP | Movement | ⚠️ Needs retrofit |
-> | Inventory | Core | MVP | None | ⚠️ Needs retrofit |
-> | Crafting | Feature | MVP | Inventory | ❌ Pre-GDD only |
-> | UI / HUD | Presentation | MVP | Combat, Inventory, Movement | ❌ Missing |
+> | Movement | 基础 | MVP | None | ❌ Missing |
+> | World/Terrain | 基础 | MVP | Movement | ❌ Missing |
+> | Combat | 核心 | MVP | Movement | ⚠️ Needs retrofit |
+> | Inventory | 核心 | MVP | None | ⚠️ Needs retrofit |
+> | Crafting | 功能 | MVP | Inventory | ❌ Pre-GDD only |
+> | UI / HUD | 表现 | MVP | Combat, Inventory, Movement | ❌ Missing |
 >
-> Does this look right? Anything I missed or miscategorized?
+> 看起来正确吗？有没有遗漏或分类错误？
 
-**User:**
-> Looks right. Add a Stamina system — it's in combat/ but should be its own system.
+**用户：**
+> 看起来正确。增加 Stamina 系统，它现在位于 combat/ 中，但应该作为独立系统。
 
-**Agent:**
-> Added Stamina as a Core / MVP system:
+**代理：**
+> 已将 Stamina 添加为核心 / MVP 系统：
 >
-> | Stamina | Core | MVP | Movement, Combat | ❌ Missing |
+> | Stamina | 核心 | MVP | Movement, Combat | ❌ Missing |
 >
-> Updated dependency: Movement depends on Stamina (movement drains it).
+> 已更新依赖项：Movement 依赖 Stamina（移动会消耗体力）。
 >
-> May I write this to `design/gdd/systems-index.md`?
+> 可以将此内容写入 `design/gdd/systems-index.md` 吗？
 
-## Turn 6: User Approves
+## 第 6 轮：用户批准
 
-**User:**
-> Yes
+**用户：**
+> 是
 
-**Agent writes `design/gdd/systems-index.md`.**
+**代理写入 `design/gdd/systems-index.md`。**
 
-## Turn 7: Agent Shows What's Now Unlocked
+## 第 7 轮：代理展示现在已解锁的内容
 
-**Agent:**
-> `design/gdd/systems-index.md` created.
+**代理：**
+> 已创建 `design/gdd/systems-index.md`。
 >
-> **BLOCKING gap resolved.** The following skills can now run:
+> **BLOCKING 缺口已解决。**现在可以运行以下技能：
 >
-> - ✅ `/design-system [name]` — guided GDD authoring for any system
-> - ✅ `/design-system retrofit [path]` — fill missing sections in existing docs
-> - ✅ `/gate-check` — now has a systems index to validate
-> - ✅ `/help` — can now show correct phase workflow
+> - ✅ `/design-system [name]` — 为任意系统引导式编写 GDD
+> - ✅ `/design-system retrofit [path]` — 填补现有文档中缺少的部分
+> - ✅ `/gate-check` — 现在有系统索引可供验证
+> - ✅ `/help` — 现在可以展示正确的阶段工作流
 >
-> **Recommended next steps (from adoption plan):**
+> **建议的后续步骤（来自引导计划）：**
 >
-> 1. Run `/design-system retrofit design/inventory.md` — your most complete existing doc, easiest win
-> 2. Run `/design-system retrofit design/combat-notes.md`
-> 3. Run `/design-system crafting` — author crafting GDD using your ideas file as input
+> 1. 运行 `/design-system retrofit design/inventory.md` — 这是现有最完整的文档，最容易取得成果
+> 2. 运行 `/design-system retrofit design/combat-notes.md`
+> 3. 运行 `/design-system crafting` — 以想法文件为输入编写制作 GDD
 >
-> After those 3, you'll have 5 of 7 systems with complete GDDs. Then run `/review-all-gdds` to catch cross-system consistency issues before architecture work.
+> 完成这 3 步后，7 个系统中会有 5 个拥有完整 GDD。然后运行 `/review-all-gdds`，在进行架构工作前发现跨系统一致性问题。
 
-## Turn 8: User Confirms Plan
+## 第 8 轮：用户确认计划
 
-**User:**
-> Perfect. I'll start with the inventory retrofit.
+**用户：**
+> 完美。我会先改造库存文档。
 
-**Agent:**
-> Run:
+**代理：**
+> 运行：
 > ```
 > /design-system retrofit design/inventory.md
 > ```
 >
-> The skill will detect your existing Overview and Rules sections, show you which of the 8 sections are missing, and run the section cycle only for the gaps. Your existing content won't be touched.
+> 该技能会检测已有的概述和规则部分，展示 8 个部分中缺少哪些内容，并仅针对缺口运行部分编写流程。现有内容不会被修改。
 
 ---
 
-## What This Example Demonstrates
+## 此示例展示的内容
 
-- **FORMAT audit, not existence audit**: `/adopt` doesn't just check whether files exist — it checks whether their internal structure matches what skills expect. A file named `gdd.md` with no template sections is flagged as a gap.
-- **Migration, not replacement**: existing content is never overwritten. The plan fills gaps only.
-- **BLOCKING gaps surface first**: the missing systems index is identified as BLOCKING because it prevents the most skills from functioning.
-- **Inline creation of the urgent gap**: rather than just reporting the gap, the agent offers to fix it immediately in the same session.
-- **Inferred from code**: the systems index is bootstrapped from the codebase structure, not written from scratch — brownfield code already contains the answer.
-- **Retrofit vs. new authoring**: `/design-system retrofit` handles existing-but-incomplete docs; full `/design-system` handles net-new docs. The adoption plan distinguishes which applies to each file.
-- **Context: fork**: `/adopt` runs in a forked context to avoid polluting the main session with large file reads across the whole codebase.
+- **审计格式，而不是审计存在性**：`/adopt` 不只是检查文件是否存在，还会检查内部结构是否符合技能预期。名为 `gdd.md` 但没有模板部分的文件会被标记为缺口。
+- **迁移，而不是替换**：现有内容绝不会被覆盖，计划只填补缺口。
+- **优先暴露 BLOCKING 缺口**：缺少系统索引会阻止大多数技能运行，因此被识别为 BLOCKING。
+- **内联创建紧急缺口**：代理不只是报告缺口，还会在同一会话中主动提出立即修复。
+- **从代码推断**：系统索引根据代码库结构启动，而不是从零编写，棕地代码已经包含答案。
+- **改造与全新编写的区别**：`/design-system retrofit` 处理已有但不完整的文档；完整的 `/design-system` 处理全新文档。引导计划会区分每个文件适用的方式。
+- **上下文：fork**：`/adopt` 在分叉上下文中运行，避免对整个代码库进行大量读取污染主会话。

@@ -1,197 +1,197 @@
-# Example Session: Using /design-system to Author a GDD
+# 示例会话：使用 /design-system 编写 GDD
 
-**Context:** Solo indie dev, week 3 of project. `/map-systems` already ran and produced `design/gdd/systems-index.md`. The movement system is listed as MVP tier, Foundation priority.
+**背景：** 独立开发者单人开发，项目第 3 周。已运行 `/map-systems` 并生成 `design/gdd/systems-index.md`。移动系统列为 MVP 层级，优先级为 Foundation。
 
-**Starting State:**
-- `design/gdd/game-concept.md` exists (survival-crafting game, 2D, Godot 4.6)
-- `design/gdd/systems-index.md` exists (15 systems identified, movement is first in design order)
-- No per-system GDDs written yet
-- No upstream dependencies for movement (it is the foundation)
+**起始状态：**
+- `design/gdd/game-concept.md` 已存在（生存制作游戏，2D，Godot 4.6）
+- `design/gdd/systems-index.md` 已存在（已识别 15 个系统，移动是设计顺序中的第一个）
+- 尚未编写各系统的 GDD
+- 移动没有上游依赖（它是基础系统）
 
-**Session Duration:** ~60 minutes
-**Turns:** 14
-**Outcome:** Complete `design/gdd/movement-system.md` with all 8 required sections written to file, ready for `/design-review`
+**会话时长：**约 60 分钟
+**轮次：**14
+**结果：** 完成 `design/gdd/movement-system.md`，8 个必需章节全部写入文件，准备运行 `/design-review`
 
 ---
 
-## Turn 1: User Invokes the Skill
+## 第 1 轮：用户调用技能
 
-**User:**
+**用户：**
 > /design-system movement
 
-## Turn 2: Agent Loads Context and Presents the Plan
+## 第 2 轮：代理加载背景并介绍计划
 
-**Agent (game-designer, via /design-system):**
-> I'm loading context before we start:
+**代理（game-designer，通过 /design-system）：**
+> 开始前，我先加载背景：
 >
-> - Read `design/gdd/game-concept.md` — survival-crafting, exploration-heavy, lone survivor stranded on alien planet
-> - Read `design/gdd/systems-index.md` — movement is **Foundation / MVP**, no upstream deps, downstream: combat, exploration, stamina
-> - No prior GDD found for movement — starting fresh
+> - 阅读 `design/gdd/game-concept.md` — 生存制作、重探索、孤身幸存者被困在外星球
+> - 阅读 `design/gdd/systems-index.md` — 移动是 **Foundation / MVP**，没有上游依赖，下游系统：战斗、探索、耐力
+> - 未找到移动系统的既有 GDD — 从头开始
 >
-> **Technical Feasibility Pre-Check:**
+> **技术可行性预检查：**
 >
-> | Domain | Signal |
+> | 领域 | 信号 |
 > |--------|--------|
 > | Engine | Godot 4.6 — CharacterBody2D with move_and_slide() is well-supported |
-> | Physics | Jolt is now the default in 4.6 — 2D movement unaffected, but note for future 3D work |
-> | Downstream risk | Stamina system listed as downstream dep — movement must expose a stamina callback hook |
+> | 物理 | Jolt 现在是 4.6 的默认物理引擎 — 不影响 2D 移动，但未来进行 3D 工作时需注意 |
+> | 下游风险 | 耐力系统列为下游依赖 — 移动必须暴露耐力回调钩子 |
 >
-> The GDD template has **8 required sections**. We'll go one at a time:
-> `Overview → Player Fantasy → Detailed Rules → Formulas → Edge Cases → Dependencies → Tuning Knobs → Acceptance Criteria`
+> GDD 模板包含 **8 个必需章节**。我们会逐个完成：
+> `概述 → 玩家幻想 → 详细规则 → 公式 → 边界情况 → 依赖项 → 调节项 → 验收标准`
 >
-> I'll show you a draft of each section, you approve or revise, then I write it to the file before we move on.
+> 我会展示每个章节的草稿，由你批准或修改，然后写入文件，再继续下一个章节。
 >
-> Creating the file skeleton now with empty section headers — may I write `design/gdd/movement-system.md` with placeholders?
+> 现在创建包含空章节标题的文件骨架——我可以将带有占位符的 `design/gdd/movement-system.md` 写入文件吗？
 
-**User:**
-> Yes
+**用户：**
+> 是的
 
-**Agent writes** `design/gdd/movement-system.md` with 8 empty section headers.
+**代理写入**包含 8 个空章节标题的 `design/gdd/movement-system.md`。
 
 ---
 
-## Turn 3: Section 1 — Overview
+## 第 3 轮：第 1 节 — 概述
 
-**Agent:**
-> **Section 1 draft — Overview:**
+**代理：**
+> **第 1 节草稿 — 概述：**
 >
-> > The movement system is the player's primary interface with the world. It governs how the lone survivor walks, runs, rolls, and traverses alien terrain. Movement is physically grounded — the planet has heavier-than-Earth gravity, and the survivor is physically exhausted — but remains responsive enough to stay out of the player's way. The system feeds directly into exploration pacing, combat positioning, and the stamina system.
+> > 移动系统是玩家与世界互动的主要界面。它决定孤身幸存者如何行走、奔跑、翻滚以及穿越外星地形。移动具有物理真实感——星球的重力高于地球，幸存者也已身心俱疲——但响应仍然足够灵敏，不会妨碍玩家。该系统直接影响探索节奏、战斗站位和耐力系统。
 >
-> Does this capture what you want?
+> 这是否准确表达了你的想法？
 
-**User:**
-> Good but add something about the terrain — surfaces slow you down or have friction modifiers.
+**用户：**
+> 不错，但补充地形相关内容：不同表面会减速或产生摩擦修正。
 
-**Agent:**
-> Revised:
+**代理：**
+> 修订版：
 >
-> > The movement system is the player's primary interface with the world. It governs how the lone survivor walks, runs, rolls, and traverses alien terrain. Movement is physically grounded — the planet has heavier-than-Earth gravity, and the survivor is physically exhausted — but remains responsive enough to stay out of the player's way. Terrain surfaces apply friction and speed modifiers (slick rock, sand, shallow water) that make navigation a meaningful skill. The system feeds directly into exploration pacing, combat positioning, and the stamina system.
+> > 移动系统是玩家与世界互动的主要界面。它决定孤身幸存者如何行走、奔跑、翻滚以及穿越外星地形。移动具有物理真实感——星球的重力高于地球，幸存者也已身心俱疲——但响应仍然足够灵敏，不会妨碍玩家。地形表面会施加摩擦和速度修正（湿滑岩石、沙地、浅水），使导航成为有意义的技能。该系统直接影响探索节奏、战斗站位和耐力系统。
 >
-> May I write this to Section 1 in the file?
+> 我可以将这段写入文件的第 1 节吗？
 
-**User:**
-> Yes
+**用户：**
+> 是
 
-**Agent writes Section 1 to file.**
+**代理将第 1 节写入文件。**
 
 ---
 
-## Turn 4: Section 2 — Player Fantasy
+## 第 4 轮：第 2 节 — 玩家幻想
 
-**Agent:**
-> **Section 2 draft — Player Fantasy:**
+**代理：**
+> **第 2 节草稿 — 玩家幻想：**
 >
-> > The player should feel like a tired but capable survivor — not a superhero, not helpless. Early game movement is deliberate and taxing; the player earns fluency over time. When traversing alien terrain, the goal is careful navigation with moments of urgency (running from threats, leaping a gap). The fantasy is "I know this terrain" — every surface type becomes readable and manageable as the player internalizes the friction system.
+> > 玩家应当感觉自己是一名疲惫但有能力的幸存者——不是超级英雄，也不是无助之人。游戏前期的移动谨慎而费力；玩家会随着时间推移逐渐熟练。穿越外星地形时，目标是谨慎导航，同时穿插紧迫时刻（逃离威胁、跃过缺口）。这种幻想是“我了解这片地形”——当玩家掌握摩擦系统后，每种表面类型都变得易于理解和应对。
 >
-> Approve, revise, or change direction?
+> 批准、修改，还是调整方向？
 
-**User:**
-> Love it. Write it.
+**用户：**
+> 很喜欢。写入吧。
 
-**Agent writes Section 2 to file.**
+**代理将第 2 节写入文件。**
 
 ---
 
-## Turn 5: Section 3 — Detailed Rules
+## 第 5 轮：第 3 节 — 详细规则
 
-**Agent:**
-> **Section 3 draft — Detailed Rules:**
+**代理：**
+> **第 3 节草稿 — 详细规则：**
 >
-> > **Base States:**
-> > - **Walk** (default): Full directional control, moderate speed, low stamina drain
-> > - **Run** (hold Shift): Faster, medium stamina drain per second — cancels automatically when stamina hits 0
-> > - **Roll/Dodge** (tap Space): Quick burst in movement direction, brief invincibility frames, high stamina cost (flat)
-> > - **Idle**: Zero movement input, stamina regenerates at full rate
+> > **基础状态：**
+> > - **行走**（默认）：可以自由控制方向，中等速度，耐力消耗低
+> > - **奔跑**（按住 Shift）：速度更快，每秒耐力消耗中等——当耐力为0时自动取消
+> > - **翻滚/闪避**（轻按空格）：朝移动方向快速冲刺，短暂无敌帧，高耐力消耗（固定量）
+> > - **闲置**：没有移动输入，耐力完全恢复
 > >
-> > **Terrain Modifiers:**
-> > - Normal ground: 1.0x speed multiplier, standard friction
-> > - Sand/loose soil: 0.8x speed, 1.1x stamina drain (harder to move)
-> > - Slick rock (wet): 1.1x speed, reduced stop friction (player overshoots)
-> > - Shallow water (ankle-deep): 0.7x speed, no friction modifier
-> > - Deep water: movement disabled, replaced by swimming (separate system, out of scope)
+> > **地形加成：**
+> > - 普通地面：速度乘数1.0x，摩擦力标准
+> > - 沙地/松软土壤：速度0.8x，耐力消耗1.1x（更难移动）
+> > - 光滑岩石（湿）：速度1.1x，停止摩擦降低（玩家容易滑过）
+> > - 浅水（脚踝深）：速度0.7x，无摩擦变化
+> > - 深水：无法移动，改为游泳（单独系统，不在此范围内）
 > >
-> > **Collision:**
-> > - CharacterBody2D + move_and_slide(); wall slide enabled
-> > - Slopes up to 45° walked normally; >45° blocked
-> > - One-way platforms supported (drop-through with Down + Jump)
+> > **碰撞：**
+> > - CharacterBody2D + move_and_slide()；支持贴墙滑动
+> > - 坡度小于45°可正常行走；>45°无法通行
+> > - 支持单向平台（按下+跳跃可掉下）
 >
-> A lot here — want me to trim or expand anything?
+> 内容比较多——你想让我删减或扩展什么吗？
 
-**User:**
-> Add that running is disabled when carrying a heavy object (like a large resource chunk).
+**用户：**
+> 补充：携带重物（例如大型资源块）时无法奔跑。
 
-**Agent:**
-> Added to Run rule:
+**代理：**
+> 已添加到 Run 规则：
 > > - **Run** (hold Shift): Faster, medium stamina drain per second — cancels automatically when stamina hits 0. **Disabled when carrying heavy objects** (signals broadcast by inventory system).
 >
-> Write to file?
+> 写入文件吗？
 
-**User:**
-> Yes
+**用户：**
+> 是
 
-**Agent writes Section 3 to file.**
+**代理将第 3 节写入文件。**
 
 ---
 
-## Turn 6: Section 4 — Formulas
+## 第 6 轮：第 4 节 — 公式
 
-**Agent:**
-> **Section 4 draft — Formulas:**
+**代理：**
+> **第 4 节草稿 — 公式：**
 >
-> Let me define variables first, then the formulas:
+> 我先定义变量，再给出公式：
 >
-> | Variable | Type | Description |
+> | 变量 | 类型 | 描述 |
 > |----------|------|-------------|
-> | `base_walk_speed` | float | Base walk speed in px/s (tunable) |
-> | `run_multiplier` | float | Run speed = walk × this |
-> | `terrain_speed_mod` | float | Per-terrain multiplier (0.7–1.1) |
-> | `stamina_drain_walk` | float | Stamina units/sec while walking |
-> | `stamina_drain_run` | float | Stamina units/sec while running |
-> | `stamina_cost_roll` | float | Flat stamina cost per roll |
-> | `terrain_drain_mod` | float | Per-terrain stamina drain multiplier |
+> | `base_walk_speed` | 浮点数 | 基础行走速度，单位 px/s（可调节） |
+> | `run_multiplier` | 浮点数 | 跑步速度 = 行走速度 × 此值 |
+> | `terrain_speed_mod` | 浮点数 | 不同地形的速度倍率（0.7–1.1） |
+> | `stamina_drain_walk` | 浮点数 | 行走时每秒消耗的耐力 |
+> | `stamina_drain_run` | 浮点数 | 跑步时每秒消耗的耐力 |
+> | `stamina_cost_roll` | 浮点数 | 每次翻滚固定耐力消耗 |
+> | `terrain_drain_mod` | 浮点数 | 不同地形的耐力消耗倍率 |
 >
-> **Effective Speed:**
+> **有效速度：**
 > ```
 > effective_speed = base_walk_speed × run_multiplier (if running, else 1.0) × terrain_speed_mod
 > ```
 >
-> **Stamina Drain (per second):**
+> **耐力消耗（每秒）：**
 > ```
 > drain_per_sec = stamina_drain_walk (or stamina_drain_run if running) × terrain_drain_mod
 > ```
 >
-> **Roll Stamina Cost (flat):**
+> **翻滚耐力消耗（固定值）：**
 > ```
 > stamina_after_roll = current_stamina - stamina_cost_roll
 > (clamped to 0 — roll still executes, but player lands with 0 stamina)
 > ```
 >
-> Approve or adjust variable names/formulas?
+> 批准变量名和公式，还是需要调整？
 
-**User:**
-> Looks right. Write it.
+**用户：**
+> 看起来没问题。写入吧。
 
-**Agent writes Section 4 to file.**
+**代理将第 4 节写入文件。**
 
 ---
 
-## Turn 7–9: Sections 5, 6, 7
+## 第 7–9 轮：第 5、6、7 节
 
-*(These follow the same pattern — agent drafts, user approves or requests minor tweaks, agent writes each section to file before moving on. Abbreviated here.)*
+*（这些章节遵循相同模式：代理起草，用户批准或提出小幅修改，代理将每节写入文件后再继续。此处省略细节。）*
 
-**Section 5 — Edge Cases** covered:
-- Player rolls into a wall (animation completes, no movement bonus)
-- Stamina hits 0 mid-run (transitions to walk, no lurch)
-- Two terrain types overlapping (lower multiplier wins)
-- Roll on slick rock (still applies slick friction to stopping, not to the roll itself)
+**第 5 节 — 边界情况** 包含：
+- 玩家翻滚撞墙（动画完成，但没有移动加成）
+- 奔跑中耐力降至 0（切换为行走，不会突然减速）
+- 两种地形重叠（采用较低的乘数）
+- 在湿滑岩石上翻滚（停止时仍使用湿滑摩擦，但翻滚本身不受影响）
 
-**Section 6 — Dependencies** covered:
-- **Stamina system** (downstream): movement exposes `on_stamina_event(type: String, amount: float)` signal
-- **Inventory system** (downstream): listens to `carrying_heavy_object_changed(is_heavy: bool)` signal
-- **Input system**: movement direction from `InputMap` — standard Godot action names (`ui_left`, `ui_right`, etc.)
-- **Terrain layer**: tile metadata drives terrain modifier lookup
+**第 6 节 — 依赖项** 包含：
+- **耐力系统**（下游）：移动暴露 `on_stamina_event(type: String, amount: float)` 信号
+- **库存系统**（下游）：监听 `carrying_heavy_object_changed(is_heavy: bool)` 信号
+- **输入系统**：移动方向来自 `InputMap` — 标准 Godot 操作名称（`ui_left`、`ui_right` 等）
+- **地形层**：图块元数据驱动地形修正查找
 
-**Section 7 — Tuning Knobs** covered:
+**第 7 节 — 调节项** 包含：
 - `base_walk_speed` (default: 120 px/s)
 - `run_multiplier` (default: 1.7)
 - Per-terrain speed and drain modifiers (table of 4 terrain types)
@@ -199,71 +199,71 @@
 
 ---
 
-## Turn 10: Section 8 — Acceptance Criteria
+## 第 10 轮：第 8 节 — 验收标准
 
-**Agent:**
-> **Section 8 draft — Acceptance Criteria:**
+**代理：**
+> **第 8 节草稿 — 验收标准：**
 >
-> These are the testable conditions that prove this system is complete:
+> 以下是证明系统完成的可测试条件：
 >
-> - [ ] Player walks at `base_walk_speed` on normal ground (measured with debug overlay)
-> - [ ] Player runs at `base_walk_speed × run_multiplier` on normal ground
-> - [ ] Run automatically cancels when stamina reaches 0, no input required
-> - [ ] Roll executes with correct invincibility frames (verify via hitbox debug mode)
-> - [ ] Each terrain type applies the correct speed modifier (QA table in sprint plan)
-> - [ ] Carrying heavy object disables run (test with inventory integration)
-> - [ ] Stamina system receives `on_stamina_event` signals during walk, run, and roll
-> - [ ] All movement values come from exported variables — no hardcoded numbers in code
+> - [ ] 玩家在普通地面以 `base_walk_speed` 行走（使用调试覆盖层测量）
+> - [ ] 玩家在普通地面以 `base_walk_speed × run_multiplier` 奔跑
+> - [ ] 耐力达到 0 时奔跑自动取消，无需输入
+> - [ ] 翻滚执行正确的无敌帧（通过命中框调试模式验证）
+> - [ ] 每种地形都应用正确的速度修正（参见迭代计划中的 QA 表）
+> - [ ] 携带重物时无法奔跑（通过库存集成测试）
+> - [ ] 耐力系统在行走、奔跑和翻滚期间收到 `on_stamina_event` 信号
+> - [ ] 所有移动数值都来自导出变量 — 代码中没有硬编码数字
 >
-> Does this cover what "done" means to you?
+> 这些是否涵盖了你对“完成”的定义？
 
-**User:**
-> Add one for slopes — make sure >45 degree slopes block movement.
+**用户：**
+> 加一条关于斜坡的标准：确保超过 45 度的斜坡阻挡移动。
 
-**Agent:**
-> Added:
-> - [ ] Slopes ≤45° traversed normally; slopes >45° block movement (player slides back)
+**代理：**
+> 已添加：
+> - [ ] ≤45° 的斜坡可正常通过；>45° 的斜坡阻挡移动（玩家向后滑）
 >
-> Write to file?
+> 写入文件吗？
 
-**User:**
-> Yes. Write it.
+**用户：**
+> 是。写入吧。
 
-**Agent writes Section 8 to file.**
+**代理将第 8 节写入文件。**
 
 ---
 
-## Turn 11: Completion Summary
+## 第 11 轮：完成总结
 
-**Agent:**
-> All 8 sections written to `design/gdd/movement-system.md`.
+**代理：**
+> 8 个章节已全部写入 `design/gdd/movement-system.md`。
 >
-> **GDD Status:**
-> - ✅ Overview
-> - ✅ Player Fantasy
-> - ✅ Detailed Rules
-> - ✅ Formulas
-> - ✅ Edge Cases
-> - ✅ Dependencies (exposes 2 signals: stamina_event, carrying_heavy)
-> - ✅ Tuning Knobs
-> - ✅ Acceptance Criteria
+> **GDD 状态：**
+> - ✅ 概述
+> - ✅ 玩家幻想
+> - ✅ 详细规则
+> - ✅ 公式
+> - ✅ 边界情况
+> - ✅ 依赖项（暴露 2 个信号：stamina_event、carrying_heavy）
+> - ✅ 调节项
+> - ✅ 验收标准
 >
-> **Key decisions made:**
-> - Terrain modifiers as tile metadata (not code constants)
-> - Rolling has a flat stamina cost (not per-second)
-> - Heavy carry disables run (signal-driven, not hardcoded check)
+> **关键决策：**
+> - 地形修正作为图块元数据（而不是代码常量）
+> - 翻滚使用固定耐力消耗（而不是每秒消耗）
+> - 携带重物会禁用奔跑（由信号驱动，而不是硬编码检查）
 >
-> **Recommended next step:** Run `/design-review design/gdd/movement-system.md` before moving to the next system in your queue (stamina is next in dependency order, per systems-index).
+> **推荐的下一步：** 在继续队列中的下一个系统前运行 `/design-review design/gdd/movement-system.md`（根据 systems-index，依赖顺序中的下一个系统是 stamina）。
 >
-> The review will validate completeness, internal consistency, and catch anything that needs revision before you build on this GDD.
+> 审查会验证完整性和内部一致性，并在你基于这份 GDD 开始构建前发现需要修订的内容。
 
 ---
 
-## What This Example Demonstrates
+## 这个示例展示了什么
 
-- **Incremental file writing**: each section written to disk immediately after approval — a session crash loses at most one in-progress section
-- **Template population**: the GDD template's 8 sections become concrete content through dialogue, not bulk generation
-- **Dependency signaling**: agent proactively surfaces downstream signal contracts (stamina, inventory) during the Dependencies section
-- **Technical feasibility pre-check**: agent notes Jolt physics change before design starts, not after implementation breaks
-- **Section-by-section cycle**: no full draft dumped at once — each section is a small, reviewable unit
-- **Recovery**: if the session crashes, the agent re-reads the file on restart and resumes from the first empty section
+- **增量写入文件**：每节在批准后立即写入磁盘——会话崩溃最多只会丢失一个正在编辑的章节
+- **填充模板**：GDD 模板的 8 个章节通过对话变成具体内容，而不是一次性批量生成
+- **依赖信号**：代理在依赖项章节主动提出下游信号契约（stamina、inventory）
+- **技术可行性预检查**：代理在设计开始前记录 Jolt 物理变更，而不是等实现出问题后才发现
+- **逐章节循环**：不会一次性倾倒完整草稿——每个章节都是小型、可审查的单元
+- **恢复**：如果会话崩溃，代理重启后重新读取文件，从第一个空章节继续

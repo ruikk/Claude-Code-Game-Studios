@@ -1,166 +1,165 @@
-# Skill Flow Diagrams
+# 技能流程图
 
-Visual maps of how skills chain together across the 7 development phases.
-These show what runs before and after each skill, and what artifacts flow between them.
+展示技能如何贯穿 7 个开发阶段并彼此串联的可视化地图。
+图中显示每项技能前后运行的内容，以及工件如何在技能之间流转。
 
 ---
 
-## Full Pipeline Overview (Zero to Ship)
+## 完整流水线概览（从零到发布）
 
 ```
-PHASE 1: CONCEPT
-  /start ──────────────────────────────────────────────────────► routes to A/B/C/D
+阶段 1：概念
+   /start ──────────────────────────────────────────────────────► 路由至 A/B/C/D
   /brainstorm ──────────────────────────────────────────────────► design/gdd/game-concept.md
   /setup-engine ────────────────────────────────────────────────► CLAUDE.md + technical-preferences.md
   /prototype [core-mechanic] ───────────────────────────────────► prototypes/[name]-concept/REPORT.md
-        │ PROCEED                                                  (validate idea BEFORE writing GDDs)
+        │ PROCEED                                                  （在编写 GDD 前验证想法）
         ▼
-  /design-review [game-concept.md] ────────────────────────────► concept validated
+   /design-review [game-concept.md] ────────────────────────────► 概念已验证
   /gate-check ─────────────────────────────────────────────────► PASS → advance to systems-design
         │
         ▼
-PHASE 2: SYSTEMS DESIGN
+阶段 2：系统设计
   /map-systems ────────────────────────────────────────────────► design/gdd/systems-index.md
         │
-        ▼ (for each system, in dependency order)
+        ▼ （按依赖顺序处理每个系统）
   /design-system [name] ──────────────────────────────────────► design/gdd/[system].md
-  /design-review [system].md ─────────────────────────────────► per-GDD review comments
+   /design-review [system].md ─────────────────────────────────► GDD 审查意见
         │
-        ▼ (after all MVP GDDs done)
+        ▼ （所有 MVP GDD 完成后）
   /review-all-gdds ────────────────────────────────────────────► design/gdd/gdd-cross-review-[date].md
   /gate-check ─────────────────────────────────────────────────► PASS → advance to technical-setup
         │
         ▼
-PHASE 3: TECHNICAL SETUP
+阶段 3：技术设置
   /create-architecture ────────────────────────────────────────► docs/architecture/master.md
   /architecture-decision (×N) ─────────────────────────────────► docs/architecture/[adr-nnn].md
-  /architecture-review ────────────────────────────────────────► review report + docs/architecture/tr-registry.yaml
+  /architecture-review ────────────────────────────────────────► 审查报告 + docs/architecture/tr-registry.yaml
   /create-control-manifest ────────────────────────────────────► docs/architecture/control-manifest.md
   /gate-check ─────────────────────────────────────────────────► PASS → advance to pre-production
         │
         ▼
-PHASE 4: PRE-PRODUCTION
-  [UX — before epics, so specs exist when stories are written]
+阶段 4：前期制作
+   [UX —— 在史诗之前完成，以便编写故事时已有规格]
   /ux-design [screen/hud/patterns] ────────────────────────────► design/ux/*.md
-  /ux-review ──────────────────────────────────────────────────► UX specs approved (HARD gate for /team-ui)
+   /ux-review ──────────────────────────────────────────────────► UX 规格已批准（/team-ui 的硬门禁）
 
-  [Test infrastructure — scaffold before stories reference tests]
-  /test-setup ─────────────────────────────────────────────────► test framework + CI/CD pipeline
+   [测试基础设施 —— 在故事引用测试前搭建]
+   /test-setup ─────────────────────────────────────────────────► 测试框架 + CI/CD 流水线
   /test-helpers ───────────────────────────────────────────────► tests/helpers/[engine-specific].gd
 
-  [Vertical slice — before epics, validate full game loop]
+   [垂直切片 —— 在史诗之前验证完整游戏循环]
   /vertical-slice ─────────────────────────────────────────────► prototypes/[name]-vertical-slice/REPORT.md
   /playtest-report ────────────────────────────────────────────► production/playtests/
 
-  [Stories + sprint plan — only after vertical slice PROCEEDS]
+   [故事 + 迭代计划 —— 仅在垂直切片 PROCEEDS 后进行]
   /create-epics [layer] ───────────────────────────────────────► production/epics/*/EPIC.md
   /create-stories [epic-slug] ─────────────────────────────────► production/epics/*/story-*.md
   /sprint-plan new ────────────────────────────────────────────► production/sprints/sprint-01.md
   /gate-check ─────────────────────────────────────────────────► PASS → advance to production
         │
         ▼
-PHASE 5: PRODUCTION (repeating sprint loop)
-  /sprint-status ──────────────────────────────────────────────► sprint snapshot
-  /story-readiness [story] ────────────────────────────────────► story validated READY
+阶段 5：制作（重复迭代循环）
+   /sprint-status ──────────────────────────────────────────────► 迭代快照
+   /story-readiness [story] ────────────────────────────────────► 故事已验证为 READY
         │
-        ▼ (pick up and implement)
-  /dev-story [story] ──────────────────────────────────────────► routes to correct programmer agent
+        ▼ （接手并实现）
+   /dev-story [story] ──────────────────────────────────────────► 路由至正确的程序员代理
         │
-        ▼ (during implementation, as needed)
-  /code-review ────────────────────────────────────────────────► code review report
-  /scope-check ────────────────────────────────────────────────► scope creep detected / clear
-  /content-audit ──────────────────────────────────────────────► GDD content gaps identified
+        ▼ （实现期间按需进行）
+   /code-review ────────────────────────────────────────────────► 代码审查报告
+   /scope-check ────────────────────────────────────────────────► 检测到范围蔓延 / 范围清晰
+   /content-audit ──────────────────────────────────────────────► 已识别 GDD 内容缺口
   /bug-report ─────────────────────────────────────────────────► production/qa/bugs/bug-NNN.md
-  /bug-triage ─────────────────────────────────────────────────► bugs re-prioritized + assigned
+   /bug-triage ─────────────────────────────────────────────────► 缺陷已重新排序并分配
 
-  [Team skills for feature areas — spawn when working a full feature]
+   [功能领域团队技能 —— 完整开发某项功能时启动]
   /team-combat / /team-narrative / /team-ui / /team-level / /team-audio
 
-  [QA cycle per sprint]
+   [每次迭代的 QA 循环]
   /qa-plan ────────────────────────────────────────────────────► production/qa/qa-plan-sprint-NN.md
-  /smoke-check ────────────────────────────────────────────────► smoke test gate (PASS/FAIL)
-  /regression-suite ───────────────────────────────────────────► coverage gaps + missing regression tests
-  /test-evidence-review ───────────────────────────────────────► evidence quality report
-  /test-flakiness ─────────────────────────────────────────────► flaky test report
+   /smoke-check ────────────────────────────────────────────────► 冒烟测试门禁（PASS/FAIL）
+   /regression-suite ───────────────────────────────────────────► 覆盖率缺口 + 缺失的回归测试
+   /test-evidence-review ───────────────────────────────────────► 测试证据质量报告
+   /test-flakiness ─────────────────────────────────────────────► 不稳定测试报告
         │
         ▼
-  /story-done [story] ─────────────────────────────────────────► story closed + next surfaced
-  /sprint-plan [next] ─────────────────────────────────────────► next sprint
+   /story-done [story] ─────────────────────────────────────────► 故事已关闭 + 显示下一个故事
+   /sprint-plan [next] ─────────────────────────────────────────► 下一个迭代
         │
-        ▼ (after Production milestone)
-  /milestone-review ───────────────────────────────────────────► milestone report
+        ▼ （Production 里程碑后）
+   /milestone-review ───────────────────────────────────────────► 里程碑报告
   /gate-check ─────────────────────────────────────────────────► PASS → advance to polish
         │
         ▼
-PHASE 6: POLISH
-  /perf-profile ───────────────────────────────────────────────► perf report + fixes
-  /balance-check ──────────────────────────────────────────────► balance report + fixes
-  /asset-audit ────────────────────────────────────────────────► asset compliance report
+阶段 6：打磨
+   /perf-profile ───────────────────────────────────────────────► 性能报告 + 修复
+   /balance-check ──────────────────────────────────────────────► 平衡性报告 + 修复
+   /asset-audit ────────────────────────────────────────────────► 资产合规报告
   /tech-debt ──────────────────────────────────────────────────► docs/tech-debt-register.md
-  /soak-test ──────────────────────────────────────────────────► soak test protocol + results
-  /localize ───────────────────────────────────────────────────► localization readiness report
-  /team-polish ────────────────────────────────────────────────► polish sprint orchestrated
-  /team-qa ────────────────────────────────────────────────────► full QA cycle sign-off
+   /soak-test ──────────────────────────────────────────────────► 浸泡测试协议 + 结果
+   /localize ───────────────────────────────────────────────────► 本地化就绪报告
+   /team-polish ────────────────────────────────────────────────► 打磨迭代已编排
+   /team-qa ────────────────────────────────────────────────────► 完整 QA 循环签核
   /gate-check ─────────────────────────────────────────────────► PASS → advance to release
         │
         ▼
-PHASE 7: RELEASE
-  /launch-checklist ───────────────────────────────────────────► launch readiness report
-  /release-checklist ──────────────────────────────────────────► platform-specific checklist
+阶段 7：发布
+   /launch-checklist ───────────────────────────────────────────► 上线就绪报告
+   /release-checklist ──────────────────────────────────────────► 平台专用清单
   /changelog ──────────────────────────────────────────────────► CHANGELOG.md
-  /patch-notes ────────────────────────────────────────────────► player-facing notes
-  /team-release ───────────────────────────────────────────────► release pipeline orchestrated
+   /patch-notes ────────────────────────────────────────────────► 面向玩家的说明
+   /team-release ───────────────────────────────────────────────► 发布流水线已编排
         │
-        ▼ (post-launch, ongoing)
-  /hotfix ─────────────────────────────────────────────────────► emergency fix with audit trail
-  /team-live-ops ──────────────────────────────────────────────► live-ops content plan
+        ▼ （上线后持续进行）
+   /hotfix ─────────────────────────────────────────────────────► 带审计记录的紧急修复
+   /team-live-ops ──────────────────────────────────────────────► live-ops 内容计划
 ```
 
 ---
 
-## Skill Chain: /design-system in Detail
+## 技能链：/design-system 详解
 
-How a single GDD gets authored, reviewed, and handed to architecture:
+单个 GDD 如何编写、审查并移交架构阶段：
 
 ```
 systems-index.md (input)
 game-concept.md (input)
-upstream GDDs (input, if any)
+上游 GDD（input，如有）
         │
         ▼
 /design-system [name]
         │
-        ├── Pre-check: feasibility table + engine risk flags
+        ├── 预检查：可行性表 + 引擎风险标记
         │
-        ├── Section cycle × 8:
-        │     question → options → decision → draft → approval → WRITE
-        │     [each section written to file immediately after approval]
+        ├── 章节循环 × 8：
+        │     提问 → 选项 → 决定 → 草稿 → 批准 → WRITE
+        │     [每节获批后立即写入文件]
         │
-        └── Output: design/gdd/[system].md (complete, all 8 sections)
+        └── 输出：design/gdd/[system].md（完整，包含全部 8 个章节）
                 │
                 ▼
         /design-review design/gdd/[system].md
                 │
-                ├── APPROVED → mark DONE in systems-index, proceed to next system
-                ├── NEEDS REVISION → agent shows specific issues, re-enter section cycle
-                └── MAJOR REVISION → significant redesign needed before next system
+                ├── APPROVED → 在 systems-index 中标记 DONE，进入下一个系统
+                ├── NEEDS REVISION → 代理展示具体问题，重新进入章节循环
+                └── MAJOR REVISION → 需要重大重新设计后才能进入下一个系统
                         │
-                        ▼ (after all MVP GDDs + cross-review)
+                        ▼ （所有 MVP GDD 完成并交叉审查后）
                 /review-all-gdds
                         │
-                        └── Output: gdd-cross-review-[date].md
+                        └── 输出：gdd-cross-review-[date].md
 ```
 
 ---
 
-## Skill Chain: UX / UI Pipeline in Detail
+## 技能链：UX / UI 流水线详解
 
-UX specs are authored in Phase 4 (Pre-Production), before epics are written, so
-that story acceptance criteria can reference specific UX artifacts.
+UX 规格在阶段 4（前期制作）编写，早于史诗创建，因此故事验收标准可以引用具体的 UX 工件。
 
 ```
-design/gdd/*.md (UI/UX requirements extracted)
-design/player-journey.md (emotional arc, if authored)
+design/gdd/*.md（提取出的 UI/UX 需求）
+design/player-journey.md（情绪弧线，如已编写）
         │
         ▼
 /ux-design hud              → design/ux/hud.md
@@ -170,193 +169,193 @@ design/player-journey.md (emotional arc, if authored)
         ▼
 /ux-review design/ux/
         │
-        ├── APPROVED → UX specs ready, proceed to /create-epics
-        ├── NEEDS REVISION → blocking issues listed → fix → re-run review
-        └── MAJOR REVISION → fundamental UX problems → redesign before epics
+        ├── APPROVED → UX 规格就绪，进入 /create-epics
+        ├── NEEDS REVISION → 列出阻塞问题 → 修复 → 重新运行审查
+        └── MAJOR REVISION → 存在根本性 UX 问题 → 在史诗之前重新设计
                 │
-                ▼ (after APPROVED — in Phase 5 when implementing UI features)
+                ▼ （APPROVED 后——阶段 5 实现 UI 功能时）
         /team-ui
                 │
-                ├── Phase 1: /ux-design (if any specs still missing) + /ux-review
-                ├── Phase 2: visual design (art-director)
-                ├── Phase 3: layout implementation (ui-programmer)
-                ├── Phase 4: accessibility audit (accessibility-specialist)
-                └── Phase 5: final review
+                ├── 阶段 1：/ux-design（如仍缺少规格）+ /ux-review
+                ├── 阶段 2：视觉设计（art-director）
+                ├── 阶段 3：布局实现（ui-programmer）
+                ├── 阶段 4：无障碍审计（accessibility-specialist）
+                └── 阶段 5：最终审查
 
-Note: /ux-design and /ux-review belong in Phase 4 (Pre-Production).
-      /team-ui belongs in Phase 5 (Production) when a UI feature is being built.
+注意：/ux-design 和 /ux-review 属于阶段 4（前期制作）。
+      /team-ui 属于阶段 5（制作），在构建 UI 功能时使用。
 ```
 
 ---
 
-## Skill Chain: Dev Story Flow in Detail
+## 技能链：开发故事流程详解
 
-How a story moves from backlog to closed:
+故事如何从待办列表走向关闭：
 
 ```
 /story-readiness [story]
         │
-        ├── READY → Status: ready-for-dev → pick up for implementation
-        ├── NEEDS WORK → agent shows specific gaps → resolve → re-run readiness
-        └── BLOCKED → ADR still Proposed, or upstream story incomplete
+        ├── READY → Status: ready-for-dev → 接手实现
+        ├── NEEDS WORK → 代理展示具体缺口 → 解决 → 重新运行就绪检查
+        └── BLOCKED → ADR 仍为 Proposed，或上游故事未完成
                 │
-                ▼ (after READY)
+                ▼ （READY 后）
         /dev-story [story]
                 │
-                ├── Reads: story file, linked GDD requirement, ADR decisions, control manifest
-                ├── Routes to: gameplay-programmer / engine-programmer / ui-programmer / etc.
+                ├── 读取：故事文件、关联的 GDD 需求、ADR 决策、控制清单
+                ├── 路由至：gameplay-programmer / engine-programmer / ui-programmer / 等
                 │
-                └── Implementation begins
+                └── 开始实现
                         │
-                        ▼ (optional, during/after implementation)
-                /code-review          → architectural review of changeset
-                /scope-check          → verify no scope creep vs. original story criteria
-                /test-evidence-review → validate test files and manual evidence quality
+                 ▼ （可选，实现期间或之后）
+                 /code-review          → 变更集架构审查
+                 /scope-check          → 验证相对于原故事标准没有范围蔓延
+                 /test-evidence-review → 验证测试文件和手动证据质量
                         │
                         ▼
                 /story-done [story]
                         │
-                        ├── COMPLETE → Status: Complete, sprint-status.yaml updated, next story surfaced
-                        ├── COMPLETE WITH NOTES → complete but some criteria deferred (logged)
-                        └── BLOCKED → acceptance criteria cannot be verified → investigate blocker
+                        ├── COMPLETE → Status: Complete，更新 sprint-status.yaml，显示下一个故事
+                        ├── COMPLETE WITH NOTES → 已完成，但部分标准延期（已记录）
+                        └── BLOCKED → 无法验证验收标准 → 调查阻塞原因
 ```
 
 ---
 
-## Skill Chain: Story Lifecycle (Backlog to Closed)
+## 技能链：故事生命周期（从待办到关闭）
 
-How a story gets from backlog to closed (summary view):
+故事如何从待办列表走向关闭（摘要视图）：
 
 ```
 /create-epics [layer]
         │
-        └── Output: production/epics/[slug]/EPIC.md
+        └── 输出：production/epics/[slug]/EPIC.md
                 │
                 ▼
         /create-stories [epic-slug]
                 │
-                └── Output: production/epics/[slug]/story-NNN-[slug].md
-                            (Status: Ready or Blocked if ADR is Proposed)
+                └── 输出：production/epics/[slug]/story-NNN-[slug].md
+                             （Status: Ready，或在 ADR 为 Proposed 时为 Blocked）
                 │
                 ▼
         /story-readiness [story]
                 │
-                ├── READY → /dev-story → implement → /story-done
-                ├── NEEDS WORK → resolve gaps → re-run
-                └── BLOCKED → fix upstream dependency first
+                ├── READY → /dev-story → 实现 → /story-done
+                ├── NEEDS WORK → 解决缺口 → 重新运行
+                └── BLOCKED → 先修复上游依赖
 ```
 
 ---
 
-## Skill Chain: QA Pipeline in Detail
+## 技能链：QA 流水线详解
 
 ```
-[Phase 4 — one-time infrastructure setup]
-/test-setup ────────────────────────────────────────────────────► test framework scaffolded + CI/CD wired
-/test-helpers ──────────────────────────────────────────────────► tests/helpers/[engine].gd (GDUnit4, NUnit, etc.)
+[阶段 4 —— 一次性基础设施设置]
+/test-setup ────────────────────────────────────────────────────► 测试框架已搭建 + CI/CD 已接入
+/test-helpers ──────────────────────────────────────────────────► tests/helpers/[engine].gd（GDUnit4、NUnit 等）
 
-[Phase 5 — per-sprint QA cycle]
+[阶段 5 —— 每次迭代的 QA 循环]
 /qa-plan [sprint or feature]
         │
-        ├── Reads: story files, GDDs, acceptance criteria
-        ├── Classifies each story by test type:
-        │     Logic → automated unit test (BLOCKING)
-        │     Integration → integration test or documented playtest (BLOCKING)
-        │     Visual/Feel → screenshot + lead sign-off (ADVISORY)
-        │     UI → manual walkthrough or interaction test (ADVISORY)
-        │     Config/Data → smoke check (ADVISORY)
-        └── Output: production/qa/qa-plan-sprint-NN.md
+        ├── 读取：故事文件、GDD、验收标准
+        ├── 按测试类型分类每个故事：
+        │     Logic → 自动化单元测试（BLOCKING）
+        │     Integration → 集成测试或有文档记录的试玩（BLOCKING）
+        │     Visual/Feel → 截图 + 负责人签核（ADVISORY）
+        │     UI → 手动演练或交互测试（ADVISORY）
+        │     Config/Data → 冒烟检查（ADVISORY）
+        └── 输出：production/qa/qa-plan-sprint-NN.md
                 │
                 ▼
         /smoke-check
                 │
-                ├── PASS → QA hand-off cleared
-                └── FAIL → block sprint close → fix critical paths first
+                ├── PASS → QA 移交已放行
+                └── FAIL → 阻止迭代关闭 → 先修复关键路径
                         │
                         ▼
                 /regression-suite
                         │
-                        └── Coverage gaps + list of fixed bugs without regression tests
+                        └── 覆盖率缺口 + 没有回归测试的已修复缺陷列表
                                 │
                                 ▼
                         /test-evidence-review
                                 │
-                                └── Validates evidence quality, not just existence
+                                └── 验证证据质量，而不只是存在性
                                         │
-                                        ▼ (if CI run history available)
+                                        ▼ （如果有 CI 运行历史）
                         /test-flakiness
                                 │
-                                └── Flaky test report + fix recommendations
+                                └── 不稳定测试报告 + 修复建议
 
-[Phase 6 — extended stability testing]
-/soak-test ─────────────────────────────────────────────────────► soak test protocol + observed results
-/team-qa ───────────────────────────────────────────────────────► full QA cycle sign-off for release gate
+[阶段 6 —— 延长稳定性测试]
+/soak-test ─────────────────────────────────────────────────────► 浸泡测试协议 + 观察结果
+/team-qa ───────────────────────────────────────────────────────► 发布门禁所需的完整 QA 循环签核
 
-[Ongoing — bug management]
+[持续进行 —— 缺陷管理]
 /bug-report ────────────────────────────────────────────────────► production/qa/bugs/bug-NNN.md
-/bug-triage ────────────────────────────────────────────────────► open bugs re-prioritized + assigned
+/bug-triage ────────────────────────────────────────────────────► 开放缺陷已重新排序并分配
 
-[Meta — harness validation]
-/skill-test [lint|spec|catalog] ────────────────────────────────► skill file structural + behavioral check
+[元流程 —— 工具框架验证]
+/skill-test [lint|spec|catalog] ────────────────────────────────► 技能文件结构与行为检查
 ```
 
 ---
 
-## Brownfield Onboarding Flow
+## 棕地项目引导流程
 
-For projects with existing work (use `/start` option D or run directly):
+适用于已有成果的项目（使用 `/start` 选项 D，或直接运行）：
 
 ```
-/project-stage-detect    → stage detection report
+/project-stage-detect    → 阶段检测报告
         │
         ▼
 /adopt
         │
-        ├── Phase 1: detect what exists
-        ├── Phase 2: FORMAT audit (not just existence)
-        ├── Phase 3: classify gaps (BLOCKING / HIGH / MEDIUM / LOW)
-        ├── Phase 4: ordered migration plan
-        ├── Phase 5: write docs/adoption-plan-[date].md
-        └── Phase 6: fix most urgent gap inline (optional)
+        ├── 阶段 1：检测现有内容
+        ├── 阶段 2：FORMAT 审计（不只是检查存在性）
+        ├── 阶段 3：分类缺口（BLOCKING / HIGH / MEDIUM / LOW）
+        ├── 阶段 4：有序迁移计划
+        ├── 阶段 5：写入 docs/adoption-plan-[date].md
+        └── 阶段 6：直接修复最紧急的缺口（可选）
                 │
                 ▼
-        /design-system retrofit [path]    → fills missing GDD sections
-        /architecture-decision retrofit [path] → fills missing ADR sections
-        /gate-check                       → where are you in the pipeline?
+         /design-system retrofit [path]    → 填补缺失的 GDD 章节
+         /architecture-decision retrofit [path] → 填补缺失的 ADR 章节
+         /gate-check                       → 当前处于流水线的哪个位置？
 ```
 
 ---
 
-## How to Read These Diagrams
+## 如何阅读这些图
 
-| Symbol | Meaning |
+| 符号 | 含义 |
 |--------|---------|
-| `──►` | Produces this artifact |
-| `│ ▼` | Flows into next step |
-| `├──` | Branch (multiple possible outcomes) |
-| `×N` | Runs N times (once per system, story, etc.) |
-| `(input)` | Read by the skill but not produced here |
-| `[optional]` | Not required for the gate to pass |
-| `WRITE` (caps) | File written to disk immediately |
+| `──►` | 生成此工件 |
+| `│ ▼` | 流向下一步 |
+| `├──` | 分支（多个可能结果） |
+| `×N` | 运行 N 次（每个系统、故事等一次） |
+| `(input)` | 由技能读取，但不在此处生成 |
+| `[optional]` | 通过阶段门不需要 |
+| `WRITE`（大写） | 立即写入磁盘的文件 |
 
 ---
 
-## Common Entry Points
+## 常见入口
 
-| Where you are | Run this |
+| 你所在的位置 | 运行此命令 |
 |---------------|---------|
-| Brand new, no idea | `/start` → `/brainstorm` |
-| Have a concept, no engine | `/setup-engine` |
-| Have concept + engine | `/map-systems` |
-| Mid-systems design | `/design-system [next system]` or `/map-systems next` |
-| All GDDs done | `/review-all-gdds` → `/gate-check` |
-| In technical setup | `/create-architecture` → `/architecture-decision` |
-| Starting UX design | `/ux-design screen [name]` or `/ux-design hud` |
-| Scaffolding tests | `/test-setup` → `/test-helpers` |
-| Have stories, ready to code | `/story-readiness [story]` → `/dev-story [story]` |
-| Story done | `/story-done [story]` |
-| Running QA for a sprint | `/qa-plan` → `/smoke-check` → `/regression-suite` |
-| Bug backlog needs sorting | `/bug-triage` |
-| Extended stability testing | `/soak-test` |
-| Not sure | `/help` |
-| Existing project | `/adopt` |
+| 全新项目，没有想法 | `/start` → `/brainstorm` |
+| 有概念，没有引擎 | `/setup-engine` |
+| 有概念 + 引擎 | `/map-systems` |
+| 正在进行系统设计 | `/design-system [next system]` 或 `/map-systems next` |
+| 所有 GDD 已完成 | `/review-all-gdds` → `/gate-check` |
+| 正在进行技术设置 | `/create-architecture` → `/architecture-decision` |
+| 开始 UX 设计 | `/ux-design screen [name]` 或 `/ux-design hud` |
+| 搭建测试 | `/test-setup` → `/test-helpers` |
+| 有故事，准备编码 | `/story-readiness [story]` → `/dev-story [story]` |
+| 故事完成 | `/story-done [story]` |
+| 为迭代运行 QA | `/qa-plan` → `/smoke-check` → `/regression-suite` |
+| 需要整理缺陷待办 | `/bug-triage` |
+| 延长稳定性测试 | `/soak-test` |
+| 不确定 | `/help` |
+| 现有项目 | `/adopt` |
