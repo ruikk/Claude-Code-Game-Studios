@@ -1,20 +1,20 @@
-# Godot Navigation — Quick Reference
+# Godot Navigation — 快速参考
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+上次验证: 2026-02-12 | 引擎: Godot 4.6
 
-## What Changed Since ~4.3 (LLM Cutoff)
+## 自 ~4.3 以来的变更（LLM 截止版本）
 
-### 4.5 Changes
-- **Dedicated 2D navigation server**: No longer a proxy to 3D NavigationServer
-  - Reduces export binary size for 2D-only games
-  - API remains the same for both 2D and 3D
+### 4.5 变更
+- **专用 2D 导航服务器**: 不再代理到 3D NavigationServer
+  - 减小纯 2D 游戏的导出二进制体积
+  - 2D 和 3D 的 API 均保持不变
 
-### 4.3 Changes (in training data)
-- **`NavigationRegion2D`**: Removed `avoidance_layers` and `constrain_avoidance` properties
+### 4.3 变更（训练数据已覆盖）
+- **`NavigationRegion2D`**: 移除 `avoidance_layers` 和 `constrain_avoidance` 属性
 
-## Current API Patterns
+## 当前 API 模式
 
-### NavigationAgent3D (Preferred for Most Cases)
+### NavigationAgent3D（大多数情况下首选）
 ```gdscript
 @onready var nav_agent: NavigationAgent3D = %NavigationAgent3D
 
@@ -54,9 +54,9 @@ func _physics_process(delta: float) -> void:
     move_and_slide()
 ```
 
-### Low-Level Path Query (3D)
+### 底层路径查询（3D）
 ```gdscript
-# Direct server query for custom pathfinding logic
+# 直接查询服务器以实现自定义寻路逻辑
 var query := NavigationPathQueryParameters3D.new()
 query.map = get_world_3d().navigation_map
 query.start_position = global_position
@@ -68,34 +68,34 @@ NavigationServer3D.query_path(query, result)
 var path: PackedVector3Array = result.path
 ```
 
-### Avoidance
+### 避障
 ```gdscript
-# Enable RVO2-based local avoidance
+# 启用基于 RVO2 的局部避障
 nav_agent.avoidance_enabled = true
 nav_agent.radius = 0.5
 nav_agent.max_speed = move_speed
 nav_agent.neighbor_distance = 10.0
 
-# Use velocity_computed signal for avoidance-safe movement
+# 使用 velocity_computed 信号进行安全避障移动
 nav_agent.velocity_computed.connect(_on_velocity_computed)
 
-# Set velocity each frame (avoidance needs this)
+# 每帧设置速度（避障需要）
 nav_agent.velocity = desired_velocity
 ```
 
-### Navigation Layers
+### 导航层
 ```gdscript
-# Use layers to separate walkable areas by agent type
-# Layer 1: Ground units
-# Layer 2: Flying units
-# Layer 3: Swimming units
-nav_agent.navigation_layers = 1  # Ground only
-nav_agent.navigation_layers = 1 | 2  # Ground + Flying
+# 使用层按代理类型分隔可行走区域
+# 第 1 层: 地面单位
+# 第 2 层: 飞行单位
+# 第 3 层: 游泳单位
+nav_agent.navigation_layers = 1  # 仅地面
+nav_agent.navigation_layers = 1 | 2  # 地面 + 飞行
 ```
 
-## Common Mistakes
-- Calling `get_next_path_position()` without checking `is_navigation_finished()`
-- Not setting `velocity` on the agent when avoidance is enabled (required for RVO2)
-- Using `NavigationRegion2D.avoidance_layers` (removed in 4.3)
-- Forgetting to bake navigation mesh after modifying geometry
-- Not setting `navigation_layers` (defaults to all layers)
+## 常见错误
+- 未检查 `is_navigation_finished()` 便调用 `get_next_path_position()`
+- 启用避障时未设置代理的 `velocity`（RVO2 必需）
+- 使用 `NavigationRegion2D.avoidance_layers`（4.3 中已移除）
+- 修改几何体后忘记烘焙导航网格
+- 未设置 `navigation_layers`（默认为所有层）

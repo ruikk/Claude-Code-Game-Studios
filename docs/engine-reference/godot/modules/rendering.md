@@ -1,40 +1,40 @@
-# Godot Rendering — Quick Reference
+# Godot Rendering — 快速参考
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+上次验证: 2026-02-12 | 引擎: Godot 4.6
 
-## What Changed Since ~4.3 (LLM Cutoff)
+## 自 ~4.3 以来的变更（LLM 截止版本）
 
-### 4.6 Changes
-- **D3D12 is the default rendering backend on Windows** (was Vulkan)
-- **Glow processes before tonemapping** (was after) — uses screen blending mode
-- **AgX tonemapper**: new white point and contrast controls
-- **SSR overhauled**: better realism, visual stability, and performance
+### 4.6 变更
+- **D3D12 是 Windows 上的默认渲染后端**（此前为 Vulkan）
+- **Glow 在色调映射前处理**（此前在之后），使用 screen 混合模式
+- **AgX tonemapper**: 新增白点和对比度控制
+- **SSR 全面重构**: 真实感、视觉稳定性和性能更好
 
-### 4.5 Changes
-- **Shader Baker**: Pre-compiles shaders to reduce startup time
-- **SMAA 1x**: New anti-aliasing option (sharper than FXAA, cheaper than TAA)
-- **Stencil buffer support**: Enables selective geometry masking/portal effects
-- **Bent normal maps**: Directional occlusion encoded in normal map textures
-- **Specular occlusion**: Ambient occlusion now correctly affects reflections
+### 4.5 变更
+- **Shader Baker**: 预编译着色器以减少启动时间
+- **SMAA 1x**: 新的抗锯齿选项（比 FXAA 更锐利，比 TAA 更省资源）
+- **Stencil buffer support**: 支持选择性几何遮罩和传送门效果
+- **Bent normal maps**: 在法线贴图纹理中编码方向性遮蔽
+- **Specular occlusion**: 环境光遮蔽现在会正确影响反射
 
-### 4.4 Changes
+### 4.4 变更
 - **`RenderingDevice.draw_list_begin`**: Many parameters removed; optional `breadcrumb` added
 - **Shader texture types**: Changed from `Texture2D` to `Texture` base type
-- **Particles `.restart()`**: Added optional `keep_seed` parameter
+- **Particles `.restart()`**: 新增可选 `keep_seed` 参数
 
-### 4.3 Changes (in training data)
+### 4.3 变更（训练数据已覆盖）
 - **Compositor node**: `Compositor` + `CompositorEffect` for post-processing chains
 
-## Current API Patterns
+## 当前 API 模式
 
 ### Post-Processing (4.3+)
 ```gdscript
-# Use Compositor node — NOT manual viewport shader chains
-# Add Compositor as child of WorldEnvironment or Camera3D
-# Create CompositorEffect resources for each post-process step
+# 使用 Compositor 节点，不要使用手动视口着色器链
+# 将 Compositor 添加为 WorldEnvironment 或 Camera3D 的子节点
+# 为每个后处理步骤创建 CompositorEffect 资源
 ```
 
-### Anti-Aliasing Options (4.6)
+### 抗锯齿选项（4.6）
 ```
 Project Settings → Rendering → Anti Aliasing:
 - MSAA 2D/3D: Hardware MSAA (quality but expensive)
@@ -42,7 +42,7 @@ Project Settings → Rendering → Anti Aliasing:
 - TAA: Temporal (best quality, ghosting on fast motion)
 ```
 
-### Rendering Backend Selection (4.6)
+### 渲染后端选择（4.6）
 ```
 Project Settings → Rendering → Renderer:
 - Forward+ (default): Full featured, desktop-focused
@@ -52,8 +52,8 @@ Project Settings → Rendering → Renderer:
 Windows default backend: D3D12 (was Vulkan pre-4.6)
 ```
 
-## Common Mistakes
-- Assuming Vulkan is the default backend on Windows (D3D12 since 4.6)
-- Using manual viewport chains instead of Compositor for post-processing
-- Using `Texture2D` in shader uniform types (use `Texture` since 4.4)
-- Not using Shader Baker for projects with many shader variants
+## 常见错误
+- 误以为 Vulkan 是 Windows 默认后端（4.6 起为 D3D12）
+- 后处理使用手动视口链，而不是 Compositor
+- 着色器 uniform 类型使用 `Texture2D`（4.4 起应使用 `Texture`）
+- 着色器变体较多的项目未使用 Shader Baker

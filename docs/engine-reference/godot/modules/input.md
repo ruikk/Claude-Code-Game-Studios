@@ -1,25 +1,25 @@
-# Godot Input — Quick Reference
+# Godot Input — 快速参考
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+上次验证: 2026-02-12 | 引擎: Godot 4.6
 
-## What Changed Since ~4.3 (LLM Cutoff)
+## 自 ~4.3 以来的变更（LLM 截止版本）
 
-### 4.6 Changes
-- **Dual-focus system**: Mouse/touch focus is now separate from keyboard/gamepad focus
-  - Visual feedback differs by input method
-  - Custom focus implementations may need updating
-- **Select Mode keybind changed**: "Select Mode" is now `v` key; old mode renamed "Transform Mode" (`q` key)
+### 4.6 变更
+- **双焦点系统**: 鼠标/触摸焦点现在与键盘/手柄焦点分离
+  - 视觉反馈因输入方式而异
+  - 可能需要更新自定义焦点实现
+- **Select Mode 快捷键变更**: “Select Mode” 现在使用 `v` 键；旧模式改名为“Transform Mode”（`q` 键）
 
-### 4.5 Changes
-- **SDL3 gamepad driver**: Gamepad handling delegated to SDL library for better cross-platform support
-- **Recursive Control disable**: Single property disables mouse/focus for entire node hierarchies
+### 4.5 变更
+- **SDL3 gamepad driver**: 手柄处理交由 SDL 库负责，以提供更好的跨平台支持
+- **递归禁用 Control**: 单个属性即可禁用整个节点层级的鼠标/焦点
 
-### 4.3 Changes (in training data)
-- **InputEventShortcut**: Dedicated event type for menu shortcuts (optional)
+### 4.3 变更（训练数据已覆盖）
+- **InputEventShortcut**: 专用于菜单快捷键的事件类型（可选）
 
-## Current API Patterns
+## 当前 API 模式
 
-### Input Actions (unchanged)
+### 输入动作（未变）
 ```gdscript
 func _physics_process(delta: float) -> void:
     var input_dir: Vector2 = Input.get_vector(
@@ -29,7 +29,7 @@ func _physics_process(delta: float) -> void:
         jump()
 ```
 
-### Input Events (unchanged)
+### 输入事件（未变）
 ```gdscript
 func _unhandled_input(event: InputEvent) -> void:
     if event is InputEventMouseButton:
@@ -40,25 +40,25 @@ func _unhandled_input(event: InputEvent) -> void:
             toggle_pause()
 ```
 
-### Focus Management (4.6 — CHANGED)
+### 焦点管理（4.6 — 已变更）
 ```gdscript
-# Mouse/touch and keyboard/gamepad focus are now SEPARATE
-# Visual styles may differ depending on which input method is active
-# If you have custom focus drawing, test with both input methods
+# 鼠标/触摸焦点现在与键盘/手柄焦点分离
+# 视觉样式可能因当前输入方式而异
+# 如果有自定义焦点绘制，请使用两种输入方式测试
 
-# Standard approach still works:
+# 标准方式仍然有效:
 func _ready() -> void:
-    %StartButton.grab_focus()  # Keyboard/gamepad focus
+    %StartButton.grab_focus()  # 键盘/手柄焦点
 
-# But be aware: mouse hover focus != keyboard focus in 4.6
+# 但请注意: 4.6 中鼠标悬停焦点 != 键盘焦点
 ```
 
-### Gamepad (4.5+ — SDL3 backend)
+### 手柄（4.5+ — SDL3 后端）
 ```gdscript
-# API unchanged, but SDL3 provides:
-# - Better device detection across platforms
-# - Improved rumble support
-# - More consistent button mapping
+# API 未变，但 SDL3 提供:
+# - 更好的跨平台设备检测
+# - 改进的震动支持
+# - 更一致的按键映射
 
 func _input(event: InputEvent) -> void:
     if event is InputEventJoypadButton:
@@ -66,7 +66,7 @@ func _input(event: InputEvent) -> void:
             confirm_selection()
 ```
 
-## Common Mistakes
-- Not testing both mouse and keyboard focus paths (dual-focus in 4.6)
-- Assuming `grab_focus()` affects mouse focus (it only affects keyboard/gamepad in 4.6)
-- Using string literals instead of `StringName` (`&"action"`) for action names in hot paths
+## 常见错误
+- 未测试鼠标和键盘两条焦点路径（4.6 使用双焦点）
+- 误以为 `grab_focus()` 会影响鼠标焦点（4.6 中仅影响键盘/手柄）
+- 热路径中的动作名称使用字符串字面量，而不是 `StringName`（`&"action"`）
