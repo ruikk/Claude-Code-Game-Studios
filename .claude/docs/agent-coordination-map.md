@@ -127,7 +127,7 @@ art-dir = art-director
 ```
 1. qa-tester          -- 使用 /bug-report 提交缺陷报告
 2. qa-lead            -- 分级严重性与优先级
-3. producer           -- 分配到冲刺（若非 S1）
+3. producer           -- 分配到迭代（若非 S1）
 4. lead-programmer    -- 定位根因并分配给程序员
 5. [specialist-programmer] -- 修复缺陷
 6. lead-programmer    -- 代码评审
@@ -161,16 +161,16 @@ art-dir = art-director
 9. qa-tester          -- 测试完整区域
 ```
 
-### Pattern 5: Sprint Cycle（模式 5：冲刺周期）
+### Pattern 5: Sprint Cycle（模式 5：迭代周期）
 
 ```
-1. producer           -- 使用 /sprint-plan new 规划冲刺
+1. producer           -- 使用 /sprint-plan new 规划迭代
 2. [All agents]       -- 执行分配任务
 3. producer           -- 使用 /sprint-plan status 进行每日状态同步
-4. qa-lead            -- 冲刺期间持续测试
-5. lead-programmer    -- 冲刺期间持续代码评审
-6. producer           -- 通过 post-sprint hook 执行冲刺复盘
-7. producer           -- 融合经验教训规划下一轮冲刺
+4. qa-lead            -- 迭代期间持续测试
+5. lead-programmer    -- 迭代期间持续代码评审
+6. producer           -- 通过 post-sprint hook 执行迭代复盘
+7. producer           -- 融合经验教训规划下一轮迭代
 ```
 
 ### Pattern 6: Milestone Checkpoint（模式 6：里程碑检查点）

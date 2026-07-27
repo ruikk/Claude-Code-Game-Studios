@@ -39,7 +39,7 @@
 | `/architecture-review` | 校验全部 ADR 的完整性、依赖顺序与 GDD 覆盖度 |
 | `/create-control-manifest` | 从已接受的 ADR 生成扁平化程序员规则表（control manifest） |
 
-## 故事与冲刺（Stories & Sprints）
+## 故事与迭代（Stories & Sprints）
 
 | Command | 目的 |
 |---------|---------|

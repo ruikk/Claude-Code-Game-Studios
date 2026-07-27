@@ -2,11 +2,11 @@
 
 ## 触发（Trigger）
 
-在每个冲刺（sprint）结束时手动触发（通常由 `producer` agent 或人类开发者调用）。
+在每个迭代（sprint）结束时手动触发（通常由 `producer` agent 或人类开发者调用）。
 
 ## 目的（Purpose）
 
-通过分析冲刺（sprint）数据，自动生成复盘起点：计划与完成对比、速度变化、缺陷趋势以及常见阻塞项。
+通过分析迭代（sprint）数据，自动生成复盘起点：计划与完成对比、速度变化、缺陷趋势以及常见阻塞项。
 这不是 git hook，而是通过 `producer` agent 调用的 workflow hook（工作流钩子）。
 
 ## 实现（Implementation）
@@ -19,12 +19,12 @@
 
 `producer` agent 应当：
 
-1. 从 `production/sprints/sprint-[N].md` **读取冲刺计划**
+1. 从 `production/sprints/sprint-[N].md` **读取迭代计划**
 2. **计算指标**：
    - 计划任务数 vs 完成任务数
    - 计划故事点 vs 完成故事点（若使用）
-   - 从上一个冲刺（sprint）结转的事项
-   - 冲刺中途新增任务
+   - 从上一个迭代（sprint）结转的事项
+   - 迭代中途新增任务
    - 任务平均完成时间
 3. **分析模式**：
    - 最常见阻塞项

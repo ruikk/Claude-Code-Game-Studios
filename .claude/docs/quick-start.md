@@ -32,7 +32,7 @@
 | 编写战斗代码 | `gameplay-programmer` |
 | 制作一个着色器 | `technical-artist` |
 | 编写对话 | `writer` |
-| 规划下一个冲刺 | `producer` |
+| 规划下一个迭代 | `producer` |
 | 评审代码质量 | `lead-programmer` |
 | 编写测试用例 | `qa-tester` |
 | 设计关卡 | `level-designer` |
@@ -88,8 +88,8 @@
 | `/create-epics` | 将 GDD + ADR 转换为 epics（每个架构模块一个） |
 | `/create-stories` | 将单个 epic 拆分为可实现的 story 文件 |
 | `/dev-story` | 读取 story 并实现——自动路由到正确程序员代理 |
-| `/sprint-plan` | 创建或更新冲刺计划 |
-| `/sprint-status` | 快速 30 行冲刺快照 |
+| `/sprint-plan` | 创建或更新迭代计划 |
+| `/sprint-status` | 快速 30 行迭代快照 |
 | `/story-readiness` | 在接手前校验 story 是否可实现 |
 | `/story-done` | story 收尾评审——验证验收标准 |
 | `/estimate` | 产出结构化工作量估算 |
@@ -105,7 +105,7 @@
 | `/consistency-check` | 扫描所有 GDD 的跨文档不一致（冲突数值、命名、规则） |
 | `/reverse-document` | 从现有代码反向生成设计/架构文档 |
 | `/milestone-review` | 审查里程碑进度 |
-| `/retrospective` | 执行冲刺/里程碑复盘 |
+| `/retrospective` | 执行迭代/里程碑复盘 |
 | `/bug-report` | 结构化缺陷报告创建 |
 | `/playtest-report` | 创建或分析试玩测试反馈 |
 | `/onboard` | 为某角色生成入门文档 |
@@ -125,8 +125,8 @@
 | `/team-level` | 编排完整关卡制作流水线 |
 | `/team-live-ops` | 为赛季、活动与上线后内容编排实时运营团队 |
 | `/team-qa` | 编排完整 QA 团队周期——测试计划、测试用例、冒烟检查、签核 |
-| `/qa-plan` | 为冲刺或功能生成 QA 测试计划 |
-| `/bug-triage` | 重新排序开放缺陷优先级，分配到冲刺，并暴露系统性趋势 |
+| `/qa-plan` | 为迭代或功能生成 QA 测试计划 |
+| `/bug-triage` | 重新排序开放缺陷优先级，分配到迭代，并暴露系统性趋势 |
 | `/smoke-check` | QA 交接前运行关键路径冒烟测试门禁（PASS/FAIL） |
 | `/soak-test` | 为长时游玩会话生成 soak test 协议 |
 | `/regression-suite` | 将覆盖映射到 GDD 关键路径，标记缺口并维护回归套件 |
@@ -146,7 +146,7 @@
 - `risk-register-entry.md` -- 用于新增风险
 - `narrative-character-sheet.md` -- 用于新角色
 - `test-plan.md` -- 用于功能测试计划
-- `sprint-plan.md` -- 用于冲刺规划
+- `sprint-plan.md` -- 用于迭代规划
 - `milestone-definition.md` -- 用于新里程碑
 - `level-design-document.md` -- 用于新关卡
 - `game-pillars.md` -- 用于核心设计支柱
@@ -213,7 +213,7 @@
    按依赖顺序编写 GDD
 6. **测试核心循环**——运行 `/prototype [core-mechanic]`
 7. **进行试玩测试**——运行 `/playtest-report` 验证假设
-8. **规划首个冲刺**——运行 `/sprint-plan new`
+8. **规划首个迭代**——运行 `/sprint-plan new`
 9. 开始构建
 
 ### Path B: "I know what I want to build"
@@ -227,7 +227,7 @@
 4. **设计每个系统**——运行 `/design-system [system-name]` 按依赖顺序编写 GDD
 5. **创建初始 ADR**——运行 `/architecture-decision`
 6. 在 `production/milestones/` 中**创建第一个里程碑**
-7. **规划首个冲刺**——运行 `/sprint-plan new`
+7. **规划首个迭代**——运行 `/sprint-plan new`
 8. 开始构建
 
 ### Path C: "I know the game but not the engine"
@@ -249,7 +249,7 @@
    并生成编号迁移计划，在不覆盖既有成果的前提下补齐缺口
 3. **必要时配置引擎**——若尚未配置，运行 `/setup-engine`
 4. **验证阶段就绪度**——运行 `/gate-check` 查看当前位置
-5. **规划下一个冲刺**——运行 `/sprint-plan new`
+5. **规划下一个迭代**——运行 `/sprint-plan new`
 
 ## File Structure Reference / 文件结构参考
 

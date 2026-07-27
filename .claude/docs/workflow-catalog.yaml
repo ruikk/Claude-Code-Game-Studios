@@ -181,13 +181,13 @@ phases:
         description: "把每个史诗项拆分为可实现的故事项文件。按史诗项运行：/create-stories [epic-slug]"
 
       - id: sprint-plan
-        name: "首个冲刺计划"
+        name: "首个迭代计划"
         command: /sprint-plan
         required: true
         artifact:
           glob: "production/sprints/sprint-*.md"
           min_count: 1
-        description: "用来自史诗项的优先级故事项规划第一个冲刺"
+        description: "用来自史诗项的优先级故事项规划第一个迭代"
 
       - id: vertical-slice
         name: "垂直切片（已游戏试玩测试）"
@@ -199,17 +199,17 @@ phases:
 
   production:
     label: "制作"
-    description: "基于冲刺的功能开发——选择、实现、关闭故事项"
+    description: "基于迭代的功能开发——选择、实现、关闭故事项"
     next_phase: polish
     steps:
       - id: sprint-plan
-        name: "冲刺计划"
+        name: "迭代计划"
         command: /sprint-plan
         required: true
         repeatable: true
         artifact:
           glob: "production/sprints/sprint-*.md"
-        description: "用优先级明确、已就绪的故事项规划当前冲刺"
+        description: "用优先级明确、已就绪的故事项规划当前迭代"
 
       - id: story-readiness
         name: "故事项就绪检查"
@@ -240,14 +240,14 @@ phases:
         repeatable: true
         artifact:
           glob: "production/sprints/sprint-*.md"
-          note: "在冲刺中途添加故事项时，或在冲刺回顾之前运行"
-        description: "通过比较当前冲刺范围与原始史诗项范围来检测范围蔓延。在 (a) 冲刺中途添加故事项时，或 (b) 冲刺回顾之前运行。"
+          note: "在迭代中途添加故事项时，或在迭代回顾之前运行"
+        description: "通过比较当前迭代范围与原始史诗项范围来检测范围蔓延。在 (a) 迭代中途添加故事项时，或 (b) 迭代回顾之前运行。"
 
       - id: sprint-status
-        name: "冲刺状态"
+        name: "迭代状态"
         command: /sprint-status
         required: false
-        description: "无需完整报告的 30 行冲刺进度快照"
+        description: "无需完整报告的 30 行迭代进度快照"
 
   polish:
     label: "打磨"
@@ -302,13 +302,13 @@ phases:
         name: "补丁说明"
         command: /patch-notes
         required: false
-        description: "根据 git 历史和冲刺数据生成面向玩家的补丁说明"
+        description: "根据 git 历史和迭代数据生成面向玩家的补丁说明"
 
       - id: changelog
         name: "变更日志"
         command: /changelog
         required: false
-        description: "从提交、冲刺和设计文档自动生成内部变更日志"
+        description: "从提交、迭代和设计文档自动生成内部变更日志"
 
       - id: launch-checklist
         name: "上线检查清单"

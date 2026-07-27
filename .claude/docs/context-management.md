@@ -77,7 +77,7 @@ Task: Implement hitbox detection
 - 指向 `production/session-state/active.md` 的引用（通过它恢复状态）
 - 本次会话中被修改文件的清单及其用途
 - 任何架构决策及其理由
-- 活跃 sprint（冲刺）任务及其当前状态
+- 活跃 sprint（迭代）任务及其当前状态
 - 代理调用及其结果（成功/失败/阻塞）
 - 测试结果（通过/失败数量、具体失败项）
 - 等待用户输入的未解决阻塞项或问题

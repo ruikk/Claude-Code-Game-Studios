@@ -27,7 +27,7 @@
 
 ## 个人快捷指令
 - 当我说 "review" 时，对最近变更的文件运行 /code-review
-- 当我说 "status" 时，显示 git status + 冲刺（sprint）进度
+- 当我说 "status" 时，显示 git status + 迭代（sprint）进度
 ```
 
 ## 设置（Setup）

@@ -405,20 +405,20 @@
 
 ---
 
-### PR-SPRINT — 冲刺可行性审查
+### PR-SPRINT — 迭代可行性审查
 
-**触发条件**: 在最终确定冲刺计划之前（`/sprint-plan`），以及在
-任何冲刺中途的范围变更之后
+**触发条件**: 在最终确定迭代计划之前（`/sprint-plan`），以及在
+任何迭代中途的范围变更之后
 
 **传递的上下文**:
-- 拟议的冲刺故事列表（标题、估算、依赖）
+- 拟议的迭代故事列表（标题、估算、依赖）
 - 团队容量（可用小时数）
-- 当前冲刺待办债务（如果有）
+- 当前迭代待办债务（如果有）
 - 里程碑约束
 
 **提示词**:
-> "审查这份冲刺计划的可行性。故事负载对于可用容量来说是否现实？故事是否按依赖正确排序？
-> 故事之间是否存在隐藏依赖，可能在冲刺中途卡住团队？是否有任何故事由于技术复杂度而被低估？
+> "审查这份迭代计划的可行性。故事负载对于可用容量来说是否现实？故事是否按依赖正确排序？
+> 故事之间是否存在隐藏依赖，可能在迭代中途卡住团队？是否有任何故事由于技术复杂度而被低估？
 > 请返回 REALISTIC（计划可实现）、CONCERNS [specific risks]，
 > 或 UNREALISTIC [sprint must be descoped — identify which stories to defer]。"
 
@@ -463,7 +463,7 @@
 > "在开始拆分故事之前，审查这份 Epic 结构的制作可行性。Epic 边界是否范围适当——每个 Epic 是否都能现实地在里程碑截止日前完成？
 > Epic 是否按系统依赖正确排序——是否有任何 Epic 需要另一个 Epic 的输出后才能开始？
 > 是否有任何 Epic 过小（应该合并）或过大（应该拆分为 2-3 个聚焦 Epic）？
-> Foundation 层 Epic 的范围是否足以让 Core 层 Epic 在 Foundation 完成后的下一个冲刺开始时启动？
+> Foundation 层 Epic 的范围是否足以让 Core 层 Epic 在 Foundation 完成后的下一个迭代开始时启动？
 > 请返回 REALISTIC（Epic 结构可制作）、CONCERNS [specific structural adjustments before stories are written]，
 > 或 UNREALISTIC [epics must be split, merged, or reordered — story breakdown cannot begin until resolved]。"
 
@@ -477,13 +477,13 @@
 
 **传递的上下文**:
 - 目标阶段名称
-- 当前存在的冲刺和里程碑工件
+- 当前存在的迭代和里程碑工件
 - 团队规模和容量
 - 当前被阻塞故事数量
 
 **提示词**:
 > "从制作视角审查当前项目在 [target phase] 阶段的门禁就绪度。所述时间线和团队规模下，范围是否现实？
-> 依赖是否已正确排序，以便团队能够按顺序真正执行？是否存在可能在前两个冲刺内破坏该阶段的里程碑或冲刺风险？
+> 依赖是否已正确排序，以便团队能够按顺序真正执行？是否存在可能在前两个迭代内破坏该阶段的里程碑或迭代风险？
 > 请返回 READY、CONCERNS [list]，或 NOT READY [blockers]。"
 
 **裁决**: READY / CONCERNS / NOT READY
@@ -606,7 +606,7 @@
 
 ### QL-STORY-READY — QA 负责人故事就绪检查
 
-**触发条件**: 在故事被接受进入冲刺之前——由 `/create-stories`、
+**触发条件**: 在故事被接受进入迭代之前——由 `/create-stories`、
 `/story-readiness` 以及 `/sprint-plan` 在选故事时调用
 
 **传递的上下文**:
@@ -616,7 +616,7 @@
 - 该故事覆盖的 GDD 需求（TR-ID 和文本）
 
 **提示词**:
-> "在故事进入冲刺之前，审查其验收标准的可测试性。所有标准是否足够具体，以便开发者能毫无歧义地知道自己何时完成？对于 Logic 类型故事：每条标准是否都能通过自动化测试验证？对于 Integration 故事：每条标准是否都能在受控测试环境中观测到？标出那些过于模糊而难以实现对照的标准，并标出那些需要完整游戏构建才能测试的标准（将这些标记为 DEFERRED，而不是 BLOCKED）。请返回 ADEQUATE（标准按原样可实现）、GAPS [specific criteria needing refinement]，或 INADEQUATE [criteria are too vague — story must be revised before sprint inclusion]。"
+> "在故事进入迭代之前，审查其验收标准的可测试性。所有标准是否足够具体，以便开发者能毫无歧义地知道自己何时完成？对于 Logic 类型故事：每条标准是否都能通过自动化测试验证？对于 Integration 故事：每条标准是否都能在受控测试环境中观测到？标出那些过于模糊而难以实现对照的标准，并标出那些需要完整游戏构建才能测试的标准（将这些标记为 DEFERRED，而不是 BLOCKED）。请返回 ADEQUATE（标准按原样可实现）、GAPS [specific criteria needing refinement]，或 INADEQUATE [criteria are too vague — story must be revised before sprint inclusion]。"
 
 **裁决**: ADEQUATE / GAPS / INADEQUATE
 
@@ -719,6 +719,6 @@ Production → Polish 的 `/gate-check` 时
 | **系统设计** | TD-SYSTEM-BOUNDARY, CD-SYSTEMS, PR-SCOPE, CD-GDD-ALIGN（每个 GDD） | ND-CONSISTENCY, AD-VISUAL |
 | **技术准备** | TD-ARCHITECTURE, TD-ADR（每个 ADR）, LP-FEASIBILITY | TD-ENGINE-RISK |
 | **前期制作** | PR-EPIC, QL-STORY-READY（每个故事）, PR-SPRINT, 所有三个 PHASE-GATE（通过 /gate-check） | CD-PLAYTEST |
-| **制作** | LP-CODE-REVIEW（每个故事）, QL-STORY-READY, PR-SPRINT（每个冲刺） | PR-MILESTONE, QL-TEST-COVERAGE |
+| **制作** | LP-CODE-REVIEW（每个故事）, QL-STORY-READY, PR-SPRINT（每个迭代） | PR-MILESTONE, QL-TEST-COVERAGE |
 | **润色** | QL-TEST-COVERAGE, CD-PLAYTEST, PR-MILESTONE | |
 | **发布** | 所有三个 PHASE-GATE（通过 /gate-check） | QL-TEST-COVERAGE |
