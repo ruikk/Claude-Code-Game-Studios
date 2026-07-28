@@ -201,70 +201,7 @@ model: sonnet
 用户确认后，**立即**创建带有空章节标题的 GDD 文件。
 这确保增量写入有目标。
 
-使用 `.claude/docs/templates/game-design-document.md` 中的模板结构：
-
-```markdown
-# [System Name]
-
-> **Status**: In Design
-> **Author**: [user + agents]
-> **Last Updated**: [today's date]
-> **Implements Pillar**: [from context]
-
-## 概述
-
-[To be designed]
-
-## 玩家幻想
-
-[To be designed]
-
-## 详细规则
-
-### 核心规则
-
-[To be designed]
-
-### 状态与转换
-
-[To be designed]
-
-### 与其他系统的交互
-
-[To be designed]
-
-## 公式
-
-[To be designed]
-
-## 边界情况
-
-[To be designed]
-
-## 依赖
-
-[To be designed]
-
-## 调优旋钮
-
-[To be designed]
-
-## 视觉/音频需求
-
-[To be designed]
-
-## UI 需求
-
-[To be designed]
-
-## 验收标准
-
-[To be designed]
-
-## 开放问题
-
-[To be designed]
-```
+使用 `.claude/docs/templates/game-design-document.md` 中的模板结构
 
 询问：“可以在 `design/gdd/[system-name].md` 创建骨架文件吗？”
 

@@ -4,7 +4,7 @@
 > **作者**: [Agent 或人员]
 > **最后更新**: [日期]
 > **最后验证**: [日期 — 此文档上次与当前设计核对并确认准确的时间]
-> **支撑支柱（Implements Pillar）**: [该机制支撑的游戏支柱]
+> **实现支柱（Implements Pillar）**: [该机制支撑的游戏支柱]
 
 ## 摘要（Summary）
 
@@ -66,7 +66,7 @@ result = base_value * (1 + modifier_sum) * scaling_factor
 | [What if X is zero?] | [This happens] | [Because of this reason] |
 | [What if both effects trigger?] | [Priority rule] | [Design reasoning] |
 
-## 依赖（Dependencies）
+## 依赖项（Dependencies）
 
 [列出该机制依赖的所有系统，以及依赖该机制的系统。]
 
@@ -75,7 +75,7 @@ result = base_value * (1 + modifier_sum) * scaling_factor
 | [Combat] | This depends on Combat | Needs damage calculation results |
 | [Inventory] | Inventory depends on this | Provides item effect data |
 
-## 可调参数（Tuning knobs）
+## 调优旋钮（Tuning knobs）
 
 [所有应可调整以便平衡的数值。包括当前值、安全范围，以及在极端值下的影响。]
 
