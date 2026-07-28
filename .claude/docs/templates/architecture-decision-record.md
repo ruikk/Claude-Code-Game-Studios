@@ -33,7 +33,7 @@
 
 > **Note**: 若 Knowledge Risk 为 MEDIUM 或 HIGH，当项目升级引擎版本时，必须重新验证此 ADR。将其标记为 "Superseded" 并撰写新的 ADR。
 
-## ADR 依赖关系（ADR Dependencies）
+## ADR 依赖项（ADR Dependencies）
 
 | Field | Value |
 |-------|-------|
@@ -55,7 +55,7 @@
 ### 约束（Constraints）
 
 - [技术约束 -- 引擎限制、平台要求]
-- [时间线约束 -- 截止压力、依赖关系]
+- [时间线约束 -- 截止压力、依赖项]
 - [资源约束 -- 团队规模、可用专长]
 - [兼容性要求 -- 必须与现有系统协同工作]
 

@@ -5,7 +5,7 @@ paths:
 
 # 设计文档规则
 
-- 每份设计文档必须包含以下 8 个章节：概述 (Overview)、玩家幻想 (Player Fantasy)、详细规则、公式 (Formulas)、边界情况 (Edge Cases)、依赖关系、调节旋钮 (Tuning Knobs)、验收标准 (Acceptance Criteria)
+- 每份设计文档必须包含以下 8 个章节：概述 (Overview)、玩家幻想 (Player Fantasy)、详细规则（Detailed Rules）、公式 (Formulas)、边界情况 (Edge Cases)、依赖项 (Dependencies)、调节旋钮 (Tuning Knobs)、验收标准 (Acceptance Criteria)
 - 公式必须包含变量定义、期望值范围和示例计算
 - 边界情况必须明确说明会发生什么，而不能只写"妥善处理"
 - 依赖关系必须是双向的——如果系统 A 依赖 B，那么 B 的文档中也必须提及 A

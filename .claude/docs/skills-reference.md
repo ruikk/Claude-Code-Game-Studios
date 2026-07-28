@@ -17,7 +17,7 @@
 | Command | 目的 |
 |---------|---------|
 | `/brainstorm` | 使用专业工作室方法进行引导式创意发散（MDA、SDT、Bartle、verb-first） |
-| `/map-systems` | 将游戏概念拆解为系统，映射依赖关系，并确定设计优先顺序 |
+| `/map-systems` | 将游戏概念拆解为系统，映射依赖项，并确定设计优先顺序 |
 | `/design-system` | 面向单个游戏系统的分章节引导式 game design document（游戏设计文档）编写 |
 | `/quick-design` | 用于小改动的轻量设计规范 — 调优、小修、小型新增 |
 | `/review-all-gdds` | 对所有设计文档执行跨 GDD 一致性与整体性（holism）评审 |

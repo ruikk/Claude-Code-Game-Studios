@@ -31,7 +31,7 @@
 
 ---
 
-## 2. Detailed Design（详细设计）
+## 2. Detailed Rules（详细规则）
 
 ### 2.1 Core Mechanics（核心机制）
 
@@ -108,7 +108,7 @@
 
 ---
 
-## 4. Dependencies（依赖关系）
+## 4. Dependencies（依赖项）
 
 **Technical Dependencies（技术依赖）**:
 - [Dependency 1]: [Why needed]

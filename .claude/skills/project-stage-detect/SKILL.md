@@ -28,7 +28,7 @@ model: haiku
 - 统计 `design/gdd/*.md` 中的 GDD 文件数量
 - 检查是否存在 game-concept.md、game-pillars.md、systems-index.md
 - 如果 systems-index.md 存在，统计系统总数与已设计系统数
-- 分析完整度（概览、详细设计、边缘情况等）
+- 分析完整度（概览、详细规则、边缘情况等）
 - 统计 `design/narrative/` 中的叙事文档
 - 统计 `design/levels/` 中的关卡设计
 

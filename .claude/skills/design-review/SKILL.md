@@ -23,7 +23,7 @@ model: sonnet
 
 完整读取目标设计文档。读取 CLAUDE.md 以了解项目上下文和标准。读取目标文档中引用或暗示的相关设计文档（检查 `design/gdd/` 中是否存在相关系统）。
 
-**依赖关系图验证**：对于依赖关系（`Dependencies`）部分中列出的每个系统，使用 Glob 检查其 GDD 文件是否存在于 `design/gdd/` 中。标记任何不存在的文件 —— 这些是下游作者会遇到的中断引用。
+**依赖关系图验证**：对于依赖项（`Dependencies`）部分中列出的每个系统，使用 Glob 检查其 GDD 文件是否存在于 `design/gdd/` 中。标记任何不存在的文件 —— 这些是下游作者会遇到的中断引用。
 
 **世界观/叙事对齐**：如果存在 `design/gdd/game-concept.md` 或 `design/narrative/` 中的任何文件，请读取。注意此 GDD 中与已建立的世界规则、基调或设计支柱相矛盾的任何机制选择。将此上下文传递给阶段 3b 中的 `game-designer`。
 
@@ -40,7 +40,7 @@ model: sonnet
 - [ ] 有详细规则（`Detailed Rules`）章节（明确的机制）
 - [ ] 有公式（`Formulas`）章节（所有数学已定义，含变量）
 - [ ] 有边界情况（`Edge Cases`）章节（处理了异常情况）
-- [ ] 有依赖关系（`Dependencies`）章节（列出了其他系统）
+- [ ] 有依赖项（`Dependencies`）章节（列出了其他系统）
 - [ ] 有调优参数（`Tuning Knobs`）章节（标识了可配置值）
 - [ ] 有验收标准（`Acceptance Criteria`）章节（可测试的成功条件）
 

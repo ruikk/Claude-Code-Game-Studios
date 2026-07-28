@@ -153,7 +153,7 @@
 
 ---
 
-## 依赖关系（Dependencies）
+## 依赖项（Dependencies）
 
 - 相关阵营： [List factions that interact with this one]
 - 相关区域： [Levels/regions where this faction appears]

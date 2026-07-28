@@ -82,16 +82,16 @@ agent: technical-director
 
 对于找到的每个 GDD 文件，通过扫描标题检查以下 8 个必需章节：
 
-| 必需章节 | 要查找的标题模式 |
-|---|---|
-| 概述 | `## Overview` |
-| 玩家幻想 | `## Player Fantasy` |
-| 详细规则 / 设计 | `## Detailed` 或 `## Core Rules` 或 `## Detailed Design` |
+| 必需章节 | 要查找的标题模式              |
+|---|-------------------------------|
+| 概述 | `## Overview`                 |
+| 玩家幻想 | `## Player Fantasy`           |
+| 详细规则 | `## Detailed Rules`           |
 | 公式 | `## Formulas` 或 `## Formula` |
-| 边界情况 | `## Edge Cases` |
-| 依赖项 | `## Dependencies` 或 `## Depends` |
-| 调优参数 | `## Tuning` |
-| 验收标准 | `## Acceptance` |
+| 边界情况 | `## Edge Cases`               |
+| 依赖项 | `## Dependencies`             |
+| 调优参数 | `## Tuning`                   |
+| 验收标准 | `## Acceptance`               |
 
 对于每个 GDD，记录：
 - 存在哪些章节

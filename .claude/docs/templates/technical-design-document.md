@@ -73,7 +73,7 @@
 ### 阶段 3（Phase 3）: [Optimization/Polish]
 - [ ] [Task 5]
 
-## 依赖关系（Dependencies）
+## 依赖项（Dependencies）
 | Depends On | For What |
 | ---------- | -------- |
 | [System] | [Reason] |

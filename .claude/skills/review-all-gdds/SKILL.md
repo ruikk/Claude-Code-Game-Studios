@@ -72,7 +72,7 @@ Read path="design/registry/entities.yaml"
 
 1. `design/gdd/game-concept.md` — 游戏愿景、核心循环、MVP 定义
 2. 如果存在 `design/gdd/game-pillars.md` — 设计支柱和反支柱
-3. `design/gdd/systems-index.md` — 权威系统列表、层级、依赖关系、状态
+3. `design/gdd/systems-index.md` — 权威系统列表、层级、依赖项、状态
 4. **`design/gdd/` 中范围内的每个系统 GDD** — 完整读取（跳过 game-concept.md 和 systems-index.md，它们已在上面读取）
 
 报告：“已加载覆盖 [M] 个系统的 [N] 个系统 GDD。支柱：[list]。反支柱：[list]。”
@@ -533,7 +533,7 @@ FAIL：开始架构设计前必须解决一个或多个阻塞问题。
 如果任何已启动的代理返回 BLOCKED、报错或未能完成：
 
 1. **立即说明**：继续前报告“[AgentName]: BLOCKED — [reason]”
-2. **评估依赖关系**：如果后续阶段需要被阻塞代理的输出，没有用户输入时不要越过该阶段继续
+2. **评估依赖项**：如果后续阶段需要被阻塞代理的输出，没有用户输入时不要越过该阶段继续
 3. **提供选项**：通过 AskUserQuestion 提供三个选择：
    - 跳过此代理，并在最终报告中注明缺口
    - 缩小范围后重试（减少 GDD 数量、聚焦单个系统）

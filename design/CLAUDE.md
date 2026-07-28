@@ -10,7 +10,7 @@
 3. 详细规则（Detailed Rules）——明确、无歧义的机制规则
 4. 公式（Formulas）——所有数学公式均须定义所用变量
 5. 边界情况（Edge Cases）——处理异常情形
-6. 依赖关系（Dependencies）——列出其他系统
+6. 依赖项（Dependencies）——列出其他系统
 7. 调优旋钮（Tuning Knobs）——明确可配置的值
 8. 验收标准（Acceptance Criteria）——可测试的成功条件
 

@@ -123,7 +123,7 @@
 
 ---
 
-## 依赖关系（Dependencies）
+## 依赖项（Dependencies）
 
 - Depends on: [combat balance, quest design, crafting system]
 - Affects: [difficulty curve, player retention, monetization]
